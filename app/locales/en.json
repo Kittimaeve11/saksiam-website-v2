@@ -1,0 +1,130 @@
+{
+    "menu": {
+        "home": "Home",
+        "about": "About Us",
+        "careers": "Careers",
+        "contact": "Contact Us",
+        "loan_services": "Loan Services",
+        "solar": "Solar Energy",
+        "branch_finder": "Branch Finder",
+        "news": "News & Activities",
+        "faq": "FAQ",
+        "sustainability": "Sustainability",
+        "investor_relations": "Investor Relations"
+    },
+    "brand": {
+        "name": "Saksiam Loans – Finance for Society",
+        "slogan": "Low Interest, Excellent Service, Trusted Standards"
+    },
+    "home": {
+        "follow_news_1": "Stay updated",
+        "follow_news_2": "with news and activities",
+        "follow_news_3": "from Saksiam",
+        "view_detail": "View Details",
+        "select_loan": "Choose the loan service that suits you",
+        "apply_loan": "Apply for a Loan",
+        "find_branch": "Find a branch near you",
+        "find_branch_near_me": "Find a branch near me",
+        "staff_recommend": "Request staff assistance",
+        "select_branch_service": "Select the branch most convenient for your service",
+        "view_all_news": "View all news and activities",
+        "read_more": "Read More"
+    },
+    "customer_reviews": {
+        "title": "Trusted by Our Customers",
+        "description": "More than 50,000 customers have received our services, with genuine reviews from real experiences."
+    },
+    "video_section": {
+        "title": "Saksiam Loans for Society",
+        "description": "Watch our service introduction video to understand our process and discover why over 50,000 customers trust Saksiam."
+    },
+    "loan_features": {
+        "low_interest": "Low Interest",
+        "easy_payment": "Easy Installments",
+        "reduce_principal_interest": "Lower Principal, Lower Interest"
+    },
+    "company": {
+        "interest_rate_fee": "Interest Rates and Fees",
+        "policy": "Policies",
+        "history": "Company History",
+        "vision_mission": "Vision and Mission",
+        "branches": "Service Branches",
+        "careers": "Careers"
+    },
+    "investor": {
+        "title": "Investor Relations",
+        "organization_structure": "Organizational Structure",
+        "board_of_directors": "Board of Directors",
+        "audit_committee": "Audit Committee",
+        "risk_committee": "Risk Management Committee",
+        "nomination_committee": "Nomination and Remuneration Committee",
+        "governance_committee": "Corporate Governance and Sustainability Committee",
+        "board_skills_matrix": "Board Skills Matrix"
+    },
+    "loan": {
+        "why_choose_us": "Why Apply for a Loan with Us?",
+        "qualifications": "Applicant Qualifications",
+        "required_documents": "Required Documents",
+        "view_more": "View More Details",
+        "more_contact": "Additional Contact Channels",
+        "application_steps": "Loan Application Process"
+    },
+    "news": {
+        "title": "News",
+        "activities": "Activities",
+        "other_news": "Other News & Activities",
+        "view_all": "View All",
+        "times": "times",
+        "read_more": "Read more details",
+        "read_more_short": "Read more"
+    },
+    "faq": {
+        "title": "All Questions About Saksiam Loans in One Place",
+        "all": "All",
+        "loan": "Loan",
+        "contact": "Contact",
+        "ask": "Ask"
+    },
+    "contact": {
+        "more_inquiry": "Request More Information",
+        "send_message": "Send Message",
+        "working_hours": "Business Hours",
+        "phone": "Contact Number",
+        "more_channels": "More Inquiry Channels",
+        "social_media": "Social Media",
+        "email": "Email"
+    },
+    "career": {
+        "title": "Join Our Team",
+        "description": "Find the right position for you. We provide opportunities for you to grow together with our organization.",
+        "search_job": "Search for a position..."
+    },
+    "branch": {
+        "head_office": "Head Office",
+        "branch": "Branch"
+    },
+    "common": {
+        "home": "Home",
+        "back": "Back",
+        "search_result": "Search Results"
+    },
+    "recruitment": {
+        "contact_information": "For further information, please contact 055-444495 ext. 237, 238, 239 or 098-2820231 / 098-2820232 (Human Resources Department).",
+        "disclaimer": "The Company reserves the right to cancel or reject any application and reserves the right to invite or not invite applicants for testing or interviews without prior notice. Applicants shall not claim any rights or raise objections in this regard.",
+        "check_exam_result": "Would you like to check the recruitment examination results?",
+        "check_with_id": "You can check the results using your national ID number.",
+        "check_result_button": "Check Results",
+        "application_closed": "Application Closed"
+    },
+    "loan_products": {
+        "vehicle_title_loan": "Vehicle Title Loan",
+        "nano_finance": "Nano Finance Loan (Micro Business Loan)",
+        "vehicle_title_investment": "Vehicle Title Loan for Investment",
+        "personal_loan": "Personal Loan",
+        "car_title_hire_purchase": "Car Title Loan (Hire Purchase Loan)",
+        "motorcycle_hire_purchase": "New Motorcycle Hire Purchase Loan"
+    },
+    "ask": "Ask",
+    "selete":"Selete",
+    "loading": "Loading"
+}
