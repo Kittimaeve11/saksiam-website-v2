@@ -120,8 +120,8 @@ export default function CookieBanner() {
               fontWeight: 700,
               color: "var(--color-primary)",
 
-              display: "inline-flex",   // 👈 เปลี่ยนตรงนี้
-              alignItems: "center",     // 👈 สำคัญมาก
+              display: "inline-flex",   
+              alignItems: "center",     
               gap: 1,
               lineHeight: 1.2,
             }}
@@ -247,11 +247,23 @@ export default function CookieBanner() {
 
             {/* ================= CONTENT ================= */}
             <Box sx={{ p: 3 }}>
-              <Typography fontSize={20} fontWeight={700} mb={1}>
+              <Typography
+                sx={{
+                  fontSize: 20,
+                  fontWeight: 700,
+                  mb: 1,
+                }}
+              >
                 ประเภทของคุกกี้ที่บริษัทใช้
               </Typography>
 
-              <Typography color="#667085" mb={3} fontSize={14}>
+              <Typography
+                sx={{
+                  color: "#667085",
+                  mb: 3,
+                  fontSize: 14,
+                }}
+              >
                 บริษัทจะใช้คุกกี้เมื่อท่านได้เข้าเยี่ยมชมเว็บไซต์ของบริษัท
                 โดยการใช้งานคุกกี้ของเราแบ่งออกตามลักษณะของการใช้งานได้ดังนี้
               </Typography>
@@ -279,16 +291,29 @@ export default function CookieBanner() {
                   >
                     {/* HEADER */}
                     <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="center"
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
                     >
-                      <Box display="flex" gap={1.2} alignItems="center">
-                        <Box color="#98A2B3">
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 1.2,
+                          alignItems: "center",
+                        }}
+                      >
+                        <Box sx={{ color: "#98A2B3" }}>
                           {isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
                         </Box>
 
-                        <Typography fontWeight={600} fontSize={15}>
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: 15,
+                          }}
+                        >
                           {item.label}
                         </Typography>
                       </Box>
@@ -361,19 +386,24 @@ export default function CookieBanner() {
                   gap: 2,
                 }}
               >
-                <Box display="flex" gap={2}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                  }}
+                >
                   <Button
                     variant="contained"
                     onClick={acceptAll}
-                    disableElevation // 👈 ตัวนี้สำคัญสุด
+                    disableElevation
                     sx={{
                       bgcolor: "var(--color-primary)",
                       borderRadius: "10px",
                       px: 3,
-                      boxShadow: "none", // 👈 กันชัวร์
+                      boxShadow: "none",
                       "&:hover": {
                         bgcolor: "var(--color-primary-hover)",
-                        boxShadow: "none", // 👈 กันตอน hover
+                        boxShadow: "none",
                       },
                     }}
                   >
@@ -383,7 +413,10 @@ export default function CookieBanner() {
                   <Button
                     variant="outlined"
                     onClick={rejectAll}
-                    sx={{ borderRadius: "10px", px: 3 }}
+                    sx={{
+                      borderRadius: "10px",
+                      px: 3,
+                    }}
                   >
                     ไม่ยอมรับคุกกี้ทั้งหมด
                   </Button>
