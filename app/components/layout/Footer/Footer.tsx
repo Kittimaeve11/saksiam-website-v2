@@ -43,18 +43,38 @@ export default function Footer() {
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [contact, setContact] = useState<Contact | null>(null);
 
+  const [loadingPolicies, setLoadingPolicies] = useState(true);
+  const [loadingContact, setLoadingContact] = useState(true);
+
+  const [errorPolicies, setErrorPolicies] = useState(false);
+  const [errorContact, setErrorContact] = useState(false);
+
   /* ================= FETCH ================= */
   useEffect(() => {
 
-    // POLICY
+    // ================= POLICY =================
     fetch("/api/policies")
       .then(res => res.json())
-      .then(data => setPolicies(data.data || []));
+      .then(data => {
+        setPolicies(data.data || []);
+        setLoadingPolicies(false);
+      })
+      .catch(() => {
+        setErrorPolicies(true);
+        setLoadingPolicies(false);
+      });
 
-    // CONTACT ( ใหม่)
+    // ================= CONTACT =================
     fetch("/api/contact")
       .then(res => res.json())
-      .then(data => setContact(data));
+      .then(data => {
+        setContact(data);
+        setLoadingContact(false);
+      })
+      .catch(() => {
+        setErrorContact(true);
+        setLoadingContact(false);
+      });
 
   }, []);
 
@@ -134,25 +154,69 @@ export default function Footer() {
                 </Typography>
 
                 <Stack spacing={0.7}>
-                  {policies.map((item) => (
+                  {loadingPolicies ? (
+                    // ================= LOADING =================
                     <Typography
-                      key={item.id}
-                      component={Link}
-                      href={`/policy/${item.id}`}
                       sx={{
                         fontSize: "16px",
-                        textDecoration: "none",
                         color: "inherit",
-                        "&:hover": {
-                          color: "var(--main-yellow-500)",
-                        },
                       }}
                     >
-                      {locale === "th" ? item.titleTH : item.titleEN}
+                      <span className="loading-text">
+                        {locale === "th" ? "กำลังโหลด" : "Loading"}
+                        <span className="loading-dots">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </span>
+                      </span>
                     </Typography>
-                  ))}
-                </Stack>
-              </Grid>
+
+                  ) : errorPolicies ? (
+                    // ================= ERROR =================
+                    <Typography
+                      sx={{
+                        fontSize: "16px",
+                        color: "inherit",
+                        opacity: 0.7,
+                      }}
+                    >
+                      {locale === "th" ? "โหลดข้อมูลไม่สำเร็จ" : "Failed to load"}
+                    </Typography>
+
+                  ) : policies.length > 0 ? (
+                    // ================= SUCCESS =================
+                    policies.map((item) => (
+                      <Typography
+                        key={item.id}
+                        component={Link}
+                        href={`/policy/${item.id}`}
+                        className="fade-in"
+                        sx={{
+                          fontSize: "16px",
+                          textDecoration: "none",
+                          color: "inherit",
+                          "&:hover": {
+                            color: "var(--main-yellow-500)",
+                          },
+                        }}
+                      >
+                        {locale === "th" ? item.titleTH : item.titleEN}
+                      </Typography>
+                    ))
+                  ) : (
+                    // ================= NO DATA =================
+                    <Typography
+                      sx={{
+                        fontSize: "16px",
+                        color: "inherit",
+                        opacity: 0.6,
+                      }}
+                    >
+                      {locale === "th" ? "ไม่มีข้อมูล" : "No data"}
+                    </Typography>
+                  )}
+                </Stack>              </Grid>
             </Stack>
           </Grid>
 
@@ -197,8 +261,8 @@ export default function Footer() {
               </Typography>
 
               {/*  ใช้ API */}
-              {contact && (
-                <Stack spacing={0.7}>
+              {contact ? (
+                <Stack spacing={0.7} className="fade-in">
                   <Typography sx={{ fontSize: "16px" }}>
                     {locale === "th" ? contact.companyTH : contact.companyEN}
                   </Typography>
@@ -207,6 +271,15 @@ export default function Footer() {
                     {locale === "th" ? contact.addressTH : contact.addressEN}
                   </Typography>
                 </Stack>
+              ) : (
+                <span className="loading-text">
+                  {locale === "th" ? "กำลังโหลด" : "Loading"}
+                  <span className="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </span>
+                </span>
               )}
 
               {/* CONTACT */}
@@ -235,38 +308,69 @@ export default function Footer() {
                         }}
                       />
                       <Typography sx={{ fontSize: "16px" }}>
-                        {contact?.email?.[0]}
+                        {contact ? (
+                          <span className="fade-in">
+                            {contact.email?.[0] || (locale === "th" ? "ไม่มีข้อมูล" : "No data")}
+                          </span>
+                        ) : (
+                          <span className="loading-text">
+                            {locale === "th" ? "กำลังโหลด" : "Loading"}
+                            <span className="loading-dots">
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                            </span>
+                          </span>
+                        )}
                       </Typography>
                     </Stack>
 
                     {/* PHONE */}
-                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                      <Grid
-                        container
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          border: "2.5px solid var(--main-yellow-500)",
-                          borderRadius: "10px",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
+                    {contact ? (
+                      <Stack
+                        direction="row"
+                        spacing={1.5}
+                        sx={{ alignItems: "center" }}
+                        className="fade-in"
                       >
+                        {/* ICON */}
                         <Grid
-                          component="i"
-                          className="fi fi-sr-phone-call"
+                          container
                           sx={{
-                            fontSize: "20px",       //  ลดนิดจะบาลานซ์กว่า
-                            color: "var(--main-yellow-500)",
-                            lineHeight: 0,          //  ตัวสำคัญ (แก้ลอย)
-                            display: "flex",
-                            alignItems: "center",
+                            width: 40,
+                            height: 40,
+                            border: "2.5px solid var(--main-yellow-500)",
+                            borderRadius: "10px",
                             justifyContent: "center",
+                            alignItems: "center",
                           }}
-                        />
-                      </Grid>
+                        >
+                          <Grid
+                            component="i"
+                            className="fi fi-sr-phone-call"
+                            sx={{
+                              fontSize: "20px",
+                              color: "var(--main-yellow-500)",
+                              lineHeight: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          />
+                        </Grid>
 
-
+                        {/* TEXT */}
+                        <Typography
+                          sx={{
+                            fontSize: "36px",
+                            fontWeight: 800,
+                            color: "var(--main-yellow-500)",
+                          }}
+                        >
+                          {contact.callCenter}
+                        </Typography>
+                      </Stack>
+                    ) : (
                       <Typography
                         sx={{
                           fontSize: "36px",
@@ -274,9 +378,16 @@ export default function Footer() {
                           color: "var(--main-yellow-500)",
                         }}
                       >
-                        {contact?.callCenter}
+                        <span className="loading-text">
+                          {locale === "th" ? "กำลังโหลด" : "Loading"}
+                          <span className="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </span>
+                        </span>
                       </Typography>
-                    </Stack>
+                    )}
 
                     {/* SOCIAL */}
                     <Stack direction="row" spacing={1}>

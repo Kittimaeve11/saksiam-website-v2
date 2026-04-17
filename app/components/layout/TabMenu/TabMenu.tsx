@@ -186,6 +186,14 @@ export default function TabMenu() {
             maxHeight: "70vh",
             overflowY: "auto",
             zIndex: 9999,
+
+            /* 🔥 ซ่อน scrollbar */
+            scrollbarWidth: "none",        // Firefox
+            msOverflowStyle: "none",       // IE/Edge
+            "&::-webkit-scrollbar": {
+              display: "none",             // Chrome/Safari
+            },
+
           }}
         >
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1, color: "#fff" }}>
@@ -220,7 +228,7 @@ export default function TabMenu() {
                   alignItems: "center",
                   justifyContent: "space-between",
 
-                  width: "100%", // ✅ สำคัญ
+                  width: "100%", 
                   boxSizing: "border-box",
 
                   px: 2,

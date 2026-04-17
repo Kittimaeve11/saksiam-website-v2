@@ -19,7 +19,6 @@ export default function Navbar(): React.ReactElement {
   ================================ */
   const { messages, locale, switchLocale } = useLocale();
   const [contact, setContact] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
 
   /* ================================
      Path
@@ -56,6 +55,9 @@ export default function Navbar(): React.ReactElement {
           backgroundImage: "url('/Navbar/Navbar.jpg')",
           backgroundSize: "100% 100%",
           backgroundRepeat: "no-repeat",
+
+          position: "relative",
+          zIndex: 1, // 🔥 เพิ่มตรงนี้
         }}
       >
         <Box
@@ -105,6 +107,9 @@ export default function Navbar(): React.ReactElement {
               alignItems: "flex-end",
               textAlign: "right",
               color: "var(--color-primary)",
+
+              position: "relative",
+              zIndex: 9999, // 🔥 ดันขึ้นเหนือ Navbar
             }}
           >
             {/* LANGUAGE */}
@@ -178,13 +183,14 @@ export default function Navbar(): React.ReactElement {
                   </span>
                 ) : (
                   <span className="loading-text">
-                    กำลังโหลด
+                    {messages.loading}
                     <span className="loading-dots">
-                      <span>.</span>
-                      <span>.</span>
-                      <span>.</span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
                     </span>
                   </span>
+
                 )}
               </Typography>
             </Stack>

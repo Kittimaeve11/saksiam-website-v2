@@ -241,64 +241,61 @@ body {
 
 /*  ทำให้ LightGallery อยู่บนสุด */
 .lg-outer {
-  z-index: 999999 !important;
+   z-index: 999999 !important;
 }
 
 /*  backdrop */
 .lg-backdrop {
-  z-index: 999998 !important;
+   z-index: 999998 !important;
 }
 
 
 /*  ตอนเปิด gallery ให้ซ่อน scroll */
 .lg-on {
-  overflow: hidden !important;
+   overflow: hidden !important;
 }
 
 /*  ซ่อน scrollbar ทั้งหมด */
 .lg-on::-webkit-scrollbar {
-  display: none;
+   display: none;
 }
 
 /* Firefox */
 .lg-on {
-  scrollbar-width: none;
+   scrollbar-width: none;
 }
 
 
 /*  แก้เส้นขาวระหว่าง tile */
 .leaflet-tile {
-  outline: 1px solid transparent;
+   outline: 1px solid transparent;
 }
 
 /*  ป้องกัน sub-pixel */
 .leaflet-container {
-  background: #ddd;
+   background: #ddd;
 }
 
 /*  กันภาพเหลื่อม */
 .leaflet-tile img {
-  image-rendering: auto;
+   image-rendering: auto;
 }
 
 /* ======================================================
-   LOADING TEXT ANIMATION
-====================================================== */
-/* ======================================================
-   LOADING TEXT (FIX ALIGN CENTER)
+   LOADING TEXT
 ====================================================== */
 
 .loading-text {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-primary);
+   display: inline-flex;
+   align-items: baseline;
+   gap: 0.2em;
+   /* 🔥 ลด gap เล็กลง */
 
-  display: inline-flex;
-  align-items: center;   /* 🔥 ให้ตัวอักษรอยู่กลาง */
-  gap: 4px;
+   font: inherit;
+   line-height: inherit;
+   color: inherit;
 
-  line-height: 1;        /* 🔥 กัน baseline เพี้ยน */
-  vertical-align: middle; /* 🔥 ให้ตรงกับ icon */
+   white-space: nowrap;
 }
 
 /* ======================================================
@@ -306,28 +303,42 @@ body {
 ====================================================== */
 
 .loading-dots {
-  display: inline-flex;
-  align-items: center;
+   display: inline-flex;
+   align-items: baseline;
+   gap: 0.15em;
+   /* 🔥 ชิดขึ้นอีกนิด */
+
+   min-width: 0.9em;
+   /* 🔥 ลดพื้นที่ไม่ให้ห่าง */
+   line-height: inherit;
 }
 
 .loading-dots span {
-  display: inline-block;   /* 🔥 สำคัญมาก */
-  width: 4px;              /* 🔥 fix ขนาดจุด */
-  text-align: center;
+   display: inline-block;
 
-  animation: loadingDots 1.4s infinite;
-  opacity: 0;
+   width: 0.2em;
+   /* 🔥 เล็กลง (เดิม 0.35em) */
+   height: 0.2em;
+   border-radius: 50%;
+
+   background-color: currentColor;
+
+   opacity: 0.3;
+   /* 🔥 เห็นชัดขึ้นนิด */
+   animation: loadingDots 1.2s infinite ease-in-out;
 }
 
 /* delay ทีละจุด */
 .loading-dots span:nth-child(1) {
-  animation-delay: 0s;
+   animation-delay: 0s;
 }
+
 .loading-dots span:nth-child(2) {
-  animation-delay: 0.2s;
+   animation-delay: 0.15s;
 }
+
 .loading-dots span:nth-child(3) {
-  animation-delay: 0.4s;
+   animation-delay: 0.3s;
 }
 
 /* ======================================================
@@ -335,33 +346,41 @@ body {
 ====================================================== */
 
 @keyframes loadingDots {
-  0% {
-    opacity: 0;
-    transform: translateY(0px);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-3px); /* 🔥 ลดจาก 4px ให้เนียนขึ้น */
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(0px);
-  }
+   0% {
+      opacity: 0.3;
+      transform: translateY(0);
+   }
+
+   30% {
+      opacity: 1;
+      transform: translateY(-0.12em);
+      /* 🔥 ขยับน้อยลง ดูเนียน */
+   }
+
+   60% {
+      opacity: 0.3;
+      transform: translateY(0);
+   }
+
+   100% {
+      opacity: 0.3;
+      transform: translateY(0);
+   }
 }
 
 
 /* ====== Fade-in animation ====== */
 .fade-in {
-  opacity: 0;
-  animation: fadeIn 0.8s ease-in forwards;
+   opacity: 0;
+   animation: fadeIn 0.8s ease-in forwards;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+   from {
+      opacity: 0;
+   }
 
+   to {
+      opacity: 1;
+   }
+}
