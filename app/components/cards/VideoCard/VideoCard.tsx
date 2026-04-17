@@ -1,7 +1,7 @@
 "use client";
 
 /* ====================================================== */
-import { Box } from "@mui/material";
+import { Box, Card } from "@mui/material";
 import Image from "next/image";
 
 /* ====================================================== */
@@ -22,8 +22,9 @@ export default function VideoCard({
   const isPreview = type === "preview";
 
   return (
-    <Box
+    <Card
       onClick={onClick}
+      elevation={0}
       sx={{
         width: isPreview ? { xs: 180, md: 380 } : "100%",
         maxWidth: isPreview ? undefined : 530,
@@ -31,9 +32,17 @@ export default function VideoCard({
         borderRadius: "20px",
         overflow: "hidden",
         cursor: isPreview ? "pointer" : "default",
+        bgcolor: "#000",
 
-        /*  ใช้ padding-top แทน aspectRatio (เสถียรกว่า) */
-        pt: "56.25%", // 16:9
+        /* ======================================================
+           🔥 FIXED 16:9 RATIO
+        ====================================================== */
+        aspectRatio: "16 / 9",
+
+        /* ======================================================
+           🔥 SHADOW
+        ====================================================== */
+        boxShadow: "0 18px 45px rgba(0,0,0,0.18)",
 
         ...(isPreview && {
           transform: "scale(0.9)",
@@ -42,6 +51,7 @@ export default function VideoCard({
           "&:hover": {
             transform: "scale(1)",
             filter: "brightness(1)",
+            boxShadow: "0 24px 55px rgba(0,0,0,0.22)",
           },
         }),
       }}
@@ -75,6 +85,7 @@ export default function VideoCard({
               alignItems: "center",
               justifyContent: "center",
               zIndex: 2,
+              boxShadow: "0 8px 18px rgba(0,0,0,0.2)",
             }}
           >
             <Box
@@ -101,14 +112,13 @@ export default function VideoCard({
           allowFullScreen
           sx={{
             position: "absolute",
-            top: 0,
-            left: 0,
+            inset: 0,
             width: "100%",
             height: "100%",
             border: 0,
           }}
         />
       )}
-    </Box>
+    </Card>
   );
 }
