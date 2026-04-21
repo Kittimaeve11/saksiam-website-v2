@@ -223,6 +223,18 @@ body {
 
 }
 
+body {
+   margin: 0;
+   padding: 0;
+
+}
+
+* {
+   margin: 0;
+   padding: 0;
+
+}
+
 .font-300 {
    font-weight: 200;
    -webkit-text-stroke: 0.15px currentColor;
@@ -239,148 +251,44 @@ body {
 }
 
 
-/*  ทำให้ LightGallery อยู่บนสุด */
+/* 🔥 ทำให้ LightGallery อยู่บนสุด */
 .lg-outer {
-   z-index: 999999 !important;
+  z-index: 999999 !important;
 }
 
-/*  backdrop */
+/* 🔥 backdrop */
 .lg-backdrop {
-   z-index: 999998 !important;
+  z-index: 999998 !important;
 }
 
 
-/*  ตอนเปิด gallery ให้ซ่อน scroll */
+/* 🔥 ตอนเปิด gallery ให้ซ่อน scroll */
 .lg-on {
-   overflow: hidden !important;
+  overflow: hidden !important;
 }
 
-/*  ซ่อน scrollbar ทั้งหมด */
+/* 🔥 ซ่อน scrollbar ทั้งหมด */
 .lg-on::-webkit-scrollbar {
-   display: none;
+  display: none;
 }
 
 /* Firefox */
 .lg-on {
-   scrollbar-width: none;
+  scrollbar-width: none;
 }
 
 
-/*  แก้เส้นขาวระหว่าง tile */
+/* 🔥 แก้เส้นขาวระหว่าง tile */
 .leaflet-tile {
-   outline: 1px solid transparent;
+  outline: 1px solid transparent;
 }
 
-/*  ป้องกัน sub-pixel */
+/* 🔥 ป้องกัน sub-pixel */
 .leaflet-container {
-   background: #ddd;
+  background: #ddd;
 }
 
-/*  กันภาพเหลื่อม */
+/* 🔥 กันภาพเหลื่อม */
 .leaflet-tile img {
-   image-rendering: auto;
-}
-
-/* ======================================================
-   LOADING TEXT
-====================================================== */
-
-.loading-text {
-   display: inline-flex;
-   align-items: baseline;
-   gap: 0.2em;
-   /* 🔥 ลด gap เล็กลง */
-
-   font: inherit;
-   line-height: inherit;
-   color: inherit;
-
-   white-space: nowrap;
-}
-
-/* ======================================================
-   DOTS
-====================================================== */
-
-.loading-dots {
-   display: inline-flex;
-   align-items: baseline;
-   gap: 0.15em;
-   /* 🔥 ชิดขึ้นอีกนิด */
-
-   min-width: 0.9em;
-   /* 🔥 ลดพื้นที่ไม่ให้ห่าง */
-   line-height: inherit;
-}
-
-.loading-dots span {
-   display: inline-block;
-
-   width: 0.2em;
-   /* 🔥 เล็กลง (เดิม 0.35em) */
-   height: 0.2em;
-   border-radius: 50%;
-
-   background-color: currentColor;
-
-   opacity: 0.3;
-   /* 🔥 เห็นชัดขึ้นนิด */
-   animation: loadingDots 1.2s infinite ease-in-out;
-}
-
-/* delay ทีละจุด */
-.loading-dots span:nth-child(1) {
-   animation-delay: 0s;
-}
-
-.loading-dots span:nth-child(2) {
-   animation-delay: 0.15s;
-}
-
-.loading-dots span:nth-child(3) {
-   animation-delay: 0.3s;
-}
-
-/* ======================================================
-   ANIMATION
-====================================================== */
-
-@keyframes loadingDots {
-   0% {
-      opacity: 0.3;
-      transform: translateY(0);
-   }
-
-   30% {
-      opacity: 1;
-      transform: translateY(-0.12em);
-      /* 🔥 ขยับน้อยลง ดูเนียน */
-   }
-
-   60% {
-      opacity: 0.3;
-      transform: translateY(0);
-   }
-
-   100% {
-      opacity: 0.3;
-      transform: translateY(0);
-   }
-}
-
-
-/* ====== Fade-in animation ====== */
-.fade-in {
-   opacity: 0;
-   animation: fadeIn 0.8s ease-in forwards;
-}
-
-@keyframes fadeIn {
-   from {
-      opacity: 0;
-   }
-
-   to {
-      opacity: 1;
-   }
+  image-rendering: auto;
 }
