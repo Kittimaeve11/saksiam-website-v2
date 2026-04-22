@@ -1,11 +1,8 @@
-// app/views/home/HomeClient.tsx
-
 "use client";
 
 /* ======================================================
    IMPORT
 ====================================================== */
-import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 
 import ServiceClient from "./Service/ServiceClient";
@@ -15,47 +12,26 @@ import NewsSection from "./News/NewsSection";
 import { useLocale } from "@/app/providers/LocaleContext";
 
 /* ======================================================
+   TYPE
+====================================================== */
+type Props = {
+  provinces: any[];
+  amphures: any[];
+  tambons: any[];
+  services: any[];
+};
+
+/* ======================================================
    COMPONENT
 ====================================================== */
-export default function HomeClient() {
+export default function HomeClient({
+  provinces,
+  amphures,
+  tambons,
+  services,
+}: Props) {
   const { messages } = useLocale();
 
-  /* ======================================================
-     STATE
-  ====================================================== */
-  const [provinces, setProvinces] = useState<any[]>([]);
-  const [amphures, setAmphures] = useState<any[]>([]);
-  const [tambons, setTambons] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-
-  /* ======================================================
-     LOAD DATA
-  ====================================================== */
-  useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        const [p, a, t, s] = await Promise.all([
-          fetch("/data/thai_provinces.json").then((r) => r.json()),
-          fetch("/data/thai_amphures.json").then((r) => r.json()),
-          fetch("/data/thai_tambons.json").then((r) => r.json()),
-          fetch("/api/service").then((r) => r.json()),
-        ]);
-
-        setProvinces(p);
-        setAmphures(a);
-        setTambons(t);
-        setServices(s.services || []);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchAllData();
-  }, []);
-
-  /* ======================================================
-     UI
-  ====================================================== */
   return (
     <>
       {/* ======================================================
@@ -69,22 +45,19 @@ export default function HomeClient() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          overflow: "hidden",
         }}
       >
-        <Box
-          sx={{
-            textAlign: "center",
-            color: "var(--neutral-white)",
-            my: 2,
-          }}
-        >
-          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+        <Box sx={{ textAlign: "center", color: "#fff", my: 2 }}>
+          <Typography
+            sx={{
+              fontSize: 20,
+              fontWeight: 600,
+            }}
+          >
             {messages?.brand?.name}
           </Typography>
 
           <Typography
-            variant="body1"
             sx={{
               opacity: 0.9,
               mt: 0.5,
@@ -98,12 +71,7 @@ export default function HomeClient() {
       {/* ======================================================
          SERVICE SECTION
       ====================================================== */}
-      <Box
-        sx={{
-          position: "relative",
-          width: "100%",
-        }}
-      >
+      <Box sx={{ position: "relative", width: "100%" }}>
         <Box
           sx={{
             position: "absolute",
@@ -120,26 +88,10 @@ export default function HomeClient() {
             backgroundSize: "cover",
             backgroundPosition: "center",
             zIndex: 0,
-
-            "&::after": {
-              content: '""',
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              width: "100%",
-              height: "6px",
-              background: "#FDFDFD",
-            },
           }}
         />
 
-        <Box
-          sx={{
-            position: "relative",
-            zIndex: 1,
-            py: 8,
-          }}
-        >
+        <Box sx={{ position: "relative", zIndex: 1, py: 8 }}>
           <ServiceClient />
         </Box>
       </Box>

@@ -1,24 +1,20 @@
 "use client";
 
-/* ======================================================
-   IMPORT
-====================================================== */
+/* ====================================================== */
 import { useState, useRef, useEffect } from "react";
-import type { Swiper as SwiperType } from "swiper";
-
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
-
-import "swiper/css";
-
 import Image from "next/image";
-import { Box } from "@mui/material";
-
+import { Box, IconButton } from "@mui/material";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 
-/* ======================================================
-   DESKTOP BANNER
-====================================================== */
+/* ====================================================== */
+type SliderProps = {
+  banners: string[];
+  ratio: string;
+  isMobile: boolean;
+};
+
+/* ====================================================== */
 const bannersPC: string[] = [
   "/Banner/SAKHomebanber/SAKHomebanber1.jpg",
   "/Banner/SAKHomebanber/SAKHomebanber2.jpg",
@@ -31,9 +27,6 @@ const bannersPC: string[] = [
   "/Banner/SAKHomebanber/SAKHomebanber9.jpg",
 ];
 
-/* ======================================================
-   MOBILE BANNER
-====================================================== */
 const bannersMobile: string[] = [
   "/Banner/SAKHomebanber/Mobile/2024-06-28BannerAgri0767_rp.jpg",
   "/Banner/SAKHomebanber/Mobile/2024-06-28BannerDrone0767_rp.jpg",
@@ -45,167 +38,194 @@ const bannersMobile: string[] = [
   "/Banner/SAKHomebanber/Mobile/2025-12-25banner251268_02_rp.jpg",
 ];
 
-/* ======================================================
-   COMPONENT
-====================================================== */
-export default function HomeBanner() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
+/* ====================================================== */
+function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
+  const [index, setIndex] = useState(0);
+  const isAnimating = useRef(false);
 
-  const swiperRef = useRef<SwiperType | null>(null);
+  const startX = useRef(0);
+  const isDragging = useRef(false);
 
+  /* ====================================================== */
+  const next = () => {
+    if (isAnimating.current) return;
+    isAnimating.current = true;
+
+    setIndex((prev) => (prev + 1) % banners.length);
+
+    setTimeout(() => (isAnimating.current = false), 350);
+  };
+
+  const prev = () => {
+    if (isAnimating.current) return;
+    isAnimating.current = true;
+
+    setIndex((prev) =>
+      prev === 0 ? banners.length - 1 : prev - 1
+    );
+
+    setTimeout(() => (isAnimating.current = false), 350);
+  };
+
+  /* ====================================================== */
   useEffect(() => {
-    setMounted(true);
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+
+      const diff = startX.current - e.clientX;
+
+      if (diff > 60) {
+        next();
+        isDragging.current = false;
+      }
+      if (diff < -60) {
+        prev();
+        isDragging.current = false;
+      }
+    };
+
+    const handleMouseUp = () => {
+      isDragging.current = false;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
   }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    startX.current = e.clientX;
+    isDragging.current = true;
+  };
+
+  /* ====================================================== */
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = startX.current - e.changedTouches[0].clientX;
+
+    if (diff > 50) next();
+    if (diff < -50) prev();
+  };
 
   return (
     <Box
       sx={{
         width: "100%",
         position: "relative",
+        aspectRatio: ratio,
         overflow: "hidden",
-        backgroundColor: "var(--main-blue-500)",
+        touchAction: "pan-y",
+
+        /* 🔥 FIX หลัก */
+        userSelect: "none",
+        WebkitUserSelect: "none",
       }}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* ======================================================
-         DESKTOP
-      ====================================================== */}
-      <Box sx={{ display: { xs: "none", md: "block" } }}>
-        <Swiper
-          modules={[Autoplay]}
-          slidesPerView={1}
-          loop
-          grabCursor
-          speed={800}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-          }}
-          onSlideChange={(swiper) => {
-            setActiveIndex(swiper.realIndex);
-          }}
-          onSwiper={(swiper) => {
-            swiperRef.current = swiper;
-            setActiveIndex(swiper.realIndex);
-          }}
-        >
-          {bannersPC.map((src, index) => (
-            <SwiperSlide key={`pc-${index}`}>
-              <Box
-                sx={{
-                  position: "relative",
-                  width: "100%",
-                  aspectRatio: "3840 / 1191",
-                }}
-              >
-                <Image
-                  src={src}
-                  alt={`banner-pc-${index}`}
-                  fill
-                  priority={index === 0}
-                  quality={90}
-
-                  /* ======================================================
-                     FIX WARNING
-                     desktop banner กว้างเต็มจอเฉพาะ md+
-                  ====================================================== */
-                  sizes="(max-width: 899px) 0px, 100vw"
-
-                  draggable={false}
-                  style={{
-                    objectFit: "cover",
-                    userSelect: "none",
-                    WebkitUserDrag: "none",
-                  }}
-                />
-              </Box>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </Box>
-
-      {/* ======================================================
-         MOBILE
-      ====================================================== */}
-      <Box sx={{ display: { xs: "block", md: "none" } }}>
-        <Swiper
-          modules={[Autoplay]}
-          slidesPerView={1}
-          loop
-          grabCursor
-          speed={800}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-          }}
-          onSlideChange={(swiper) => {
-            setActiveIndex(swiper.realIndex);
-          }}
-          onSwiper={(swiper) => {
-            swiperRef.current = swiper;
-            setActiveIndex(swiper.realIndex);
-          }}
-        >
-          {bannersMobile.map((src, index) => (
-            <SwiperSlide key={`mobile-${index}`}>
-              <Box
-                sx={{
-                  position: "relative",
-                  width: "100%",
-                  aspectRatio: "768 / 1032",
-                }}
-              >
-                <Image
-                  src={src}
-                  alt={`banner-mobile-${index}`}
-                  fill
-                  priority={index === 0}
-                  quality={90}
-
-                  /* ======================================================
-                     FIX WARNING
-                     mobile แสดงเฉพาะต่ำกว่า md
-                  ====================================================== */
-                  sizes="(max-width: 899px) 100vw, 0px"
-
-                  draggable={false}
-                  style={{
-                    objectFit: "cover",
-                    userSelect: "none",
-                    WebkitUserDrag: "none",
-                  }}
-                />
-              </Box>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </Box>
-
-      {/* ======================================================
-         DOT SLIDER
-      ====================================================== */}
-      {mounted && (
+      {banners.map((src, i) => (
         <Box
+          key={i}
           sx={{
             position: "absolute",
-            left: "50%",
-            transform: "translateX(-50%)",
-            bottom: { xs: 14, md: 22 },
-            zIndex: 10,
-            px: 2,
-            py: 1,
-            borderRadius: "999px",
+            inset: 0,
+            opacity: i === index ? 1 : 0,
+            transition: "opacity 0.35s ease",
+            zIndex: i === index ? 2 : 1,
           }}
         >
-          <DotSlider
-            total={9}
-            activeIndex={activeIndex}
-            onClick={(index) => {
-              swiperRef.current?.slideToLoop(index);
+          <Image
+            src={src}
+            alt={`banner-${i}`}
+            fill
+            priority={i === 0}
+            quality={75} // 🔥 FIX warning
+
+            sizes={
+              isMobile
+                ? "(max-width: 899px) 100vw, 0px"
+                : "(min-width: 900px) 100vw, 0px"
+            }
+
+            /* 🔥 FIX ครบทุกจุด */
+            draggable={false}
+            style={{
+              objectFit: "cover",
+              pointerEvents: "none",
+              userSelect: "none",
+              WebkitUserDrag: "none",
             }}
           />
         </Box>
-      )}
+      ))}
+
+      <IconButton onClick={prev} sx={arrowLeft}>
+        <IoIosArrowBack />
+      </IconButton>
+
+      <IconButton onClick={next} sx={arrowRight}>
+        <IoIosArrowForward />
+      </IconButton>
+
+      <Box sx={dotWrap}>
+        <DotSlider
+          total={banners.length}
+          activeIndex={index}
+          onClick={(i) => setIndex(i)}
+        />
+      </Box>
+    </Box>
+  );
+}
+
+/* ====================================================== */
+const arrowLeft = {
+  position: "absolute",
+  top: "50%",
+  left: 12,
+  transform: "translateY(-50%)",
+  bgcolor: "rgba(0,0,0,0.4)",
+  color: "#fff",
+  zIndex: 10,
+};
+
+const arrowRight = {
+  position: "absolute",
+  top: "50%",
+  right: 12,
+  transform: "translateY(-50%)",
+  bgcolor: "rgba(0,0,0,0.4)",
+  color: "#fff",
+  zIndex: 10,
+};
+
+const dotWrap = {
+  position: "absolute",
+  bottom: 16,
+  left: "50%",
+  transform: "translateX(-50%)",
+  zIndex: 10,
+};
+
+/* ====================================================== */
+export default function HomeBanner() {
+  return (
+    <Box sx={{ width: "100%" }}>
+      <Box sx={{ display: { xs: "none", md: "block" } }}>
+        <FadeSlider banners={bannersPC} ratio="3840 / 1191" isMobile={false} />
+      </Box>
+
+      <Box sx={{ display: { xs: "block", md: "none" } }}>
+        <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
+      </Box>
     </Box>
   );
 }
