@@ -50,11 +50,23 @@ export default function ServiceCard({
 
       {/* ================= CONTENT ================= */}
       <Box sx={{ p: 2, flexGrow: 1 }}>
-        <Typography fontSize={15} fontWeight={600} color="var(--color-primary)">
+        <Typography
+          sx={{
+            fontSize: 15,
+            fontWeight: 600,
+            color: "var(--color-primary)",
+          }}
+        >
           {title}
         </Typography>
 
-        <Typography fontSize={13} mt={0.5} color="rgba(0,0,0,0.6)">
+        <Typography
+          sx={{
+            fontSize: 13,
+            mt: 0.5,
+            color: "rgba(0,0,0,0.6)",
+          }}
+        >
           {description}
         </Typography>
       </Box>
