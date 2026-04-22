@@ -2,7 +2,7 @@
 
 /* ====================================================== */
 import { Box } from "@mui/material";
-import NewsCardItem from "@/app/components/cards/NewsCardItem";
+import NewsCardItem from "@/app/components/cards/NewsCard/NewsCardItem";
 
 /* ====================================================== */
 type Props = {

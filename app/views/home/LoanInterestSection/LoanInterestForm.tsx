@@ -507,8 +507,10 @@ export default function LoanInterestForm(
             }}
           >
             {/* ================= NAME ================= */}
-            <Box flex={1} className={`form-group ${errors.fullname ? "error" : ""}`}>
-              <Typography>
+            <Box
+              sx={{ flex: 1 }}
+              className={`form-group ${errors.fullname ? "error" : ""}`}
+            >              <Typography>
                 ชื่อ - นามสกุล <span style={{ color: "red" }}>*</span>
               </Typography>
 
@@ -563,7 +565,10 @@ export default function LoanInterestForm(
             </Box>
 
             {/* ================= PHONE ================= */}
-            <Box flex={1} className={`form-group ${errors.phone ? "error" : ""}`}>
+            <Box
+              sx={{ flex: 1 }}
+              className={`form-group ${errors.phone ? "error" : ""}`}
+            >
               <Typography>
                 เบอร์โทร <span style={{ color: "red" }}>*</span>
               </Typography>
