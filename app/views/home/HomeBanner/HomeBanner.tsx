@@ -53,7 +53,7 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
 
     setIndex((prev) => (prev + 1) % banners.length);
 
-    setTimeout(() => (isAnimating.current = false), 350);
+    setTimeout(() => (isAnimating.current = false), 400); // 🔥 FIX timing
   };
 
   const prev = () => {
@@ -64,7 +64,7 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
       prev === 0 ? banners.length - 1 : prev - 1
     );
 
-    setTimeout(() => (isAnimating.current = false), 350);
+    setTimeout(() => (isAnimating.current = false), 400); // 🔥 FIX timing
   };
 
   /* ====================================================== */
@@ -95,7 +95,7 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  }, [index]); // 🔥 FIX stale state
 
   const handleMouseDown = (e: React.MouseEvent) => {
     startX.current = e.clientX;
@@ -122,12 +122,11 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
         aspectRatio: ratio,
         overflow: "hidden",
         touchAction: "pan-y",
-
-        /* 🔥 FIX หลัก */
         userSelect: "none",
         WebkitUserSelect: "none",
       }}
       onMouseDown={handleMouseDown}
+      onMouseLeave={() => (isDragging.current = false)} // 🔥 FIX หลุดจอ
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -147,22 +146,22 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
             alt={`banner-${i}`}
             fill
             priority={i === 0}
-            quality={75} // 🔥 FIX warning
-
+            quality={75}
             sizes={
               isMobile
                 ? "(max-width: 899px) 100vw, 0px"
                 : "(min-width: 900px) 100vw, 0px"
             }
-
-            /* 🔥 FIX ครบทุกจุด */
             draggable={false}
-            style={{
-              objectFit: "cover",
-              pointerEvents: "none",
-              userSelect: "none",
-              WebkitUserDrag: "none",
-            }}
+            style={
+              {
+                objectFit: "cover",
+                pointerEvents: "none",
+                userSelect: "none",
+
+                WebkitUserDrag: "none",
+              } as React.CSSProperties
+            }
           />
         </Box>
       ))}
