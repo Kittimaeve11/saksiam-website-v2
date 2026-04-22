@@ -251,23 +251,23 @@ body {
 }
 
 
-/* 🔥 ทำให้ LightGallery อยู่บนสุด */
+/*  ทำให้ LightGallery อยู่บนสุด */
 .lg-outer {
   z-index: 999999 !important;
 }
 
-/* 🔥 backdrop */
+/*  backdrop */
 .lg-backdrop {
   z-index: 999998 !important;
 }
 
 
-/* 🔥 ตอนเปิด gallery ให้ซ่อน scroll */
+/*  ตอนเปิด gallery ให้ซ่อน scroll */
 .lg-on {
   overflow: hidden !important;
 }
 
-/* 🔥 ซ่อน scrollbar ทั้งหมด */
+/*  ซ่อน scrollbar ทั้งหมด */
 .lg-on::-webkit-scrollbar {
   display: none;
 }
@@ -278,17 +278,33 @@ body {
 }
 
 
-/* 🔥 แก้เส้นขาวระหว่าง tile */
+/*  แก้เส้นขาวระหว่าง tile */
 .leaflet-tile {
   outline: 1px solid transparent;
 }
 
-/* 🔥 ป้องกัน sub-pixel */
+/*  ป้องกัน sub-pixel */
 .leaflet-container {
   background: #ddd;
 }
 
-/* 🔥 กันภาพเหลื่อม */
+/*  กันภาพเหลื่อม */
 .leaflet-tile img {
   image-rendering: auto;
+}
+
+
+/* ====== Fade-in animation ====== */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

@@ -3,7 +3,7 @@
 /* ====================================================== */
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Skeleton } from "@mui/material";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 
@@ -11,8 +11,32 @@ import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 type SliderProps = {
   banners: string[];
   ratio: string;
-  isMobile: boolean;
+  isMobile?: boolean;
 };
+
+/* ======================================================
+   SKELETON
+====================================================== */
+function BannerhomeSkeleton({ ratio }: { ratio: string }) {
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        aspectRatio: ratio,
+        overflow: "hidden",
+      }}
+    >
+      <Skeleton
+        variant="rectangular"
+        animation="wave"
+        sx={{
+          width: "100%",
+          height: "100%",
+        }}
+      />
+    </Box>
+  );
+}
 
 /* ====================================================== */
 const bannersPC: string[] = [
@@ -38,57 +62,118 @@ const bannersMobile: string[] = [
   "/Banner/SAKHomebanber/Mobile/2025-12-25banner251268_02_rp.jpg",
 ];
 
-/* ====================================================== */
-function FadeSlider({ banners, ratio }: SliderProps) {
+/* ======================================================
+   SLIDER
+====================================================== */
+function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
   const [index, setIndex] = useState(0);
-  const isAnimating = useRef(false);
 
-  const startX = useRef(0);
+  const isAnimating = useRef(false);
   const isDragging = useRef(false);
+  const startX = useRef(0);
+
+  const isInteracting = useRef(false);
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const animationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* ======================================================
-      PRELOAD (กันขาว)
+     PRELOAD
   ====================================================== */
   useEffect(() => {
     banners.forEach((src) => {
       const img = new window.Image();
       img.src = src;
     });
+
+    return () => {
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
+      if (animationTimer.current) clearTimeout(animationTimer.current);
+    };
   }, [banners]);
 
-  /* ====================================================== */
+  /* ======================================================
+     AUTO CONTROL
+  ====================================================== */
+  const pauseAuto = () => {
+    isInteracting.current = true;
+
+    if (resumeTimer.current) {
+      clearTimeout(resumeTimer.current);
+    }
+
+    resumeTimer.current = setTimeout(() => {
+      isInteracting.current = false;
+    }, 3000);
+  };
+
+  /* ======================================================
+     NAVIGATION
+  ====================================================== */
   const next = () => {
+    pauseAuto();
+
     if (isAnimating.current) return;
     isAnimating.current = true;
 
     setIndex((prev) => (prev + 1) % banners.length);
 
-    setTimeout(() => (isAnimating.current = false), 400);
+    if (animationTimer.current) {
+      clearTimeout(animationTimer.current);
+    }
+
+    animationTimer.current = setTimeout(() => {
+      isAnimating.current = false;
+    }, 400);
   };
 
   const prev = () => {
+    pauseAuto();
+
     if (isAnimating.current) return;
     isAnimating.current = true;
 
-    setIndex((prev) =>
-      prev === 0 ? banners.length - 1 : prev - 1
-    );
+    setIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
 
-    setTimeout(() => (isAnimating.current = false), 400);
+    if (animationTimer.current) {
+      clearTimeout(animationTimer.current);
+    }
+
+    animationTimer.current = setTimeout(() => {
+      isAnimating.current = false;
+    }, 400);
   };
 
-  /* ====================================================== */
+  /* ======================================================
+     AUTOPLAY + DRAG
+  ====================================================== */
   useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isInteracting.current && !isDragging.current && !isAnimating.current) {
+        isAnimating.current = true;
+
+        setIndex((prev) => (prev + 1) % banners.length);
+
+        if (animationTimer.current) {
+          clearTimeout(animationTimer.current);
+        }
+
+        animationTimer.current = setTimeout(() => {
+          isAnimating.current = false;
+        }, 400);
+      }
+    }, 5000);
+
     const handleMove = (e: MouseEvent) => {
       if (!isDragging.current) return;
 
       const diff = startX.current - e.clientX;
 
-      if (diff > 60) {
+      if (diff > 40) {
         next();
         isDragging.current = false;
       }
-      if (diff < -60) {
+
+      if (diff < -40) {
         prev();
         isDragging.current = false;
       }
@@ -96,33 +181,47 @@ function FadeSlider({ banners, ratio }: SliderProps) {
 
     const handleUp = () => {
       isDragging.current = false;
+      pauseAuto();
     };
 
     window.addEventListener("mousemove", handleMove);
     window.addEventListener("mouseup", handleUp);
 
     return () => {
+      clearInterval(interval);
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("mouseup", handleUp);
     };
-  }, [index]);
+  }, [banners]);
 
+  /* ======================================================
+     HANDLERS
+  ====================================================== */
   const handleMouseDown = (e: React.MouseEvent) => {
+    pauseAuto();
     startX.current = e.clientX;
     isDragging.current = true;
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    pauseAuto();
     startX.current = e.touches[0].clientX;
+    isDragging.current = true;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = startX.current - e.changedTouches[0].clientX;
 
-    if (diff > 50) next();
-    if (diff < -50) prev();
+    if (diff > 40) next();
+    if (diff < -40) prev();
+
+    isDragging.current = false;
+    pauseAuto();
   };
 
+  /* ======================================================
+     UI
+  ====================================================== */
   return (
     <Box
       sx={{
@@ -130,13 +229,14 @@ function FadeSlider({ banners, ratio }: SliderProps) {
         position: "relative",
         aspectRatio: ratio,
         overflow: "hidden",
-        touchAction: "pan-y",
         userSelect: "none",
-        WebkitUserSelect: "none",
-        backgroundColor: "#000",
+        touchAction: "pan-y",
+        backgroundColor: "transparent",
       }}
       onMouseDown={handleMouseDown}
-      onMouseLeave={() => (isDragging.current = false)}
+      onMouseLeave={() => {
+        isDragging.current = false;
+      }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -147,26 +247,27 @@ function FadeSlider({ banners, ratio }: SliderProps) {
             position: "absolute",
             inset: 0,
             opacity: i === index ? 1 : 0,
-            transition: "opacity 0.4s ease",
+            transition: "opacity 0.4s ease-in-out",
             zIndex: i === index ? 2 : 1,
+            backgroundColor: "#f5f5f5",
           }}
         >
           <Image
             src={src}
-            alt={`banner-${i}`}
+            alt={`banner-${i + 1}`}
             fill
-            priority
+            priority={i < 2}
             quality={75}
-            sizes="(max-width: 900px) 100vw, 100vw" //  FIX warning
-            draggable={false}
-            style={
-              {
-                objectFit: "cover",
-                pointerEvents: "none",
-                userSelect: "none",
-                WebkitUserDrag: "none",
-              } as React.CSSProperties
+            sizes={
+              isMobile
+                ? "(max-width: 899px) 100vw, 0px"
+                : "(min-width: 900px) 100vw, 0px"
             }
+            draggable={false}
+            style={{
+              objectFit: "cover",
+              pointerEvents: "none",
+            }}
           />
         </Box>
       ))}
@@ -183,7 +284,10 @@ function FadeSlider({ banners, ratio }: SliderProps) {
         <DotSlider
           total={banners.length}
           activeIndex={index}
-          onClick={(i) => setIndex(i)}
+          onClick={(i) => {
+            pauseAuto();
+            setIndex(i);
+          }}
         />
       </Box>
     </Box>
@@ -216,19 +320,48 @@ const dotWrap = {
   bottom: 16,
   left: "50%",
   transform: "translateX(-50%)",
-  zIndex: 10,
+  zIndex: 999,
 };
 
-/* ====================================================== */
+/* ======================================================
+   MAIN COMPONENT
+====================================================== */
 export default function HomeBanner() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ display: { xs: "none", md: "block" } }}>
-        <FadeSlider banners={bannersPC} ratio="3840 / 1191" isMobile={false} />
+        {loading ? (
+          <BannerhomeSkeleton ratio="3840 / 1191" />
+        ) : (
+          <Box className="fade-in">
+            <FadeSlider
+              banners={bannersPC}
+              ratio="3840 / 1191"
+              isMobile={false}
+            />
+          </Box>
+        )}
       </Box>
 
       <Box sx={{ display: { xs: "block", md: "none" } }}>
-        <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
+        {loading ? (
+          <BannerhomeSkeleton ratio="768 / 1032" />
+        ) : (
+          <Box className="fade-in">
+            <FadeSlider
+              banners={bannersMobile}
+              ratio="768 / 1032"
+              isMobile
+            />
+          </Box>
+        )}
       </Box>
     </Box>
   );
