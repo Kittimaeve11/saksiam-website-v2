@@ -39,12 +39,22 @@ const bannersMobile: string[] = [
 ];
 
 /* ====================================================== */
-function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
+function FadeSlider({ banners, ratio }: SliderProps) {
   const [index, setIndex] = useState(0);
   const isAnimating = useRef(false);
 
   const startX = useRef(0);
   const isDragging = useRef(false);
+
+  /* ======================================================
+      PRELOAD (กันขาว)
+  ====================================================== */
+  useEffect(() => {
+    banners.forEach((src) => {
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, [banners]);
 
   /* ====================================================== */
   const next = () => {
@@ -53,7 +63,7 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
 
     setIndex((prev) => (prev + 1) % banners.length);
 
-    setTimeout(() => (isAnimating.current = false), 400); // 🔥 FIX timing
+    setTimeout(() => (isAnimating.current = false), 400);
   };
 
   const prev = () => {
@@ -64,12 +74,12 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
       prev === 0 ? banners.length - 1 : prev - 1
     );
 
-    setTimeout(() => (isAnimating.current = false), 400); // 🔥 FIX timing
+    setTimeout(() => (isAnimating.current = false), 400);
   };
 
   /* ====================================================== */
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMove = (e: MouseEvent) => {
       if (!isDragging.current) return;
 
       const diff = startX.current - e.clientX;
@@ -84,25 +94,24 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
       }
     };
 
-    const handleMouseUp = () => {
+    const handleUp = () => {
       isDragging.current = false;
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
     };
-  }, [index]); // 🔥 FIX stale state
+  }, [index]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     startX.current = e.clientX;
     isDragging.current = true;
   };
 
-  /* ====================================================== */
   const handleTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
   };
@@ -124,9 +133,10 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
         touchAction: "pan-y",
         userSelect: "none",
         WebkitUserSelect: "none",
+        backgroundColor: "#000",
       }}
       onMouseDown={handleMouseDown}
-      onMouseLeave={() => (isDragging.current = false)} // 🔥 FIX หลุดจอ
+      onMouseLeave={() => (isDragging.current = false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -137,7 +147,7 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
             position: "absolute",
             inset: 0,
             opacity: i === index ? 1 : 0,
-            transition: "opacity 0.35s ease",
+            transition: "opacity 0.4s ease",
             zIndex: i === index ? 2 : 1,
           }}
         >
@@ -145,20 +155,15 @@ function FadeSlider({ banners, ratio, isMobile }: SliderProps) {
             src={src}
             alt={`banner-${i}`}
             fill
-            priority={i === 0}
+            priority
             quality={75}
-            sizes={
-              isMobile
-                ? "(max-width: 899px) 100vw, 0px"
-                : "(min-width: 900px) 100vw, 0px"
-            }
+            sizes="(max-width: 900px) 100vw, 100vw" //  FIX warning
             draggable={false}
             style={
               {
                 objectFit: "cover",
                 pointerEvents: "none",
                 userSelect: "none",
-
                 WebkitUserDrag: "none",
               } as React.CSSProperties
             }
