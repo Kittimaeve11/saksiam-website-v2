@@ -14,32 +14,17 @@ type SliderProps = {
   isMobile?: boolean;
 };
 
-/* ======================================================
-   SKELETON
-====================================================== */
+/* ====================================================== */
 function BannerhomeSkeleton({ ratio }: { ratio: string }) {
   return (
-    <Box
-      sx={{
-        width: "100%",
-        aspectRatio: ratio,
-        overflow: "hidden",
-      }}
-    >
-      <Skeleton
-        variant="rectangular"
-        animation="wave"
-        sx={{
-          width: "100%",
-          height: "100%",
-        }}
-      />
+    <Box sx={{ width: "100%", aspectRatio: ratio }}>
+      <Skeleton variant="rectangular" animation="wave" sx={{ width: "100%", height: "100%" }} />
     </Box>
   );
 }
 
 /* ====================================================== */
-const bannersPC: string[] = [
+const bannersPC = [
   "/Banner/SAKHomebanber/SAKHomebanber1.jpg",
   "/Banner/SAKHomebanber/SAKHomebanber2.jpg",
   "/Banner/SAKHomebanber/SAKHomebanber3.jpg",
@@ -51,7 +36,7 @@ const bannersPC: string[] = [
   "/Banner/SAKHomebanber/SAKHomebanber9.jpg",
 ];
 
-const bannersMobile: string[] = [
+const bannersMobile = [
   "/Banner/SAKHomebanber/Mobile/2024-06-28BannerAgri0767_rp.jpg",
   "/Banner/SAKHomebanber/Mobile/2024-06-28BannerDrone0767_rp.jpg",
   "/Banner/SAKHomebanber/Mobile/2024-06-28BannerLand0767_rp.jpg",
@@ -63,160 +48,116 @@ const bannersMobile: string[] = [
 ];
 
 /* ======================================================
-   SLIDER
+   🔥 LOOP SLIDER + RESET AUTOPLAY
 ====================================================== */
 function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
-  const [index, setIndex] = useState(0);
+  const slides = [banners[banners.length - 1], ...banners, banners[0]];
 
-  const isAnimating = useRef(false);
-  const isDragging = useRef(false);
+  const [index, setIndex] = useState(1);
+  const [enableTransition, setEnableTransition] = useState(true);
+
   const startX = useRef(0);
+  const isDragging = useRef(false);
 
-  const isInteracting = useRef(false);
-  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const animationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  /* ======================================================
-     PRELOAD
-  ====================================================== */
-  useEffect(() => {
-    banners.forEach((src) => {
-      const img = new window.Image();
-      img.src = src;
-    });
-
-    return () => {
-      if (resumeTimer.current) clearTimeout(resumeTimer.current);
-      if (animationTimer.current) clearTimeout(animationTimer.current);
-    };
-  }, [banners]);
+  const isSliding = useRef(false);
+  const autoTimer = useRef<NodeJS.Timeout | null>(null);
 
   /* ======================================================
-     AUTO CONTROL
+     🔥 RESET AUTOPLAY (หัวใจหลัก)
   ====================================================== */
-  const pauseAuto = () => {
-    isInteracting.current = true;
+  const resetAutoplay = () => {
+    if (autoTimer.current) clearTimeout(autoTimer.current);
 
-    if (resumeTimer.current) {
-      clearTimeout(resumeTimer.current);
-    }
-
-    resumeTimer.current = setTimeout(() => {
-      isInteracting.current = false;
-    }, 3000);
-  };
-
-  /* ======================================================
-     NAVIGATION
-  ====================================================== */
-  const next = () => {
-    pauseAuto();
-
-    if (isAnimating.current) return;
-    isAnimating.current = true;
-
-    setIndex((prev) => (prev + 1) % banners.length);
-
-    if (animationTimer.current) {
-      clearTimeout(animationTimer.current);
-    }
-
-    animationTimer.current = setTimeout(() => {
-      isAnimating.current = false;
-    }, 400);
-  };
-
-  const prev = () => {
-    pauseAuto();
-
-    if (isAnimating.current) return;
-    isAnimating.current = true;
-
-    setIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
-
-    if (animationTimer.current) {
-      clearTimeout(animationTimer.current);
-    }
-
-    animationTimer.current = setTimeout(() => {
-      isAnimating.current = false;
-    }, 400);
-  };
-
-  /* ======================================================
-     AUTOPLAY + DRAG
-  ====================================================== */
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isInteracting.current && !isDragging.current && !isAnimating.current) {
-        isAnimating.current = true;
-
-        setIndex((prev) => (prev + 1) % banners.length);
-
-        if (animationTimer.current) {
-          clearTimeout(animationTimer.current);
-        }
-
-        animationTimer.current = setTimeout(() => {
-          isAnimating.current = false;
-        }, 400);
+    autoTimer.current = setTimeout(() => {
+      if (!isSliding.current) {
+        isSliding.current = true;
+        setIndex((prev) => prev + 1);
       }
     }, 5000);
-
-    const handleMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-
-      const diff = startX.current - e.clientX;
-
-      if (diff > 40) {
-        next();
-        isDragging.current = false;
-      }
-
-      if (diff < -40) {
-        prev();
-        isDragging.current = false;
-      }
-    };
-
-    const handleUp = () => {
-      isDragging.current = false;
-      pauseAuto();
-    };
-
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", handleUp);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleUp);
-    };
-  }, [banners]);
+  };
 
   /* ======================================================
-     HANDLERS
+     START AUTOPLAY
   ====================================================== */
-  const handleMouseDown = (e: React.MouseEvent) => {
-    pauseAuto();
-    startX.current = e.clientX;
-    isDragging.current = true;
+  useEffect(() => {
+    resetAutoplay();
+    return () => {
+      if (autoTimer.current) clearTimeout(autoTimer.current);
+    };
+  }, []);
+
+  /* ======================================================
+     RESET LOOP
+  ====================================================== */
+  const handleTransitionEnd = () => {
+    isSliding.current = false;
+
+    if (index === slides.length - 1) {
+      setEnableTransition(false);
+      setIndex(1);
+    }
+
+    if (index === 0) {
+      setEnableTransition(false);
+      setIndex(slides.length - 2);
+    }
+
+    // 🔥 เริ่ม autoplay ใหม่หลัง slide เสร็จ
+    resetAutoplay();
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    pauseAuto();
-    startX.current = e.touches[0].clientX;
-    isDragging.current = true;
+  useEffect(() => {
+    if (!enableTransition) {
+      requestAnimationFrame(() => {
+        setEnableTransition(true);
+      });
+    }
+  }, [enableTransition]);
+
+  /* ======================================================
+     CHANGE SLIDE
+  ====================================================== */
+  const goNext = () => {
+    isSliding.current = true;
+    setIndex((prev) => prev + 1);
+    resetAutoplay();
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = startX.current - e.changedTouches[0].clientX;
+  const goPrev = () => {
+    isSliding.current = true;
+    setIndex((prev) => prev - 1);
+    resetAutoplay();
+  };
 
-    if (diff > 40) next();
-    if (diff < -40) prev();
+  /* ======================================================
+     DRAG
+  ====================================================== */
+  const handleStart = (x: number) => {
+    startX.current = x;
+    isDragging.current = true;
+
+    if (autoTimer.current) clearTimeout(autoTimer.current); // 🔥 หยุดทันที
+  };
+
+  const handleEnd = (x: number) => {
+    if (!isDragging.current) return;
+
+    const diff = startX.current - x;
+
+    if (diff > 50) {
+      isSliding.current = true;
+      setIndex((prev) => prev + 1);
+    }
+
+    if (diff < -50) {
+      isSliding.current = true;
+      setIndex((prev) => prev - 1);
+    }
 
     isDragging.current = false;
-    pauseAuto();
+
+    // 🔥 เริ่ม autoplay ใหม่
+    resetAutoplay();
   };
 
   /* ======================================================
@@ -231,62 +172,61 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
         overflow: "hidden",
         userSelect: "none",
         touchAction: "pan-y",
-        backgroundColor: "transparent",
       }}
-      onMouseDown={handleMouseDown}
-      onMouseLeave={() => {
-        isDragging.current = false;
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      onMouseDown={(e) => handleStart(e.clientX)}
+      onMouseUp={(e) => handleEnd(e.clientX)}
+      onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+      onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
     >
-      {banners.map((src, i) => (
-        <Box
-          key={i}
-          sx={{
-            position: "absolute",
-            inset: 0,
-            opacity: i === index ? 1 : 0,
-            transition: "opacity 0.4s ease-in-out",
-            zIndex: i === index ? 2 : 1,
-            backgroundColor: "#f5f5f5",
-          }}
-        >
-          <Image
-            src={src}
-            alt={`banner-${i + 1}`}
-            fill
-            priority={i < 2}
-            quality={75}
-            sizes={
-              isMobile
-                ? "(max-width: 899px) 100vw, 0px"
-                : "(min-width: 900px) 100vw, 0px"
-            }
-            draggable={false}
-            style={{
-              objectFit: "cover",
-              pointerEvents: "none",
-            }}
-          />
-        </Box>
-      ))}
+      {/* TRACK */}
+      <Box
+        onTransitionEnd={handleTransitionEnd}
+        sx={{
+          display: "flex",
+          height: "100%",
+          transform: `translateX(-${index * 100}%)`,
+          transition: enableTransition ? "transform 0.5s ease" : "none",
+        }}
+      >
+        {slides.map((src, i) => (
+          <Box key={i} sx={{ flex: "0 0 100%" }}>
+            <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
+              <Image
+                src={src}
+                alt={`banner-${i}`}
+                fill
+                priority={i < 3}
+                sizes={
+                  isMobile
+                    ? "(max-width: 899px) 100vw"
+                    : "(min-width: 900px) 100vw"
+                }
+                draggable={false}
+                style={{ objectFit: "cover" }}
+              />
+            </Box>
+          </Box>
+        ))}
+      </Box>
 
-      <IconButton onClick={prev} sx={arrowLeft}>
+      {/* ARROW */}
+      <IconButton onClick={goPrev} sx={arrowLeft}>
         <IoIosArrowBack />
       </IconButton>
 
-      <IconButton onClick={next} sx={arrowRight}>
+      <IconButton onClick={goNext} sx={arrowRight}>
         <IoIosArrowForward />
       </IconButton>
 
+      {/* DOT */}
       <Box sx={dotWrap}>
         <DotSlider
           total={banners.length}
-          activeIndex={index}
+          activeIndex={(index - 1 + banners.length) % banners.length}
           onClick={(i) => {
-            pauseAuto();
-            setIndex(i);
+            isSliding.current = true;
+            setIndex(i + 1);
+            resetAutoplay();
           }}
         />
       </Box>
@@ -323,9 +263,7 @@ const dotWrap = {
   zIndex: 999,
 };
 
-/* ======================================================
-   MAIN COMPONENT
-====================================================== */
+/* ====================================================== */
 export default function HomeBanner() {
   const [loading, setLoading] = useState(true);
 
@@ -341,11 +279,7 @@ export default function HomeBanner() {
           <BannerhomeSkeleton ratio="3840 / 1191" />
         ) : (
           <Box className="fade-in">
-            <FadeSlider
-              banners={bannersPC}
-              ratio="3840 / 1191"
-              isMobile={false}
-            />
+            <FadeSlider banners={bannersPC} ratio="3840 / 1191" />
           </Box>
         )}
       </Box>
@@ -355,11 +289,7 @@ export default function HomeBanner() {
           <BannerhomeSkeleton ratio="768 / 1032" />
         ) : (
           <Box className="fade-in">
-            <FadeSlider
-              banners={bannersMobile}
-              ratio="768 / 1032"
-              isMobile
-            />
+            <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
           </Box>
         )}
       </Box>

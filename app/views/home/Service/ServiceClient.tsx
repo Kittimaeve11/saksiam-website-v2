@@ -3,109 +3,138 @@
 /* ======================================================
    IMPORT
 ====================================================== */
-import Image from "next/image";
-import { Grid, Box, Typography } from "@mui/material";
+
+import { Box, Container, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import { useEffect, useState } from "react";
+import ServiceCard from "./ServiceCard";
+import { useLocale } from "@/app/providers/LocaleContext";
 
 /* ======================================================
-   TYPES
+   TYPE
 ====================================================== */
-type ServiceCardProps = {
+
+type Service = {
+  id: number;
   image: string;
-  title: string;
-  description: string;
+  titleTH: string;
+  titleENG: string;
+  descriptionTH: string;
+  descriptionENG: string;
 };
 
 /* ======================================================
    COMPONENT
 ====================================================== */
-export default function ServiceCard({
-  image,
-  title,
-  description,
-}: ServiceCardProps) {
-  return (
-    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-      <Box
-        sx={{
-          borderRadius: "20px",
-          overflow: "hidden",
-          background: "#fff",
-          boxShadow: "0 15px 30px rgba(0,0,0,0.08)",
-          transition: "all .3s ease",
-          display: "flex",
-          flexDirection: "column",
-          height: "100%", // 🔥 ให้การ์ดสูงเท่ากัน
 
-          "&:hover": {
-            transform: "translateY(-8px)",
-            boxShadow: "0 25px 50px rgba(0,0,0,0.12)",
-          },
-        }}
-      >
-        {/* ================= IMAGE ================= */}
-        <Box
+export default function ServiceList() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { locale } = useLocale();
+
+  /* ======================================================
+     🔥 FIX: ลบเฉพาะ (นาโนไฟแนนซ์)
+  ====================================================== */
+  const removeNano = (text: string) => {
+    return text.replace(/\s*\(นาโนไฟแนนซ์\)/g, "");
+  };
+
+  /* ======================================================
+     FETCH API
+  ====================================================== */
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch("/api/service");
+
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
+
+        const data = await res.json();
+        setServices(data.services || []);
+      } catch (err: any) {
+        console.error("Fetch error:", err);
+        setError("โหลดข้อมูลไม่สำเร็จ");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  /* ======================================================
+     STATE UI
+  ====================================================== */
+
+  if (loading)
+    return <div style={{ textAlign: "center" }}>Loading...</div>;
+
+  if (error)
+    return (
+      <div style={{ textAlign: "center", color: "red" }}>
+        {error}
+      </div>
+    );
+
+  if (!services.length)
+    return <div style={{ textAlign: "center" }}>ไม่มีข้อมูล</div>;
+
+  /* ======================================================
+     UI
+  ====================================================== */
+
+  return (
+    <Container maxWidth='lg'>
+      {/* TITLE */}
+      <Box sx={{ textAlign: "center", mb: 7 }}>
+        <Typography
           sx={{
-            position: "relative",
-            height: 180,
+            display: "inline-block",
+            fontSize: 40,
+            fontWeight: 800,
+            background:
+              "linear-gradient(90deg, #243865 0%, #4871CB 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
           }}
         >
-          <Image
-            src={image}
-            alt={title}
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            style={{ objectFit: "cover" }}
-          />
-        </Box>
-
-        {/* ================= CONTENT ================= */}
-        <Box sx={{ p: 2, flexGrow: 1 }}>
-          <Typography
-            sx={{
-              fontSize: 15,
-              fontWeight: 600,
-              color: "var(--color-primary)",
-              lineHeight: 1.4,
-            }}
-          >
-            {title}
-          </Typography>
-
-          <Typography
-            sx={{
-              fontSize: 13,
-              mt: 0.5,
-              color: "rgba(0,0,0,0.6)",
-              lineHeight: 1.6,
-            }}
-          >
-            {description}
-          </Typography>
-        </Box>
-
-        {/* ================= BUTTON ================= */}
-        <Box sx={{ px: 2, pb: 2 }}>
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 1.2,
-              borderRadius: "999px",
-              background: "var(--color-primary)",
-              color: "#fff",
-              fontSize: "14px",
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "all .25s",
-
-              "&:hover": {
-                background: "var(--color-primary-hover)",
-              },
-            }}
-          >
-            ดูรายละเอียด
-          </Box>
-        </Box>
+          {locale === "th" ? "บริการสินเชื่อ" : "Loan Services"}
+        </Typography>
       </Box>
-    </Grid>
+
+      {/* GRID */}
+      <Box sx={{ px: { xs: 2, md: 3 } }}>
+        <Grid container spacing={3}>
+          {services.map((item) => {
+            const titleRaw =
+              locale === "th" ? item.titleTH : item.titleENG;
+
+            const title =
+              locale === "th"
+                ? removeNano(titleRaw)
+                : titleRaw;
+
+            const description =
+              locale === "th"
+                ? item.descriptionTH
+                : item.descriptionENG;
+
+            return (
+              <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <ServiceCard
+                  image={item.image}
+                  title={title}
+                  description={description}
+                />
+              </Grid>
+            );
+          })}
+        </Grid>
+      </Box>
+    </Container>
   );
 }
