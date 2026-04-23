@@ -23,7 +23,7 @@ type Service = {
 /* ======================================================
    COMPONENT
 ====================================================== */
-export default function ServiceList() {
+export default function ServiceClient() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
