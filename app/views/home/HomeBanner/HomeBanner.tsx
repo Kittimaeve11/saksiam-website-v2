@@ -18,7 +18,11 @@ type SliderProps = {
 function BannerhomeSkeleton({ ratio }: { ratio: string }) {
   return (
     <Box sx={{ width: "100%", aspectRatio: ratio }}>
-      <Skeleton variant="rectangular" animation="wave" sx={{ width: "100%", height: "100%" }} />
+      <Skeleton
+        variant="rectangular"
+        animation="wave"
+        sx={{ width: "100%", height: "100%" }}
+      />
     </Box>
   );
 }
@@ -47,9 +51,7 @@ const bannersMobile = [
   "/Banner/SAKHomebanber/Mobile/2025-12-25banner251268_02_rp.jpg",
 ];
 
-/* ======================================================
-    SLIDER (FIX SPEED CLICK)
-====================================================== */
+/* ====================================================== */
 function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
   const slides = [banners[banners.length - 1], ...banners, banners[0]];
 
@@ -60,9 +62,9 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
   const isDragging = useRef(false);
 
   const isSliding = useRef(false);
-  const isAnimating = useRef(false); // 🔥 เพิ่มตัวนี้
+  const isAnimating = useRef(false);
 
-  const autoTimer = useRef<NodeJS.Timeout | null>(null);
+  const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* ====================================================== */
   const resetAutoplay = () => {
@@ -83,19 +85,25 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
     };
   }, []);
 
-  /* ====================================================== */
+  /* ======================================================
+     🔥 FIX LOOP + NO WHITE SCREEN
+  ====================================================== */
   const handleTransitionEnd = () => {
     isSliding.current = false;
-    isAnimating.current = false; // 🔥 ปลดล็อกตรงนี้
+    isAnimating.current = false;
 
     if (index === slides.length - 1) {
       setEnableTransition(false);
-      setIndex(1);
+      requestAnimationFrame(() => setIndex(1));
+      return;
     }
 
     if (index === 0) {
       setEnableTransition(false);
-      setIndex(slides.length - 2);
+      requestAnimationFrame(() =>
+        setIndex(slides.length - 2)
+      );
+      return;
     }
 
     resetAutoplay();
@@ -111,7 +119,7 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
 
   /* ====================================================== */
   const goNext = () => {
-    if (isAnimating.current) return; // 🔥 กันกดรัว
+    if (isAnimating.current) return;
 
     isAnimating.current = true;
     isSliding.current = true;
@@ -130,7 +138,9 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
     resetAutoplay();
   };
 
-  /* ====================================================== */
+  /* ======================================================
+     🔥 FIX SWIPE FREEZE
+  ====================================================== */
   const handleStart = (x: number) => {
     startX.current = x;
     isDragging.current = true;
@@ -143,18 +153,11 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
 
     const diff = startX.current - x;
 
-    if (diff > 50) {
-      if (!isAnimating.current) {
-        isAnimating.current = true;
-        setIndex((prev) => prev + 1);
-      }
-    }
+    if (Math.abs(diff) > 50 && !isAnimating.current) {
+      isAnimating.current = true;
+      isSliding.current = true;
 
-    if (diff < -50) {
-      if (!isAnimating.current) {
-        isAnimating.current = true;
-        setIndex((prev) => prev - 1);
-      }
+      setIndex((prev) => (diff > 0 ? prev + 1 : prev - 1));
     }
 
     isDragging.current = false;
@@ -169,6 +172,9 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
         position: "relative",
         aspectRatio: ratio,
         overflow: "hidden",
+
+        userSelect: "none",
+        WebkitUserSelect: "none",
       }}
       onMouseDown={(e) => handleStart(e.clientX)}
       onMouseUp={(e) => handleEnd(e.clientX)}
@@ -182,24 +188,30 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
           height: "100%",
           transform: `translateX(-${index * 100}%)`,
           transition: enableTransition ? "transform 0.5s ease" : "none",
+          willChange: "transform", // 🔥 GPU FIX
         }}
       >
         {slides.map((src, i) => (
           <Box key={i} sx={{ flex: "0 0 100%" }}>
             <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-              <Image
-                src={src}
-                alt={`banner-${i}`}
-                fill
-                priority={i < 3}
-                sizes={
-                  isMobile
-                    ? "(max-width: 899px) 100vw"
-                    : "(min-width: 900px) 100vw"
-                }
-                draggable={false}
-                style={{ objectFit: "cover" }}
-              />
+<Image
+  src={src}
+  alt=""
+  fill
+
+  priority
+  loading="eager"
+
+  sizes="(max-width: 768px) 100vw, 1200px"
+
+  draggable={false}
+  style={{
+    objectFit: "cover",
+    backfaceVisibility: "hidden",
+    transform: "translateZ(0)",
+  }}
+/>
+
             </Box>
           </Box>
         ))}
@@ -222,8 +234,19 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
           activeIndex={(index - 1 + banners.length) % banners.length}
           onClick={(i) => {
             if (isAnimating.current) return;
+
+            const current = (index - 1 + banners.length) % banners.length;
+
             isAnimating.current = true;
-            setIndex(i + 1);
+            isSliding.current = true;
+
+            // 🔥 ถ้ากด “ย้อนหลัง” → ให้วิ่งไปข้างหน้าแทน
+            if (i < current) {
+              setIndex((prev) => prev + (banners.length - (current - i)));
+            } else {
+              setIndex((prev) => prev + (i - current));
+            }
+
             resetAutoplay();
           }}
         />
@@ -237,20 +260,22 @@ const clickLeft = {
   position: "absolute",
   left: 0,
   top: 0,
-  width: "12%",
+  width: "60px",
   height: "100%",
   zIndex: 5,
   cursor: "pointer",
+  display: { xs: "none", md: "block" },
 };
 
 const clickRight = {
   position: "absolute",
   right: 0,
   top: 0,
-  width: "12%",
+  width: "60px",
   height: "100%",
   zIndex: 5,
   cursor: "pointer",
+  display: { xs: "none", md: "block" },
 };
 
 const arrowLeft = {
@@ -294,7 +319,9 @@ export default function HomeBanner() {
         {loading ? (
           <BannerhomeSkeleton ratio="3840 / 1191" />
         ) : (
-          <FadeSlider banners={bannersPC} ratio="3840 / 1191" />
+          <Box className="fade-in">
+            <FadeSlider banners={bannersPC} ratio="3840 / 1191" />
+          </Box>
         )}
       </Box>
 
@@ -302,7 +329,9 @@ export default function HomeBanner() {
         {loading ? (
           <BannerhomeSkeleton ratio="768 / 1032" />
         ) : (
-          <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
+          <Box className="fade-in">
+            <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
+          </Box>
         )}
       </Box>
     </Box>
