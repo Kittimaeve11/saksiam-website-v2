@@ -3,9 +3,7 @@
 /* ======================================================
    IMPORT
 ====================================================== */
-
 import { Box, Container, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid";
 import { useEffect, useState } from "react";
 import ServiceCard from "./ServiceCard";
 import { useLocale } from "@/app/providers/LocaleContext";
@@ -13,7 +11,6 @@ import { useLocale } from "@/app/providers/LocaleContext";
 /* ======================================================
    TYPE
 ====================================================== */
-
 type Service = {
   id: number;
   image: string;
@@ -26,7 +23,6 @@ type Service = {
 /* ======================================================
    COMPONENT
 ====================================================== */
-
 export default function ServiceList() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,10 +44,7 @@ export default function ServiceList() {
     const fetchServices = async () => {
       try {
         const res = await fetch("/api/service");
-
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
 
         const data = await res.json();
         setServices(data.services || []);
@@ -69,15 +62,11 @@ export default function ServiceList() {
   /* ======================================================
      STATE UI
   ====================================================== */
-
-  if (loading)
-    return <div style={{ textAlign: "center" }}>Loading...</div>;
+  if (loading) return <div style={{ textAlign: "center" }}>Loading...</div>;
 
   if (error)
     return (
-      <div style={{ textAlign: "center", color: "red" }}>
-        {error}
-      </div>
+      <div style={{ textAlign: "center", color: "red" }}>{error}</div>
     );
 
   if (!services.length)
@@ -86,9 +75,8 @@ export default function ServiceList() {
   /* ======================================================
      UI
   ====================================================== */
-
   return (
-    <Container maxWidth='lg'>
+    <Container maxWidth="lg">
       {/* TITLE */}
       <Box sx={{ textAlign: "center", mb: 7 }}>
         <Typography
@@ -106,34 +94,45 @@ export default function ServiceList() {
         </Typography>
       </Box>
 
-      {/* GRID */}
-      <Box sx={{ px: { xs: 2, md: 3 } }}>
-        <Grid container spacing={3}>
-          {services.map((item) => {
-            const titleRaw =
-              locale === "th" ? item.titleTH : item.titleENG;
+      {/* GRID (ใช้ CSS GRID แทน flex) */}
+      <Box
+        sx={{
+          display: "grid",
+          gap: 3,
 
-            const title =
-              locale === "th"
-                ? removeNano(titleRaw)
-                : titleRaw;
+          gridTemplateColumns: "1fr", // <724 → 1 การ์ด
 
-            const description =
-              locale === "th"
-                ? item.descriptionTH
-                : item.descriptionENG;
+          "@media (min-width:724px)": {
+            gridTemplateColumns: "1fr 1fr", // 2 การ์ด
+          },
 
-            return (
-              <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <ServiceCard
-                  image={item.image}
-                  title={title}
-                  description={description}
-                />
-              </Grid>
-            );
-          })}
-        </Grid>
+          "@media (min-width:1166px)": {
+            gridTemplateColumns: "1fr 1fr 1fr", // 3 การ์ด
+          },
+        }}
+      >
+        {services.map((item) => {
+          const titleRaw =
+            locale === "th" ? item.titleTH : item.titleENG;
+
+          const title =
+            locale === "th" ? removeNano(titleRaw) : titleRaw;
+
+          const description =
+            locale === "th"
+              ? item.descriptionTH
+              : item.descriptionENG;
+
+          return (
+            <Box key={item.id}>
+              <ServiceCard
+                image={item.image}
+                title={title}
+                description={description}
+              />
+            </Box>
+          );
+        })}
       </Box>
     </Container>
   );
