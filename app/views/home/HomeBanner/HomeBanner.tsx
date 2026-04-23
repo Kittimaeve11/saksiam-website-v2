@@ -48,7 +48,7 @@ const bannersMobile = [
 ];
 
 /* ======================================================
-   🔥 LOOP SLIDER + RESET AUTOPLAY
+    SLIDER (FIX SPEED CLICK)
 ====================================================== */
 function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
   const slides = [banners[banners.length - 1], ...banners, banners[0]];
@@ -60,11 +60,11 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
   const isDragging = useRef(false);
 
   const isSliding = useRef(false);
+  const isAnimating = useRef(false); // 🔥 เพิ่มตัวนี้
+
   const autoTimer = useRef<NodeJS.Timeout | null>(null);
 
-  /* ======================================================
-     🔥 RESET AUTOPLAY (หัวใจหลัก)
-  ====================================================== */
+  /* ====================================================== */
   const resetAutoplay = () => {
     if (autoTimer.current) clearTimeout(autoTimer.current);
 
@@ -76,9 +76,6 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
     }, 5000);
   };
 
-  /* ======================================================
-     START AUTOPLAY
-  ====================================================== */
   useEffect(() => {
     resetAutoplay();
     return () => {
@@ -86,11 +83,10 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
     };
   }, []);
 
-  /* ======================================================
-     RESET LOOP
-  ====================================================== */
+  /* ====================================================== */
   const handleTransitionEnd = () => {
     isSliding.current = false;
+    isAnimating.current = false; // 🔥 ปลดล็อกตรงนี้
 
     if (index === slides.length - 1) {
       setEnableTransition(false);
@@ -102,7 +98,6 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
       setIndex(slides.length - 2);
     }
 
-    // 🔥 เริ่ม autoplay ใหม่หลัง slide เสร็จ
     resetAutoplay();
   };
 
@@ -114,29 +109,33 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
     }
   }, [enableTransition]);
 
-  /* ======================================================
-     CHANGE SLIDE
-  ====================================================== */
+  /* ====================================================== */
   const goNext = () => {
+    if (isAnimating.current) return; // 🔥 กันกดรัว
+
+    isAnimating.current = true;
     isSliding.current = true;
+
     setIndex((prev) => prev + 1);
     resetAutoplay();
   };
 
   const goPrev = () => {
+    if (isAnimating.current) return;
+
+    isAnimating.current = true;
     isSliding.current = true;
+
     setIndex((prev) => prev - 1);
     resetAutoplay();
   };
 
-  /* ======================================================
-     DRAG
-  ====================================================== */
+  /* ====================================================== */
   const handleStart = (x: number) => {
     startX.current = x;
     isDragging.current = true;
 
-    if (autoTimer.current) clearTimeout(autoTimer.current); // 🔥 หยุดทันที
+    if (autoTimer.current) clearTimeout(autoTimer.current);
   };
 
   const handleEnd = (x: number) => {
@@ -145,24 +144,24 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
     const diff = startX.current - x;
 
     if (diff > 50) {
-      isSliding.current = true;
-      setIndex((prev) => prev + 1);
+      if (!isAnimating.current) {
+        isAnimating.current = true;
+        setIndex((prev) => prev + 1);
+      }
     }
 
     if (diff < -50) {
-      isSliding.current = true;
-      setIndex((prev) => prev - 1);
+      if (!isAnimating.current) {
+        isAnimating.current = true;
+        setIndex((prev) => prev - 1);
+      }
     }
 
     isDragging.current = false;
-
-    // 🔥 เริ่ม autoplay ใหม่
     resetAutoplay();
   };
 
-  /* ======================================================
-     UI
-  ====================================================== */
+  /* ====================================================== */
   return (
     <Box
       sx={{
@@ -170,15 +169,12 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
         position: "relative",
         aspectRatio: ratio,
         overflow: "hidden",
-        userSelect: "none",
-        touchAction: "pan-y",
       }}
       onMouseDown={(e) => handleStart(e.clientX)}
       onMouseUp={(e) => handleEnd(e.clientX)}
       onTouchStart={(e) => handleStart(e.touches[0].clientX)}
       onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
     >
-      {/* TRACK */}
       <Box
         onTransitionEnd={handleTransitionEnd}
         sx={{
@@ -209,7 +205,9 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
         ))}
       </Box>
 
-      {/* ARROW */}
+      <Box onClick={goPrev} sx={clickLeft} />
+      <Box onClick={goNext} sx={clickRight} />
+
       <IconButton onClick={goPrev} sx={arrowLeft}>
         <IoIosArrowBack />
       </IconButton>
@@ -218,13 +216,13 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
         <IoIosArrowForward />
       </IconButton>
 
-      {/* DOT */}
       <Box sx={dotWrap}>
         <DotSlider
           total={banners.length}
           activeIndex={(index - 1 + banners.length) % banners.length}
           onClick={(i) => {
-            isSliding.current = true;
+            if (isAnimating.current) return;
+            isAnimating.current = true;
             setIndex(i + 1);
             resetAutoplay();
           }}
@@ -235,23 +233,41 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
 }
 
 /* ====================================================== */
+const clickLeft = {
+  position: "absolute",
+  left: 0,
+  top: 0,
+  width: "12%",
+  height: "100%",
+  zIndex: 5,
+  cursor: "pointer",
+};
+
+const clickRight = {
+  position: "absolute",
+  right: 0,
+  top: 0,
+  width: "12%",
+  height: "100%",
+  zIndex: 5,
+  cursor: "pointer",
+};
+
 const arrowLeft = {
   position: "absolute",
   top: "50%",
-  left: 12,
+  left: 25,
   transform: "translateY(-50%)",
-  bgcolor: "rgba(0,0,0,0.4)",
-  color: "#fff",
+  color: "#ffffffb4",
   zIndex: 10,
 };
 
 const arrowRight = {
   position: "absolute",
   top: "50%",
-  right: 12,
+  right: 25,
   transform: "translateY(-50%)",
-  bgcolor: "rgba(0,0,0,0.4)",
-  color: "#fff",
+  color: "#ffffffb4",
   zIndex: 10,
 };
 
@@ -278,9 +294,7 @@ export default function HomeBanner() {
         {loading ? (
           <BannerhomeSkeleton ratio="3840 / 1191" />
         ) : (
-          <Box className="fade-in">
-            <FadeSlider banners={bannersPC} ratio="3840 / 1191" />
-          </Box>
+          <FadeSlider banners={bannersPC} ratio="3840 / 1191" />
         )}
       </Box>
 
@@ -288,9 +302,7 @@ export default function HomeBanner() {
         {loading ? (
           <BannerhomeSkeleton ratio="768 / 1032" />
         ) : (
-          <Box className="fade-in">
-            <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
-          </Box>
+          <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
         )}
       </Box>
     </Box>
