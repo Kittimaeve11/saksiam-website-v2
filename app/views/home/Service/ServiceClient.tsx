@@ -6,6 +6,7 @@
 import { Box, Container, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import ServiceCard from "./ServiceCard";
+import ServiceSkeletonCard from "./ServiceSkeletonCard";
 import { useLocale } from "@/app/providers/LocaleContext";
 
 /* ======================================================
@@ -60,16 +61,16 @@ export default function ServiceClient() {
   }, []);
 
   /* ======================================================
-     STATE UI
+     ERROR / EMPTY
   ====================================================== */
-  if (loading) return <div style={{ textAlign: "center" }}>Loading...</div>;
-
   if (error)
     return (
-      <div style={{ textAlign: "center", color: "red" }}>{error}</div>
+      <div style={{ textAlign: "center", color: "red" }}>
+        {error}
+      </div>
     );
 
-  if (!services.length)
+  if (!loading && !services.length)
     return <div style={{ textAlign: "center" }}>ไม่มีข้อมูล</div>;
 
   /* ======================================================
@@ -94,45 +95,61 @@ export default function ServiceClient() {
         </Typography>
       </Box>
 
-      {/* GRID (ใช้ CSS GRID แทน flex) */}
+      {/* GRID */}
       <Box
         sx={{
           display: "grid",
           gap: 3,
 
-          gridTemplateColumns: "1fr", // <724 → 1 การ์ด
+          gridTemplateColumns: "1fr",
 
           "@media (min-width:724px)": {
-            gridTemplateColumns: "1fr 1fr", // 2 การ์ด
+            gridTemplateColumns: "1fr 1fr",
           },
 
           "@media (min-width:1166px)": {
-            gridTemplateColumns: "1fr 1fr 1fr", // 3 การ์ด
+            gridTemplateColumns: "1fr 1fr 1fr",
           },
         }}
       >
-        {services.map((item) => {
-          const titleRaw =
-            locale === "th" ? item.titleTH : item.titleENG;
+        {/* ================= SKELETON ================= */}
+        {loading &&
+          Array.from({ length: 6 }).map((_, i) => (
+            <ServiceSkeletonCard key={`skeleton-${i}`} />
+          ))}
 
-          const title =
-            locale === "th" ? removeNano(titleRaw) : titleRaw;
+        {/* ================= REAL DATA ================= */}
+        {!loading &&
+          services.map((item, index) => {
+            const titleRaw =
+              locale === "th" ? item.titleTH : item.titleENG;
 
-          const description =
-            locale === "th"
-              ? item.descriptionTH
-              : item.descriptionENG;
+            const title =
+              locale === "th"
+                ? removeNano(titleRaw)
+                : titleRaw;
 
-          return (
-            <Box key={item.id}>
-              <ServiceCard
-                image={item.image}
-                title={title}
-                description={description}
-              />
-            </Box>
-          );
-        })}
+            const description =
+              locale === "th"
+                ? item.descriptionTH
+                : item.descriptionENG;
+
+            return (
+              <Box
+                key={item.id}
+                className="fade-in"
+                sx={{
+                  animationDelay: `${index * 0.1}s`,
+                }}
+              >
+                <ServiceCard
+                  image={item.image}
+                  title={title}
+                  description={description}
+                />
+              </Box>
+            );
+          })}
       </Box>
     </Container>
   );

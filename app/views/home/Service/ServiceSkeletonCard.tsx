@@ -3,7 +3,7 @@
 /* ======================================================
    IMPORT
 ====================================================== */
-import { Card, Box, Skeleton } from "@mui/material";
+import { Box, Card, Skeleton } from "@mui/material";
 
 /* ======================================================
    COMPONENT
@@ -16,7 +16,7 @@ export default function ServiceSkeletonCard() {
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
-        boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
         gap: 1,
       }}
     >
@@ -29,8 +29,8 @@ export default function ServiceSkeletonCard() {
       >
         <Skeleton
           variant="rectangular"
-          animation="wave"
-          sx={{ width: "100%", height: "100%" }}
+          width="100%"
+          height="100%"
         />
       </Box>
 
@@ -39,23 +39,26 @@ export default function ServiceSkeletonCard() {
         {/* TITLE */}
         <Skeleton
           variant="text"
-          width="80%"
-          height={28}
+          width="70%"
+          height={30}
           sx={{ mb: 1 }}
         />
 
         {/* DESCRIPTION */}
-        <Skeleton variant="text" width="100%" height={18} />
-        <Skeleton variant="text" width="90%" height={18} />
+
+        <Skeleton
+          variant="text"
+          width="90%"
+          height={20}
+          sx={{ mb: 2 }}
+        />
 
         {/* BUTTON */}
         <Skeleton
-          variant="rounded"
+          variant="rectangular"
+          width="100%"
           height={40}
-          sx={{
-            mt: 2,
-            borderRadius: "999px",
-          }}
+          sx={{ borderRadius: 8 }}
         />
       </Box>
     </Card>
