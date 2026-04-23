@@ -254,25 +254,60 @@ export default function LoanInterestForm(
       sx={{
         position: "relative",
         zIndex: 0,
-        borderRadius: "110px", // 🔥 ปรับให้สวย (ไม่ต้อง 110 แล้ว)
         background: "#fff",
         boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
 
-        px: { xs: 5, md: 6 },
-        pt: { xs: 6, md: 10 },
-        pb: { xs: 5, md: 10 },
+        /* ======================================================
+           🔥 RESPONSIVE CARD
+        ====================================================== */
+        borderRadius: {
+          xs: "40px",   // 🔥 มือถือ (จาก 110 → 32)
+          sm: "50px",
+          md: "80px",
+          lg: "110px",  // desktop คงเดิม
+        },
+
+        px: {
+          xs:3,   // 🔥 มือถือเล็กลง
+          sm: 4,
+          md: 6,
+        },
+
+        pt: {
+          xs: 4,
+          sm: 6,
+          md: 10,
+        },
+
+        pb: {
+          xs: 4,
+          sm: 6,
+          md: 10,
+        },
 
         /* ======================================================
-           🔥 GRADIENT BORDER (ตัวจริง)
+           🔥 GRADIENT BORDER
         ====================================================== */
         "&::before": {
           content: '""',
           position: "absolute",
           inset: 0,
-          borderRadius: "110px",
-          padding: "8px", // ⭐ ความหนากรอบ
 
-          background: "linear-gradient(135deg, #4369BE, #ffffff,#ffffff,#ffffff, #FBD53F)",
+          borderRadius: {
+            xs: "32px",
+            sm: "50px",
+            md: "80px",
+            lg: "110px",
+          },
+
+          padding: {
+            xs: "6px",   // 🔥 มือถือบางลง
+            sm: "8px",
+            md: "8px",   // desktop เดิม
+          },
+
+          background:
+            "linear-gradient(135deg, #4369BE, #ffffff, #ffffff, #ffffff, #FBD53F)",
 
           WebkitMask:
             "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",

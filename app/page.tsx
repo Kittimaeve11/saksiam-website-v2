@@ -132,14 +132,14 @@ export default function Page() {
         </Box>
 
         {/* ================= FORM ================= */}
-        {/* <Box sx={{ background: "#FDFDFD", py: 12 }}>
+        <Box sx={{ background: "#FDFDFD", py: 12 }}>
           <LoanInterestSection
             provinces={data.provinces}
             amphures={data.amphures}
             tambons={data.tambons}
             services={data.services}
           />
-        </Box> */}
+        </Box>
 
         {/* ================= NEWS ================= */}
         <Box sx={{ backgroundColor: "#E9F0FB", py: 5 }}>
