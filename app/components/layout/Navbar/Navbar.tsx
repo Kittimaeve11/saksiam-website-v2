@@ -79,7 +79,12 @@ export default function Navbar(): React.ReactElement {
           <Link href="/" style={{ display: "inline-block" }}>
             <Box
               sx={{
-                height: "80px",
+                height: {
+                  xs: "70px",   // มือถือเล็ก → ยังใหญ่
+                  sm: "75px",   // tablet
+                  md: "80px",   // laptop
+                  lg: "100px",   // desktop
+                },
                 display: "flex",
                 alignItems: "center",
               }}
@@ -91,8 +96,9 @@ export default function Navbar(): React.ReactElement {
                 height={100}
                 priority
                 style={{
-                  height: "100%",
                   width: "auto",
+                  height: "auto",
+                  maxHeight: "100%", // 🔥 ให้พอดีกับ Box
                   objectFit: "contain",
                 }}
               />

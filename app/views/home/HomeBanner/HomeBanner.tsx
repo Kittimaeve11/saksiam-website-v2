@@ -264,7 +264,16 @@ const clickLeft = {
   height: "100%",
   zIndex: 5,
   cursor: "pointer",
-  display: { xs: "none", md: "block" },
+
+  display: { xs: "none", md: "block" }, // 🔥 สำคัญ
+
+  transition: "all 0.25s ease",
+
+  "&:hover": {
+    width: "12%",
+    background:
+      "linear-gradient(to right, rgba(0,0,0,0.25), transparent)",
+  },
 };
 
 const clickRight = {
@@ -275,7 +284,16 @@ const clickRight = {
   height: "100%",
   zIndex: 5,
   cursor: "pointer",
-  display: { xs: "none", md: "block" },
+
+  display: { xs: "none", md: "block" }, // 🔥 สำคัญ
+
+  transition: "all 0.25s ease",
+
+  "&:hover": {
+    width: "12%",
+    background:
+      "linear-gradient(to left, rgba(0,0,0,0.25), transparent)",
+  },
 };
 
 const arrowLeft = {
