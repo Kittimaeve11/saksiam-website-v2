@@ -3,20 +3,11 @@
 /* ====================================================== */
 import { useState } from "react";
 import { Box } from "@mui/material";
+import type { FaqItem } from "@/app/Utils/type";
 import FaqCard from "./FaqCard";
 
-/* ====================================================== */
-type FAQ = {
-  id: number;
-  category: "loan" | "contact";
-  questionTH: string;
-  questionEN: string;
-  answerTH: string;
-  answerEN: string;
-};
-
 type Props = {
-  data: FAQ[];
+  data: FaqItem[];
 };
 
 /* ====================================================== */
@@ -34,7 +25,13 @@ export default function FaqList({ data }: Props) {
      RENDER
   ====================================================== */
   return (
-    <Box>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: { xs: "100%", md: "100%" },
+        mx: "auto",
+      }}
+    >
       {data.map((item, index) => {
         const isLast = index === data.length - 1;
 

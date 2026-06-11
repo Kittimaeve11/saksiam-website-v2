@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { Box, Typography } from "@mui/material";
+import { Box, Card, CardContent, Typography } from "@mui/material";
 import { IoIosArrowForward } from "react-icons/io";
 import { useLocale } from "@/app/providers/LocaleContext";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 
 /* ====================================================== */
 type Variant =
@@ -15,7 +16,7 @@ type Variant =
   | "minimal"
 
 type News = {
-  id: number;
+  id: string | number;
 
   categoryTH: string;
   categoryEN: string;
@@ -28,6 +29,7 @@ type News = {
 
   createdAt: string;
   images: string[];
+  views?: number;
 };
 
 
@@ -69,6 +71,14 @@ export default function NewsCard({ item, variant = "default" }: Props) {
     ? formatDate(item.createdAt, locale)
     : "-";
   const imageSrc = item.images?.[0] || "/images/placeholder.jpg";
+  const isRemoteImage =
+    imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
+  const imageZoomStyle: CSSProperties = {
+    objectFit: "cover",
+    display: "block",
+    transformOrigin: "center center",
+    transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+  };
 
   /* ======================================================
      OVERLAY
@@ -79,17 +89,26 @@ export default function NewsCard({ item, variant = "default" }: Props) {
         href={href}
         style={{ textDecoration: "none", display: "block", height: "100%" }}
       >
-        <Box
+        <Card
+          className="news-overlay-card"
+          elevation={0}
           sx={{
             position: "relative",
             borderRadius: "20px",
             overflow: "hidden",
-            height: "100%",
+            width: "100%",
+            aspectRatio: "16 / 9",
+            // aspectRatio: {
+            //   xs: "9 / 16",  // โทรศัพท์
+            //   md: "16 / 9",  // แท็บเล็ตขึ้นไป
+            // },
+
+            height: "auto",
             cursor: "pointer",
 
             //  ใส่ transition ให้รูปก่อน
             "& img": {
-              transition: "transform .4s ease",
+              transition: "transform 0.4s ease",
             },
 
             //  hover แยกออกมา
@@ -98,7 +117,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
             },
 
             "&:hover img": {
-              transform: "scale(1.05)",
+              transform: "scale(1.08)",
             },
           }}
         >
@@ -108,19 +127,19 @@ export default function NewsCard({ item, variant = "default" }: Props) {
               position: "relative",
               width: "100%",
               height: "100%",
+              overflow: "hidden",
+              lineHeight: 0,
             }}
           >
             <Image
               src={imageSrc}
               alt={title || "news image"}
               fill
+              unoptimized={isRemoteImage}
               sizes="(max-width: 600px) 100vw,
             (max-width: 900px) 50vw,
             25vw"
-              style={{
-                objectFit: "cover",
-                transition: "transform .4s ease",
-              }}
+              style={imageZoomStyle}
             />
 
             {/*  OVERLAY BASE */}
@@ -147,7 +166,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
             />
           </Box>
 
-          {/*  TEXT */}
+          {/* TEXT */}
           <Box
             sx={{
               position: "absolute",
@@ -155,6 +174,11 @@ export default function NewsCard({ item, variant = "default" }: Props) {
               width: "100%",
               p: 2,
               zIndex: 3,
+
+              overflow: "hidden",
+
+              // เพิ่มอันนี้
+              boxSizing: "border-box",
             }}
           >
             <Typography
@@ -168,12 +192,15 @@ export default function NewsCard({ item, variant = "default" }: Props) {
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
+
+                // เพิ่ม
+                wordBreak: "break-word",
               }}
             >
               {title}
             </Typography>
           </Box>
-        </Box>
+        </Card>
       </Link>
     );
   }
@@ -186,26 +213,34 @@ export default function NewsCard({ item, variant = "default" }: Props) {
         href={href}
         style={{ textDecoration: "none", display: "block", height: "100%" }}
       >
-        <Box
+        <Card
+          className="news-simple-card"
+          elevation={0}
           sx={{
             borderRadius: "20px",
             background: "#fff",
+
+            width: "auto",
+            maxWidth: "320px",
+            mx: "auto",
+
             boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
             overflow: "hidden",
-            transition: "all .3s cubic-bezier(0.4, 0, 0.2, 1)",
+
+            transition: "transform 0.2s, box-shadow 0.2s",
+
             display: "flex",
             flexDirection: "column",
+            height: "100%",
+
             cursor: "pointer",
 
             "&:hover": {
               transform: "translateY(-4px)",
+            },
 
-              "& img": {
-                transition: "transform .4s ease",
-              },
-              "&:hover img": {
-                transform: "scale(1.05)",
-              },
+            "&:hover img": {
+              transform: "scale(1.08)",
             },
           }}
         >
@@ -214,19 +249,21 @@ export default function NewsCard({ item, variant = "default" }: Props) {
             sx={{
               position: "relative",
               width: "100%",
-              pt: "56.25%",
+              aspectRatio: "16 / 9",
+              height: "auto",
+              flexShrink: 0,
+
               overflow: "hidden",
+              lineHeight: 0,
             }}
           >
             <Image
               src={imageSrc}
               alt={title || "news image"}
               fill
+              unoptimized={isRemoteImage}
               sizes="(max-width: 768px) 100vw, 33vw"
-              style={{
-                objectFit: "cover",
-                transition: "transform .4s ease",
-              }}
+              style={imageZoomStyle}
             />
 
             {/*  OVERLAY */}
@@ -243,12 +280,15 @@ export default function NewsCard({ item, variant = "default" }: Props) {
           </Box>
 
           {/* CONTENT */}
-          <Box
+          <CardContent
             sx={{
               p: 2.5,
               display: "flex",
               flexDirection: "column",
               flexGrow: 1,
+              "&:last-child": {
+                pb: 2.5,
+              },
             }}
           >
             {/* TITLE */}
@@ -294,8 +334,8 @@ export default function NewsCard({ item, variant = "default" }: Props) {
               {messages.news.read_more_short}
               <IoIosArrowForward size={16} />
             </Typography>
-          </Box>
-        </Box>
+          </CardContent>
+        </Card>
       </Link>
     );
   }
@@ -315,7 +355,8 @@ export default function NewsCard({ item, variant = "default" }: Props) {
 
         }}
       >
-        <Box
+        <Card
+          elevation={0}
           sx={{
             borderRadius: "28px",
             background: "#fff",
@@ -327,12 +368,16 @@ export default function NewsCard({ item, variant = "default" }: Props) {
             display: "flex",
             flexDirection: "column",
             height: "100%",
-            transition: "all .3s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "transform 0.2s, box-shadow 0.2s",
             cursor: "pointer",
 
             "&:hover": {
-              transform: "translateY(-3px)",
+              transform: "none",
               boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
+            },
+
+            "&:hover img": {
+              transform: "scale(1.08)",
             },
           }}
         >
@@ -341,25 +386,25 @@ export default function NewsCard({ item, variant = "default" }: Props) {
             sx={{
               position: "relative",
               width: "100%",
-              pt: "56.25%",
+              aspectRatio: "16 / 9",
               overflow: "hidden",
+              lineHeight: 0,
             }}
           >
             <Image
               src={imageSrc}
               alt={title || "news image"}
               fill
+              unoptimized={isRemoteImage}
               sizes="(max-width: 600px) 100vw,
                    (max-width: 900px) 50vw,
                    25vw"
-              style={{
-                objectFit: "cover",
-              }}
+              style={imageZoomStyle}
             />
           </Box>
 
           {/* CONTENT */}
-          <Box
+          <CardContent
             sx={{
               p: 2.5,
               display: "flex",
@@ -401,8 +446,8 @@ export default function NewsCard({ item, variant = "default" }: Props) {
             >
               {detail || " "} {/*  กันไม่มีข้อมูล */}
             </Typography>
-          </Box>
-        </Box>
+          </CardContent>
+        </Card>
       </Link>
     );
   }
@@ -416,7 +461,8 @@ export default function NewsCard({ item, variant = "default" }: Props) {
       href={href}
       style={{ textDecoration: "none", display: "block", height: "100%" }}
     >
-      <Box
+      <Card
+        elevation={0}
         sx={{
           width: "100%",
           height: "100%",
@@ -432,22 +478,22 @@ export default function NewsCard({ item, variant = "default" }: Props) {
         0 4px 8px rgba(0,0,0,0.04)
         `,
 
-          transition: "all .25s ease",
+          transform: "translate3d(0, 0, 0)",
+          transition:
+            "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.34s ease",
+          willChange: "transform",
 
           "&:hover": {
-            transform: "translateY(-3px)", //  ลดความแรง (จาก -6 → -4)
-
+            transform: "translate3d(0, -6px, 0)",
             //  hover เงา: เพิ่มนิดเดียว ไม่ฟุ้ง
             boxShadow: `
           0 3px 6px rgba(0,0,0,0.04),
           0 10px 16px rgba(0,0,0,0.06)
           `,
-            "& img": {
-              transition: "transform .4s ease",
-            },
-            "&:hover img": {
-              transform: "scale(1.05)",
-            },
+          },
+
+          "&:hover img": {
+            transform: "scale(1.06)",
           },
         }}
       >
@@ -456,18 +502,22 @@ export default function NewsCard({ item, variant = "default" }: Props) {
           sx={{
             position: "relative",
             width: "100%",
-            pt: "56.25%",
+            aspectRatio: "16 / 9",
             overflow: "hidden",
             borderTopLeftRadius: "16px",
             borderTopRightRadius: "16px",
+            lineHeight: 0,
+            isolation: "isolate",
+            transform: "translateZ(0)",
           }}
         >
           <Image
             src={imageSrc}
             alt={title || "news image"}
             fill
+            unoptimized={isRemoteImage}
             sizes="(max-width: 768px) 100vw, 33vw"
-            style={{ objectFit: "cover" }}
+            style={imageZoomStyle}
           />
 
           {/*  OVERLAY ดำ */}
@@ -484,7 +534,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
         </Box>
 
         {/* CONTENT */}
-        <Box
+        <CardContent
           sx={{
             p: 2,
             display: "flex",          //  เพิ่ม
@@ -588,8 +638,8 @@ export default function NewsCard({ item, variant = "default" }: Props) {
               <IoIosArrowForward size={15} />
             </Typography>
           </Box>
-        </Box>
-      </Box>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

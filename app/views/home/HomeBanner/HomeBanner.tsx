@@ -3,7 +3,7 @@
 /* ====================================================== */
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Box, IconButton, Skeleton } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 
@@ -11,48 +11,20 @@ import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 type SliderProps = {
   banners: string[];
   ratio: string;
-  isMobile?: boolean;
 };
 
-/* ====================================================== */
-function BannerhomeSkeleton({ ratio }: { ratio: string }) {
-  return (
-    <Box sx={{ width: "100%", aspectRatio: ratio }}>
-      <Skeleton
-        variant="rectangular"
-        animation="wave"
-        sx={{ width: "100%", height: "100%" }}
-      />
-    </Box>
-  );
-}
+export type HomeBannerItem = {
+  id: number;
+  pc: string;
+  mobile: string;
+  link?: string;
+};
+
+const isRemoteImage = (src: string) =>
+  src.startsWith("http://") || src.startsWith("https://");
 
 /* ====================================================== */
-const bannersPC = [
-  "/Banner/SAKHomebanber/SAKHomebanber1.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber2.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber3.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber4.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber5.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber6.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber7.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber8.jpg",
-  "/Banner/SAKHomebanber/SAKHomebanber9.jpg",
-];
-
-const bannersMobile = [
-  "/Banner/SAKHomebanber/Mobile/2024-06-28BannerAgri0767_rp.jpg",
-  "/Banner/SAKHomebanber/Mobile/2024-06-28BannerDrone0767_rp.jpg",
-  "/Banner/SAKHomebanber/Mobile/2024-06-28BannerLand0767_rp.jpg",
-  "/Banner/SAKHomebanber/Mobile/2024-06-28BannerNano0767_rp.jpg",
-  "/Banner/SAKHomebanber/Mobile/2024-06-28BannerPer0767_rp.jpg",
-  "/Banner/SAKHomebanber/Mobile/2024-06-28bannerSolarcrooftop0767_rp.jpg",
-  "/Banner/SAKHomebanber/Mobile/2025-12-25banner251268_01_rp.jpg",
-  "/Banner/SAKHomebanber/Mobile/2025-12-25banner251268_02_rp.jpg",
-];
-
-/* ====================================================== */
-function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
+function FadeSlider({ banners, ratio }: SliderProps) {
   const slides = [banners[banners.length - 1], ...banners, banners[0]];
 
   const [index, setIndex] = useState(1);
@@ -172,6 +144,7 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
         position: "relative",
         aspectRatio: ratio,
         overflow: "hidden",
+        backgroundColor: "#243865",
 
         userSelect: "none",
         WebkitUserSelect: "none",
@@ -192,25 +165,34 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
         }}
       >
         {slides.map((src, i) => (
-          <Box key={i} sx={{ flex: "0 0 100%" }}>
-            <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-<Image
-  src={src}
-  alt=""
-  fill
+          <Box key={i} sx={{ flex: "0 0 100%", backgroundColor: "#243865" }}>
+            <Box
+              sx={{
+                position: "relative",
+                width: "100%",
+                height: "calc(100% + 2px)",
+                mt: "-1px",
+                backgroundColor: "#243865",
+              }}
+            >
+              <Image
+                src={src}
+                alt=""
+                fill
+                unoptimized={isRemoteImage(src)}
 
-  priority
-  loading="eager"
+                priority
+                loading="eager"
 
-  sizes="(max-width: 768px) 100vw, 1200px"
+                sizes="(max-width: 768px) 100vw, 1200px"
 
-  draggable={false}
-  style={{
-    objectFit: "cover",
-    backfaceVisibility: "hidden",
-    transform: "translateZ(0)",
-  }}
-/>
+                draggable={false}
+                style={{
+                  objectFit: "cover",
+                  backfaceVisibility: "hidden",
+                  transform: "translateZ(0)",
+                }}
+              />
 
             </Box>
           </Box>
@@ -256,23 +238,35 @@ function FadeSlider({ banners, ratio, isMobile = false }: SliderProps) {
 }
 
 /* ====================================================== */
+
+
 const clickLeft = {
   position: "absolute",
   left: 0,
   top: 0,
-  width: "60px",
+
+  width: "180px",
   height: "100%",
+
   zIndex: 5,
   cursor: "pointer",
 
-  display: { xs: "none", md: "block" }, // 🔥 สำคัญ
+  display: { xs: "none", md: "block" },
 
-  transition: "all 0.25s ease",
+  opacity: 0,
+
+  transform: "scaleX(0.33)",
+  transformOrigin: "left center",
+
+  background:
+    "linear-gradient(to right, rgba(0,0,0,0.25), transparent)",
+
+  transition:
+    "transform 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease",
 
   "&:hover": {
-    width: "12%",
-    background:
-      "linear-gradient(to right, rgba(0,0,0,0.25), transparent)",
+    opacity: 1,
+    transform: "scaleX(1)",
   },
 };
 
@@ -280,19 +274,29 @@ const clickRight = {
   position: "absolute",
   right: 0,
   top: 0,
-  width: "60px",
+
+  width: "180px",
   height: "100%",
+
   zIndex: 5,
   cursor: "pointer",
 
-  display: { xs: "none", md: "block" }, // 🔥 สำคัญ
+  display: { xs: "none", md: "block" },
 
-  transition: "all 0.25s ease",
+  opacity: 0,
+
+  transform: "scaleX(0.33)",
+  transformOrigin: "right center",
+
+  background:
+    "linear-gradient(to left, rgba(0,0,0,0.25), transparent)",
+
+  transition:
+    "transform 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease",
 
   "&:hover": {
-    width: "12%",
-    background:
-      "linear-gradient(to left, rgba(0,0,0,0.25), transparent)",
+    opacity: 1,
+    transform: "scaleX(1)",
   },
 };
 
@@ -323,35 +327,29 @@ const dotWrap = {
 };
 
 /* ====================================================== */
-export default function HomeBanner() {
-  const [loading, setLoading] = useState(true);
+export default function HomeBanner({ banners }: { banners: HomeBannerItem[] }) {
+  const pcBanners = banners.map((item) => item.pc).filter(Boolean);
+  const mobileApiBanners = banners.map((item) => item.mobile || item.pc).filter(Boolean);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+  if (!pcBanners.length && !mobileApiBanners.length) return null;
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Box sx={{ display: { xs: "none", md: "block" } }}>
-        {loading ? (
-          <BannerhomeSkeleton ratio="3840 / 1191" />
-        ) : (
+    <Box sx={{ width: "100%", overflow: "hidden", backgroundColor: "#243865" }}>
+      {!!pcBanners.length && (
+        <Box sx={{ display: { xs: "none", md: "block" } }}>
           <Box className="fade-in">
-            <FadeSlider banners={bannersPC} ratio="3840 / 1191" />
+            <FadeSlider banners={pcBanners} ratio="3840 / 1191" />
           </Box>
-        )}
-      </Box>
+        </Box>
+      )}
 
-      <Box sx={{ display: { xs: "block", md: "none" } }}>
-        {loading ? (
-          <BannerhomeSkeleton ratio="768 / 1032" />
-        ) : (
+      {!!mobileApiBanners.length && (
+        <Box sx={{ display: { xs: "block", md: "none" } }}>
           <Box className="fade-in">
-            <FadeSlider banners={bannersMobile} ratio="768 / 1032" isMobile />
+            <FadeSlider banners={mobileApiBanners} ratio="678 / 1032" />
           </Box>
-        )}
-      </Box>
+        </Box>
+      )}
     </Box>
   );
 }

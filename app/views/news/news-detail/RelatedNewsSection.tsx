@@ -3,10 +3,10 @@
 /* ======================================================
    IMPORT
 ====================================================== */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules"; // กันบางเวอร์ชัน error
+import { Navigation } from "swiper/modules";
 import "swiper/css";
 
 /* ======================================================
@@ -21,7 +21,7 @@ import { useLocale } from "@/app/providers/LocaleContext";
    DATA TYPE
 ====================================================== */
 type News = {
-  id: number;
+  id: string | number;
   titleTH: string;
   titleEN: string;
   images: string[];
@@ -30,11 +30,12 @@ type News = {
   categoryEN: string;
   detailTH: string;
   detailEN: string;
+  views?: number;
 };
 
 type Props = {
   data: News[];
-  currentId: number;
+  currentId: string | number;
   currentCategory: string;
 };
 
@@ -66,14 +67,44 @@ export default function RelatedNewsSection({
     .slice(0, 10);
 
   /* ======================================================
-     SWIPER SETUP
+     SWIPER
   ====================================================== */
   const swiperRef = useRef<SwiperType | null>(null);
 
-  const perPage = 3;
-  const totalPages = Math.ceil(related.length / perPage);
-
   const [activePage, setActivePage] = useState(0);
+  const [perPage, setPerPage] = useState(3);
+
+  /* ======================================================
+     RESPONSIVE PAGE SIZE
+  ====================================================== */
+  useEffect(() => {
+    const updatePerPage = () => {
+      if (window.innerWidth < 600) {
+        setPerPage(1);
+      } else if (window.innerWidth < 1200) {
+        setPerPage(2);
+      } else {
+        setPerPage(3);
+      }
+    };
+
+    updatePerPage();
+
+    window.addEventListener(
+      "resize",
+      updatePerPage
+    );
+
+    return () =>
+      window.removeEventListener(
+        "resize",
+        updatePerPage
+      );
+  }, []);
+
+  const totalPages = Math.ceil(
+    related.length / perPage
+  );
 
   /* ======================================================
      EMPTY
@@ -84,35 +115,71 @@ export default function RelatedNewsSection({
      RENDER
   ====================================================== */
   return (
-    <Box sx={{ mt: 6 }}>
-      {/* ================= TITLE ================= */}
+    <Box sx={{ mt: { xs: 4, md: 6 } }}>
+      {/* ======================================================
+         TITLE
+      ====================================================== */}
       <Typography
         sx={{
-          fontSize: 22,
+          fontSize: {
+            xs: 20,
+            md: 22,
+          },
           fontWeight: 600,
           color: "var(--color-primary)",
           mb: 2,
         }}
       >
-        {/* กัน undefined */}
-        {messages?.news?.other_news || "ข่าวและกิจกรรมอื่น ๆ"}
+        {messages?.news?.other_news ||
+          "ข่าวและกิจกรรมอื่น ๆ"}
       </Typography>
 
-      {/* ================= SWIPER ================= */}
+      {/* ======================================================
+         SWIPER
+      ====================================================== */}
       <Box>
         <Swiper
-          modules={[Navigation]} // สำคัญ (บางเวอร์ชันต้องมี)
-          slidesPerView={3}
+          modules={[Navigation]}
           spaceBetween={16}
-          slidesPerGroup={3}
           watchOverflow
           centeredSlides={false}
-          onSwiper={(swiper) => (swiperRef.current = swiper)}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+          }}
           onSlideChange={(swiper) => {
-            const pageIndex = Math.floor(swiper.activeIndex / perPage);
+            const currentPerPage =
+              Number(swiper.params.slidesPerGroup) || 1;
+
+            const pageIndex = Math.floor(
+              swiper.activeIndex / currentPerPage
+            );
+
             setActivePage(pageIndex);
           }}
-          style={{ paddingBottom: "4px" }} // กัน shadow โดนตัด
+          breakpoints={{
+            0: {
+              slidesPerView: 1,
+              slidesPerGroup: 1,
+            },
+
+            600: {
+              slidesPerView: 2,
+              slidesPerGroup: 2,
+            },
+
+            900: {
+              slidesPerView: 2,
+              slidesPerGroup: 2,
+            },
+
+            1200: {
+              slidesPerView: 3,
+              slidesPerGroup: 3,
+            },
+          }}
+          style={{
+            paddingBottom: "4px",
+          }}
         >
           {related.map((item) => (
             <SwiperSlide
@@ -123,7 +190,7 @@ export default function RelatedNewsSection({
               }}
             >
               {/* ======================================================
-                 FIX HEIGHT CARD เท่ากันทุกใบ
+                 FIX CARD HEIGHT
               ====================================================== */}
               <Box
                 sx={{
@@ -134,8 +201,16 @@ export default function RelatedNewsSection({
                   flexDirection: "column",
                 }}
               >
-                <Box sx={{ flex: 1, display: "flex" }}>
-                  <NewsCard item={item} variant="minimal" />
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                  }}
+                >
+                  <NewsCard
+                    item={item}
+                    variant="minimal"
+                  />
                 </Box>
               </Box>
             </SwiperSlide>
@@ -143,14 +218,18 @@ export default function RelatedNewsSection({
         </Swiper>
       </Box>
 
-      {/* ================= DOT ================= */}
+      {/* ======================================================
+         DOT SLIDER
+      ====================================================== */}
       {totalPages > 1 && (
         <Box sx={{ mt: 2 }}>
           <DotSlider
             total={totalPages}
             activeIndex={activePage}
             onClick={(index) => {
-              swiperRef.current?.slideTo(index * perPage);
+              swiperRef.current?.slideTo(
+                index * perPage
+              );
             }}
           />
         </Box>

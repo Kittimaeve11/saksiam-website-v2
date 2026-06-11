@@ -13,32 +13,34 @@ import { HiMiniHome } from "react-icons/hi2";
 
 import { useLocale } from "@/app/providers/LocaleContext";
 import { usePathname } from "next/navigation";
+import LoanMenu from "./LoanMenu";
+import { getWebsiteMourningMode } from "@/app/Utils/websiteTheme";
 
 /* ======================================================
    COMPONENT
 ====================================================== */
 
-export default function TabMenu() {
+type TabMenuProps = {
+  initialMourningMode?: boolean;
+};
+
+const isExternalHref = (href: string) =>
+  href.startsWith("http://") || href.startsWith("https://");
+
+export default function TabMenu({
+  initialMourningMode = false,
+}: TabMenuProps) {
 
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileLoanOpen, setMobileLoanOpen] = useState(false);
+  const [isMourningMode, setIsMourningMode] = useState(initialMourningMode);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
   const { messages } = useLocale();
   const pathname = usePathname();
-
-  const loanMenu = [
-    "สินเชื่อทะเบียนรถเป็นประกัน",
-    "สินเชื่อรถจักรยานยนต์ใหม่",
-    "สินเชื่อรถแลกเงิน (สินเชื่อเช่าซื้อ)",
-    "สินเชื่อทะเบียนรถ (เพื่อการลงทุน)",
-    "สินเชื่อรายย่อยเพื่อการประกอบอาชีพ (นาโนไฟแนนซ์)",
-    "สินเชื่อส่วนบุคคล",
-    "สินเช่าที่ดินเป็นประกัน",
-    "สินเชื่อโซลาร์รูฟท็อป",
-  ];
+  const isHomeMourningMode = pathname === "/" && isMourningMode;
 
   const mobileMenus = [
     { label: messages.menu.loan_services, href: "/loan-services" },
@@ -55,6 +57,12 @@ export default function TabMenu() {
   ====================================================== */
 
   useEffect(() => {
+    let active = true;
+
+    getWebsiteMourningMode().then((enabled) => {
+      if (active) setIsMourningMode(enabled);
+    });
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         menuRef.current &&
@@ -66,6 +74,7 @@ export default function TabMenu() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
+      active = false;
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
@@ -120,14 +129,15 @@ export default function TabMenu() {
       <Box
         sx={{
           display: { xs: "flex", lg: "none" },
-          width: "100%",
+          width: "100vw",
           height: 49,
-          bgcolor: "var(--color-primary)",
+          bgcolor: isHomeMourningMode ? "#3c3c3c" : "var(--color-primary)",
           alignItems: "center",
           justifyContent: "flex-end",
           gap: 2,
           px: 2,
           position: "relative",
+          zIndex: 1200,
         }}
       >
         {/* HOME */}
@@ -177,7 +187,7 @@ export default function TabMenu() {
             left: 0,
             right: 0,
             width: "100%",
-            bgcolor: "var(--main-blue-500)",
+            bgcolor: isHomeMourningMode ? "#4a4a4a" : "var(--main-blue-500)",
             px: 2,
             py: 2,
             borderBottomLeftRadius: "12px",
@@ -185,15 +195,7 @@ export default function TabMenu() {
             boxShadow: "0 12px 20px -10px rgba(0,0,0,0.3)",
             maxHeight: "70vh",
             overflowY: "auto",
-            zIndex: 9999,
-
-            /* 🔥 ซ่อน scrollbar */
-            scrollbarWidth: "none",        // Firefox
-            msOverflowStyle: "none",       // IE/Edge
-            "&::-webkit-scrollbar": {
-              display: "none",             // Chrome/Safari
-            },
-
+            zIndex: 1300,
           }}
         >
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1, color: "#fff" }}>
@@ -228,7 +230,7 @@ export default function TabMenu() {
                   alignItems: "center",
                   justifyContent: "space-between",
 
-                  width: "100%", 
+                  width: "100%", // ✅ สำคัญ
                   boxSizing: "border-box",
 
                   px: 2,
@@ -263,71 +265,44 @@ export default function TabMenu() {
 
               {/* SUBMENU */}
               {mobileLoanOpen && (
-                <Box
-                  sx={{
-                    mt: 0.5,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 0.5,
-                  }}
-                >
-                  {loanMenu.map((item, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        width: "100%", // ✅ เต็มแน่นอน
-                        boxSizing: "border-box",
-
-                        px: 2,
-                        py: 1.25,
-
-                        fontSize: 14,
-                        color: "#fff",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-
-                        pl: 4, // ✅ เยื้อง text แต่ background ยังเต็ม
-
-                        "&:hover": {
-                          bgcolor: "rgba(255,255,255,0.12)",
-                        },
-                      }}
-                    >
-                      {item}
-                    </Box>
-                  ))}
-                </Box>
+                <LoanMenu/>
               )}
             </Box>
 
             {/* เมนูอื่น ๆ */}
             {mobileMenus
               .filter((item) => item.label !== messages.menu.loan_services)
-              .map((item, i) => (
-                <Box
-                  key={i}
-                  component={Link}
-                  href={item.href}
-                  onClick={() => {
-                    setMobileOpen(false);
-                    setMobileLoanOpen(false);
-                  }}
-                  sx={{
-                    display: "block",
-                    px: 2,
-                    py: 1.5,
-                    color: "#fff",
-                    textDecoration: "none",
-                    borderRadius: "8px",
+              .map((item, i) => {
+                const isExternal = isExternalHref(item.href);
 
-                    "&:hover": {
-                      bgcolor: "rgba(255,255,255,0.1)",
-                    },
-                  }}
-                >
-                  {item.label}
-                </Box>
-              ))}
+                return (
+                  <Box
+                    key={i}
+                    component={isExternal ? "a" : Link}
+                    href={item.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    onClick={() => {
+                      setMobileOpen(false);
+                      setMobileLoanOpen(false);
+                    }}
+                    sx={{
+                      display: "block",
+                      px: 2,
+                      py: 1.5,
+                      color: "#fff",
+                      textDecoration: "none",
+                      borderRadius: "8px",
+
+                      "&:hover": {
+                        bgcolor: "rgba(255,255,255,0.1)",
+                      },
+                    }}
+                  >
+                    {item.label}
+                  </Box>
+                );
+              })}
           </Box>
         </Box>
       </Box>
@@ -336,11 +311,13 @@ export default function TabMenu() {
       <Box
         sx={{
           display: { xs: "none", lg: "flex" },
-          width: "100%",
+          width: "100vw",
           height: 49,
-          bgcolor: "var(--color-primary)",
+          bgcolor: isHomeMourningMode ? "#3c3c3c" : "var(--color-primary)",
           alignItems: "center",
           justifyContent: "center",
+          position: "relative",
+          zIndex: 1200,
         }}
       >
         <Box sx={{ display: "flex", gap: 4 }}>
@@ -379,32 +356,22 @@ export default function TabMenu() {
                   borderRadius: 1.5,
                   boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
                   overflow: "hidden",
-                  zIndex: 999,
+                  zIndex: 1300,
                 }}
               >
-                {loanMenu.map((item, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      px: 2,
-                      py: 1.5,
-                      fontSize: 14,
-                      cursor: "pointer",
-                      "&:hover": {
-                        bgcolor: "var(--color-primary)",
-                        color: "#fff",
-                      },
-                    }}
-                  >
-                    {item}
-                  </Box>
-                ))}
+              <LoanMenu/>
               </Box>
             )}
           </Box>
 
           {/* OTHER MENU */}
-          <Box component={Link} href="https://solar.saksiam.com/" sx={menuStyle("/solar")}>
+          <Box
+            component="a"
+            href="https://solar.saksiam.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={menuStyle("/solar")}
+          >
             {messages.menu.solar}
           </Box>
 
@@ -424,11 +391,23 @@ export default function TabMenu() {
             {messages.menu.faq}
           </Box>
 
-          <Box component={Link} href="https://sustainability.saksiam.com/th/home" sx={menuStyle("/sustainability")}>
+          <Box
+            component="a"
+            href="https://sustainability.saksiam.com/th/home"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={menuStyle("/sustainability")}
+          >
             {messages.menu.sustainability}
           </Box>
 
-          <Box component={Link} href="https://investor.saksiam.com/th" sx={menuStyle("/investor-relations")}>
+          <Box
+            component="a"
+            href="https://investor.saksiam.com/th"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={menuStyle("/investor-relations")}
+          >
             {messages.menu.investor_relations}
           </Box>
 

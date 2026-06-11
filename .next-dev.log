@@ -1,0 +1,17 @@
+
+> saksiam-website-v2@0.1.0 dev
+> next dev
+
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:420:11)
+    at spawn (node:child_process:786:9)
+    at fork (node:child_process:174:10)
+    at D:\SAK\Website SAK Siam\Code website sak siam\backup_source_website_sak_siam\saksiam-website-v2\node_modules\next\dist\cli\next-dev.js:253:45
+    at new Promise (<anonymous>)
+    at startServer (D:\SAK\Website SAK Siam\Code website sak siam\backup_source_website_sak_siam\saksiam-website-v2\node_modules\next\dist\cli\next-dev.js:221:16)
+    at runDevServer (D:\SAK\Website SAK Siam\Code website sak siam\backup_source_website_sak_siam\saksiam-website-v2\node_modules\next\dist\cli\next-dev.js:355:23)
+    at Module.nextDev (D:\SAK\Website SAK Siam\Code website sak siam\backup_source_website_sak_siam\saksiam-website-v2\node_modules\next\dist\cli\next-dev.js:363:11) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawn'
+}

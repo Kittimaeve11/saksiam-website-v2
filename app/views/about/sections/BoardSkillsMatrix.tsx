@@ -1,11 +1,71 @@
-import React from 'react'
+"use client";
 
-const BoardSkillsMatrix = () => {
+import { useEffect, useState } from "react";
+import { Container } from "@mui/material";
+
+import { apiFetch, getCachedApiResponse } from "@/app/api/client";
+import type { AboutMenuBannerItem } from "@/app/Utils/type";
+import AboutMenuBanner from "@/app/components/ui/Banner/AboutMenuBanner";
+
+export default function BoardSkillsMatrix() {
+  const endpoint = "/api/bannerapi/9";
+  const cached = getCachedApiResponse<AboutMenuBannerItem | null>(endpoint);
+  const [data, setData] = useState<AboutMenuBannerItem | null>(cached?.data || null);
+  const [loading, setLoading] = useState(!cached);
+
+  useEffect(() => {
+    let active = true;
+    const cached = getCachedApiResponse<AboutMenuBannerItem | null>(endpoint);
+    if (cached) {
+      setData(cached.data || null);
+      setLoading(false);
+      return;
+    }
+
+    const fetchBanner = async () => {
+      try {
+        setLoading(true);
+
+        const res = await apiFetch<AboutMenuBannerItem | null>(
+          endpoint
+        );
+
+        if (!res.status) {
+          throw new Error(res.message || "Banner API error");
+        }
+
+        if (active) {
+          setData(res.data || null);
+        }
+      } catch (error) {
+        console.error(
+          "Board skills matrix banner fetch error:",
+          error
+        );
+
+        if (active) {
+          setData(null);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchBanner();
+
+    return () => {
+      active = false;
+    };
+  }, [endpoint]);
+
   return (
-    <div>
-      
-    </div>
-  )
+    <Container maxWidth="lg">
+      <AboutMenuBanner
+        data={data}
+        loading={loading}
+      />
+    </Container>
+  );
 }
-
-export default BoardSkillsMatrix

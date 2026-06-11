@@ -20,9 +20,17 @@ type Props = {
   images: string[];
 };
 
+type LightGalleryInstance = {
+  openGallery: (index?: number) => void;
+};
+
+type LightGalleryInitDetail = {
+  instance: LightGalleryInstance;
+};
+
 /* ====================================================== */
 export default function Gallery({ images = [] }: Props) {
-  const lightGallery = useRef<any>(null);
+  const lightGallery = useRef<LightGalleryInstance | null>(null);
   const theme = useTheme();
 
   /* ======================================================
@@ -38,7 +46,7 @@ export default function Gallery({ images = [] }: Props) {
   else if (isMd) columns = 3;
 
   /* ====================================================== */
-  const onInit = useCallback((detail: any) => {
+  const onInit = useCallback((detail: LightGalleryInitDetail) => {
     lightGallery.current = detail.instance;
   }, []);
 
@@ -65,12 +73,11 @@ export default function Gallery({ images = [] }: Props) {
   // preview ในช่อง MORE
   const morePreviewImage = hasMore ? images[visibleCount] : null;
 
-  // 🔥 นับเฉพาะ "รูปที่ไม่แสดงจริง"
-  const hiddenCount = hasMore ? total - columns : 0;
-
   /* ====================================================== */
   const imgSizes =
     "(max-width:600px) 100vw, (max-width:900px) 50vw, (max-width:1200px) 33vw, 25vw";
+  const isRemoteImage = (src: string) =>
+    src.startsWith("http://") || src.startsWith("https://");
 
   return (
     <LightGallery
@@ -83,7 +90,6 @@ export default function Gallery({ images = [] }: Props) {
       counter
 
       
-      // ❌ ลบ licenseKey ออก = หาย warning
     >
       <Box
         sx={{
@@ -136,6 +142,7 @@ export default function Gallery({ images = [] }: Props) {
                 src={src}
                 alt={`gallery-${index}`}
                 fill
+                unoptimized={isRemoteImage(src)}
                 sizes={imgSizes}
                 style={{ objectFit: "cover" }}
               />
@@ -175,6 +182,7 @@ export default function Gallery({ images = [] }: Props) {
               src={morePreviewImage}
               alt="more"
               fill
+              unoptimized={isRemoteImage(morePreviewImage)}
               sizes={imgSizes}
               style={{ objectFit: "cover" }}
             />
@@ -196,9 +204,6 @@ export default function Gallery({ images = [] }: Props) {
               <Typography sx={{ fontWeight: 600, fontSize: 18 }}>
                 ดูเพิ่มเติม
               </Typography>
-              {/* <Typography sx={{ fontSize: 16 }}>
-                {hiddenCount} ภาพ
-              </Typography> */}
             </Box>
           </Box>
         )}

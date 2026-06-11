@@ -1,6 +1,5 @@
 import localFont from "next/font/local";
-import { Suspense } from "react";
-import Script from "next/script";
+import { cookies } from "next/headers";
 import "./globals.css";
 /* ======================================================
    MUI PROVIDER (Fix Hydration Error)
@@ -22,6 +21,7 @@ import ToastProvider from "./providers/ToastProvider";
 ====================================================== */
 
 import Navbar from "./components/layout/Navbar/Navbar";
+import NavigationRestore from "./components/layout/NavigationRestore/NavigationRestore";
 import TabMenu from "./components/layout/TabMenu/TabMenu";
 import Footer from "./components/layout/Footer/Footer";
 
@@ -29,9 +29,9 @@ import Footer from "./components/layout/Footer/Footer";
    UI COMPONENTS
 ====================================================== */
 
-import CookieBanner from "./components/ui/CookieBanner/CookieBanner";
 import FloatingButtons from "./components/ui/FloatingButtons/FloatingButtons";
 import BackToTopButton from "./components/ui/BackToTopButton/BackToTopButton";
+import { getWebsiteMourningMode } from "./Utils/websiteTheme";
 
 /* ======================================================
    LOCAL FONT
@@ -57,8 +57,8 @@ const sukhumvitTadmai = localFont({
   ],
   variable: "--font-sukhumvit",
   display: "swap",
+  preload: false, // 🔥 ใส่ตรงนี้
 });
-
 /* ======================================================
    METADATA (SEO)
 ====================================================== */
@@ -77,20 +77,58 @@ export const metadata = {
    ROOT LAYOUT
 ====================================================== */
 
-export default function RootLayout({
+const getInitialLocale = async () => {
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("locale")?.value;
+
+  return locale === "en" ? "en" : "th";
+};
+
+const localeBootstrapScript = `
+  (function () {
+    try {
+      var saved = localStorage.getItem("locale");
+      if (saved !== "th" && saved !== "en") return;
+
+      var match = document.cookie.match(/(?:^|; )locale=(th|en)(?:;|$)/);
+      var cookieLocale = match ? match[1] : null;
+      if (cookieLocale === saved) return;
+
+      document.cookie = "locale=" + saved + "; path=/; max-age=31536000; samesite=lax";
+      document.documentElement.lang = saved;
+
+      var reloadKey = "locale-cookie-synced";
+      if (sessionStorage.getItem(reloadKey) !== saved) {
+        sessionStorage.setItem(reloadKey, saved);
+        location.replace(location.href);
+      }
+    } catch (_) {}
+  })();
+`;
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [initialLocale, initialMourningMode] = await Promise.all([
+    getInitialLocale(),
+    getWebsiteMourningMode(),
+  ]);
+
   return (
     <html
-      lang="th"
+      lang={initialLocale}
       className={sukhumvitTadmai.variable}
       suppressHydrationWarning
     >
 
       {/* Flaticon Icons */}
       <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: localeBootstrapScript }}
+        />
+
         <link
           rel="stylesheet"
           href="https://cdn-uicons.flaticon.com/uicons-solid-rounded/css/uicons-solid-rounded.css"
@@ -119,14 +157,15 @@ export default function RootLayout({
           <ThemeMode />
 
           {/* Locale Provider */}
-          <LocaleProvider>
+          <LocaleProvider initialLocale={initialLocale}>
 
             {/* Google Analytics */}
             {/* <GoogleAnalytics GA_MEASUREMENT_ID="G-GRQS76P3XV" /> */}
 
             {/* Header */}
-            <Navbar />
-            <TabMenu />
+            <NavigationRestore />
+            <Navbar initialMourningMode={initialMourningMode} />
+            <TabMenu initialMourningMode={initialMourningMode} />
 
             {/* Main Content */}
             <main
@@ -135,7 +174,7 @@ export default function RootLayout({
             </main>
 
             {/* Footer */}
-            <Footer />
+            <Footer initialMourningMode={initialMourningMode} />
 
             {/* Toast Notification */}
             <ToastProvider />
@@ -148,14 +187,6 @@ export default function RootLayout({
 
 
         </MuiProvider>
-
-        {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
-          <Script
-            src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
-            strategy="afterInteractive"
-          />
-        )}
-
 
       </body>
 

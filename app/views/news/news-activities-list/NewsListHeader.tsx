@@ -3,7 +3,7 @@
 /* ======================================================
    IMPORT
 ====================================================== */
-import { Box } from "@mui/material";
+import { Container } from "@mui/material";
 import { useLocale } from "@/app/providers/LocaleContext";
 import Breadcrumb from "@/app/components/ui/Breadcrumb/Breadcrumb";
 
@@ -14,7 +14,7 @@ export default function NewsListHeader() {
   const { messages } = useLocale();
 
   return (
-    <Box sx={{ mx: "auto" }}>
+    <Container maxWidth="xl">
       <Breadcrumb
         items={[
           {
@@ -32,6 +32,6 @@ export default function NewsListHeader() {
           },
         ]}
       />
-    </Box>
+    </Container>
   );
 }

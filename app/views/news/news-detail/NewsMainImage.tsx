@@ -6,13 +6,14 @@ import { Box } from "@mui/material";
 
 /* ====================================================== */
 type Props = {
-  src: string;
+  src?: string;
   title?: string;
 };
 
 /* ====================================================== */
 export default function NewsMainImage({ src, title }: Props) {
   if (!src) return null;
+  const isRemoteImage = src.startsWith("http://") || src.startsWith("https://");
 
   return (
     <Box
@@ -29,6 +30,7 @@ export default function NewsMainImage({ src, title }: Props) {
         alt={title || "news image"}
         fill // 🔥 ต้องใช้ fill
         priority
+        unoptimized={isRemoteImage}
         sizes="(max-width: 768px) 100vw, 1200px"
         style={{
           objectFit: "cover", // 🔥 กันรูปยืด

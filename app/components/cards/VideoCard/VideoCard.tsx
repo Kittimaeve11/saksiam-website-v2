@@ -3,8 +3,8 @@
 /* ====================================================== */
 import { Box, Card } from "@mui/material";
 import Image from "next/image";
+import VideoCardSkeleton from "./VideoCardskeleton";
 
-/* ====================================================== */
 type Props = {
   videoId?: string;
   videoUrl?: string;
@@ -21,41 +21,49 @@ export default function VideoCard({
 }: Props) {
   const isPreview = type === "preview";
 
+  /* ======================================================
+     LOADING STATE
+  ====================================================== */
+  const isLoading =
+    (isPreview && !videoId?.trim()) ||
+    (!isPreview && !videoUrl?.trim());
+
+  if (isLoading) {
+    return <VideoCardSkeleton type={type} />;
+  }
+
+  // const isLoading = true;
+
+  // if (isLoading) {
+  //   return <VideoCardSkeleton type={type} />;
+  // }  
+
+
   return (
     <Card
       onClick={onClick}
       elevation={0}
       sx={{
-        width: isPreview ? { xs: 180, md: 380 } : "100%",
+        width: isPreview ? { xs: 180, lg: 380 } : "100%",
         maxWidth: isPreview ? undefined : 530,
+
         position: "relative",
         borderRadius: "20px",
         overflow: "hidden",
-        cursor: isPreview ? "pointer" : "default",
-        bgcolor: "#000",
 
-        /* ======================================================
-           🔥 FIXED 16:9 RATIO
-        ====================================================== */
         aspectRatio: "16 / 9",
 
-        /* ======================================================
-           🔥 SHADOW
-        ====================================================== */
+        bgcolor: "#000",
+
         boxShadow: "0 18px 45px rgba(0,0,0,0.18)",
 
         ...(isPreview && {
-          transform: "scale(0.9)",
           filter: "brightness(0.5)",
-          transition: "all 0.3s ease",
-          "&:hover": {
-            transform: "scale(1)",
-            filter: "brightness(1)",
-            boxShadow: "0 24px 55px rgba(0,0,0,0.22)",
-          },
+          transition: "all .3s ease",
         }),
       }}
     >
+
       {/* ================= PREVIEW ================= */}
       {isPreview && videoId && (
         <>
@@ -63,9 +71,11 @@ export default function VideoCard({
             src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
             alt="thumbnail"
             fill
+            draggable={false}
             sizes="(max-width: 768px) 180px, 380px"
             style={{
               objectFit: "cover",
+              userSelect: "none",
             }}
             priority={false}
           />
@@ -112,10 +122,11 @@ export default function VideoCard({
           allowFullScreen
           sx={{
             position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
+            inset: "-2px",
+            width: "calc(100% + 4px)",
+            height: "calc(100% + 4px)",
             border: 0,
+            display: "block",
           }}
         />
       )}

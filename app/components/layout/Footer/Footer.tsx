@@ -8,12 +8,14 @@ import { Box, Grid, Typography } from "@mui/material";
 
 import { footerMenu } from "@/app/config/footer";
 import { useLocale } from "@/app/providers/LocaleContext";
+import { getWebsiteMourningMode } from "@/app/Utils/websiteTheme";
+import { usePathname } from "next/navigation";
 
 import { useEffect, useState } from "react";
 
 /* ====================================================== */
 type Policy = {
-  id: number;
+  id: string;
   titleTH: string;
   titleEN: string;
 };
@@ -35,66 +37,146 @@ type Contact = {
   };
 };
 
-export default function Footer() {
+type FooterProps = {
+  initialMourningMode?: boolean;
+};
+
+let cachedFooterPolicies: Policy[] | null = null;
+let cachedFooterContact: Contact | null = null;
+let pendingFooterPolicies: Promise<Policy[]> | null = null;
+let pendingFooterContact: Promise<Contact | null> | null = null;
+
+const isExternalHref = (href: string) =>
+  href.startsWith("http://") || href.startsWith("https://");
+
+const getFooterPolicies = async () => {
+  if (cachedFooterPolicies) return cachedFooterPolicies;
+  if (pendingFooterPolicies) return pendingFooterPolicies;
+
+  pendingFooterPolicies = fetch("/api/policies")
+    .then((res) => res.json())
+    .then((data) => {
+      const policies = data.data || [];
+      cachedFooterPolicies = policies;
+      return policies;
+    })
+    .finally(() => {
+      pendingFooterPolicies = null;
+    });
+
+  return pendingFooterPolicies;
+};
+
+const getFooterContact = async () => {
+  if (cachedFooterContact) return cachedFooterContact;
+  if (pendingFooterContact) return pendingFooterContact;
+
+  pendingFooterContact = fetch("/api/contact")
+    .then((res) => res.json())
+    .then((data: Contact) => {
+      cachedFooterContact = data;
+      return cachedFooterContact;
+    })
+    .catch(() => null)
+    .finally(() => {
+      pendingFooterContact = null;
+    });
+
+  return pendingFooterContact;
+};
+
+export default function Footer({
+  initialMourningMode = false,
+}: FooterProps) {
 
   const { locale } = useLocale();
+  const pathname = usePathname();
   const iconSize = 35;
 
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [contact, setContact] = useState<Contact | null>(null);
+  const [policies, setPolicies] = useState<Policy[]>(cachedFooterPolicies || []);
+  const [contact, setContact] = useState<Contact | null>(cachedFooterContact);
 
-  const [loadingPolicies, setLoadingPolicies] = useState(true);
-  const [loadingContact, setLoadingContact] = useState(true);
+  const [loadingPolicies, setLoadingPolicies] = useState(!cachedFooterPolicies);
+  const [isMourningMode, setIsMourningMode] = useState(initialMourningMode);
 
   const [errorPolicies, setErrorPolicies] = useState(false);
-  const [errorContact, setErrorContact] = useState(false);
+  const isHomeMourningMode = pathname === "/" && isMourningMode;
 
   /* ================= FETCH ================= */
   useEffect(() => {
+    let active = true;
+
+    getWebsiteMourningMode().then((enabled) => {
+      if (active) setIsMourningMode(enabled);
+    });
 
     // ================= POLICY =================
-    fetch("/api/policies")
-      .then(res => res.json())
+    getFooterPolicies()
       .then(data => {
-        setPolicies(data.data || []);
+        if (!active) return;
+        setPolicies(data);
         setLoadingPolicies(false);
       })
       .catch(() => {
+        if (!active) return;
         setErrorPolicies(true);
         setLoadingPolicies(false);
       });
 
     // ================= CONTACT =================
-    fetch("/api/contact")
-      .then(res => res.json())
+    getFooterContact()
       .then(data => {
+        if (!active) return;
         setContact(data);
-        setLoadingContact(false);
       })
       .catch(() => {
-        setErrorContact(true);
-        setLoadingContact(false);
+        if (!active) return;
+        setContact(null);
       });
 
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
-    <Box component="footer">
+    <Box
+      component="footer"
+      sx={{
+        mt: "-1px",
+        backgroundColor: isHomeMourningMode ? "#383838" : "var(--main-blue-950)",
+      }}
+    >
       {/* ================= BACKGROUND ================= */}
       <Grid
         container
         sx={{
+          position: "relative",
           justifyContent: "center",
           width: "100%",
           minHeight: "420px",
-          backgroundImage: `
-      linear-gradient(rgba(28,53,99,0.75), rgba(28,53,99,0.75)),
-      url('/Footer/Footer.png')
-    `,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+          overflow: "hidden",
           color: "var(--neutral-white)",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "url('/Footer/Footer.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            filter: isHomeMourningMode ? "grayscale(1)" : "none",
+            zIndex: 0,
+          },
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            background: isHomeMourningMode
+              ? "rgba(42, 42, 42, 0.72)"
+              : "rgba(28, 53, 99, 0.75)",
+            zIndex: 1,
+          },
         }}
       >
         {/* ================= CONTAINER ================= */}
@@ -105,6 +187,8 @@ export default function Footer() {
             width: "100%",
             maxWidth: "1200px",
             mx: "auto",
+            position: "relative",
+            zIndex: 2,
 
             px: {
               xs: 2,
@@ -126,23 +210,29 @@ export default function Footer() {
                   </Typography>
 
                   <Stack spacing={0.7}>
-                    {menu.items.map((item, i) => (
-                      <Typography
-                        key={i}
-                        component={Link}
-                        href={item.href}
-                        sx={{
-                          fontSize: "16px",
-                          textDecoration: "none",
-                          color: "inherit",
-                          "&:hover": {
-                            color: "var(--main-yellow-500)",
-                          },
-                        }}
-                      >
-                        {item.label[locale]}
-                      </Typography>
-                    ))}
+                    {menu.items.map((item, i) => {
+                      const isExternal = isExternalHref(item.href);
+
+                      return (
+                        <Typography
+                          key={i}
+                          component={isExternal ? "a" : Link}
+                          href={item.href}
+                          target={isExternal ? "_blank" : undefined}
+                          rel={isExternal ? "noopener noreferrer" : undefined}
+                          sx={{
+                            fontSize: "16px",
+                            textDecoration: "none",
+                            color: "inherit",
+                            "&:hover": {
+                              color: "var(--main-yellow-500)",
+                            },
+                          }}
+                        >
+                          {item.label[locale]}
+                        </Typography>
+                      );
+                    })}
                   </Stack>
                 </Grid>
               ))}
@@ -230,23 +320,29 @@ export default function Footer() {
                   </Typography>
 
                   <Stack spacing={0.7}>
-                    {menu.items.map((item, i) => (
-                      <Typography
-                        key={i}
-                        component={Link}
-                        href={item.href}
-                        sx={{
-                          fontSize: "16px",
-                          textDecoration: "none",
-                          color: "inherit",
-                          "&:hover": {
-                            color: "var(--main-yellow-500)",
-                          },
-                        }}
-                      >
-                        {item.label[locale]}
-                      </Typography>
-                    ))}
+                    {menu.items.map((item, i) => {
+                      const isExternal = isExternalHref(item.href);
+
+                      return (
+                        <Typography
+                          key={i}
+                          component={isExternal ? "a" : Link}
+                          href={item.href}
+                          target={isExternal ? "_blank" : undefined}
+                          rel={isExternal ? "noopener noreferrer" : undefined}
+                          sx={{
+                            fontSize: "16px",
+                            textDecoration: "none",
+                            color: "inherit",
+                            "&:hover": {
+                              color: "var(--main-yellow-500)",
+                            },
+                          }}
+                        >
+                          {item.label[locale]}
+                        </Typography>
+                      );
+                    })}
                   </Stack>
                 </Grid>
               ))}
@@ -460,7 +556,7 @@ export default function Footer() {
       <Grid
         sx={{
           width: "100%",
-          backgroundColor: "var(--main-blue-950)",
+          backgroundColor: isHomeMourningMode ? "#303030" : "var(--main-blue-950)",
           py: 1.5,
           textAlign: "center",
         }}

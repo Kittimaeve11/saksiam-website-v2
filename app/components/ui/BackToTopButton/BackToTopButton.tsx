@@ -68,8 +68,8 @@ export default function BackToTopButton({ hide = false }: Props) {
           right: { xs: 20, md: 30 },
           zIndex: 9999,
 
-          width: 50,
-          height: 50,
+          width: { xs: 40, md: 50 },
+          height: { xs: 40, md: 50 },
           borderRadius: "50%",
 
           display: "flex",
@@ -81,10 +81,11 @@ export default function BackToTopButton({ hide = false }: Props) {
 
           cursor: "pointer",
           boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-          transition: "all .25s ease",
+          transition:
+            "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
 
           "&:hover": {
-            transform: "translateY(-4px) scale(1.05)",
+            transform: "translateY(-4px) scale(1.08)",
             boxShadow: "0 12px 25px rgba(0,0,0,0.25)",
           },
 

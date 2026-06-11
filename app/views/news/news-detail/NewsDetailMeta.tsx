@@ -4,12 +4,14 @@
 import { Box, Typography } from "@mui/material";
 import { useLocale } from "@/app/providers/LocaleContext";
 import Image from "next/image";
+import { formatViews } from "@/app/Utils/formatViews";
 
 /* ====================================================== */
 type Props = {
   createdAt: string;
   titleTH: string;
   titleEN: string;
+  views: number;
   social?: {
     facebook?: string;
     line?: string;
@@ -42,6 +44,7 @@ export default function NewsDetailMeta({
   createdAt,
   titleTH,
   titleEN,
+  views,
   social,
 }: Props) {
   const { locale } = useLocale();
@@ -113,7 +116,7 @@ export default function NewsDetailMeta({
               }}
             />
             <Typography sx={{ lineHeight: 1 }}>
-              7,151 ครั้ง
+              {formatViews(views, locale)}
             </Typography>
           </Box>
         </Box>

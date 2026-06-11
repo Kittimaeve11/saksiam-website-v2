@@ -1,9 +1,10 @@
 "use client";
 
 /* ====================================================== */
-import { apiFetch } from "@/app/api/client";
+import { apiFetch, getCachedApiResponse } from "@/app/api/client";
 import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
+import EachBannerSkeleton from "./EachBannerskeleton";
 
 /* ====================================================== */
 const BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO!;
@@ -23,7 +24,11 @@ interface EachBanneritem {
 
 /* ====================================================== */
 const EachBanner = ({ num }: { num: number }) => {
-  const [data, setData] = useState<EachBanneritem | null>(null);
+  const endpoint = `/api/bannerapi/${num}`;
+  const cached = getCachedApiResponse<EachBanneritem | null>(endpoint);
+  const [data, setData] = useState<EachBanneritem | null>(cached?.data || null);
+  const [loading, setLoading] = useState(!cached);
+  const [imageReady, setImageReady] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -32,58 +37,112 @@ const EachBanner = ({ num }: { num: number }) => {
       FETCH
   ====================================================== */
   useEffect(() => {
+    let active = true;
+    const cached = getCachedApiResponse<EachBanneritem | null>(endpoint);
+    if (cached) {
+      setData(cached.data || null);
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
-        const res = await apiFetch<any>(`/api/bannerapi/${num}`);
+        setLoading(true);
+        const res = await apiFetch<EachBanneritem | null>(endpoint);
 
         if (!res?.status) {
           throw new Error(res?.message || "API error");
         }
 
-        setData(res.data || null);
+        if (active) setData(res.data || null);
       } catch (err) {
         console.error("fetch error:", err);
+        if (active) setData(null);
+      } finally {
+        if (active) setLoading(false);
       }
     };
 
     fetchData();
-  }, [num]);
+
+    return () => {
+      active = false;
+    };
+  }, [endpoint]);
+
+  const imageSrc = data
+    ? isMobile
+      ? `${BASE_URL}/${data.pictureMoblie}`
+      : `${BASE_URL}/${data.picturePC}`
+    : "";
+
+  useEffect(() => {
+    setImageReady(false);
+  }, [imageSrc]);
 
   /* ====================================================== */
+  if (loading) {
+    return <EachBannerSkeleton />;
+  }
+
+  if (!data) return null;
+
   return (
     <Box
       sx={{
         width: "100%",
         position: "relative",
         background: "#fff",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        overflow: "hidden",
+        lineHeight: 0,
       }}
     >
-      {data && (
+      <Box
+        sx={{
+          width: "100%",
+          aspectRatio: {
+            xs: "678 / 1032",
+            md: "3840 / 1191",
+          },
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {!imageReady && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 1,
+            }}
+          >
+            <EachBannerSkeleton />
+          </Box>
+        )}
+
         <Box
           component="img"
-          src={
-            isMobile
-              ? `${BASE_URL}/${data.pictureMoblie}`
-              : `${BASE_URL}/${data.picturePC}`
-          }
+          className={imageReady ? "fade-in" : undefined}
+          src={imageSrc}
           alt={data.name}
           draggable={false}
+          onLoad={() => setImageReady(true)}
           onDragStart={(e) => e.preventDefault()}
           sx={{
             width: "100%",
-            height: "auto",
-            objectFit: "contain",
-
+            height: "100%",
+            objectFit: {
+              xs: "contain",
+              md: "cover",
+            },
+            backgroundColor: "#fff",
             display: "block",
-
+            opacity: imageReady ? undefined : 0,
             userSelect: "none",
             WebkitUserDrag: "none",
           }}
         />
-      )}
+      </Box>
     </Box>
   );
 };

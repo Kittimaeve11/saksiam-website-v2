@@ -9,8 +9,8 @@ type Service = {
   descriptionTH: string;
   descriptionENG: string;
 
-  minAmount: number;   
-  maxAmount: number;  
+  minAmount: number;
+  maxAmount: number;
 };
 
 /* ======================================================
@@ -103,3 +103,64 @@ export async function GET() {
 
   return Response.json({ services });
 }
+
+export const steps = [
+  {
+    id: 1,
+    title: "กรอกข้อมูลสมัครสินเชื่อ",
+    description:
+      "กรอกข้อมูลเบื้องต้นผ่านเว็บไซต์ หรือสมัครที่สาขาใกล้บ้าน",
+  },
+  {
+    id: 2,
+    title: "ส่งเอกสารประกอบการสมัคร",
+    description:
+      "เตรียมเอกสาร เช่น บัตรประชาชน และเล่มทะเบียนรถ",
+  },
+  {
+    id: 3,
+    title: "ตรวจสอบและประเมินวงเงิน",
+    description:
+      "เจ้าหน้าที่ตรวจสอบข้อมูล และประเมินวงเงินสินเชื่อ",
+  },
+  {
+    id: 4,
+    title: "อนุมัติสินเชื่อ",
+    description:
+      "เมื่อผ่านการอนุมัติ ลูกค้าจะได้รับแจ้งผลการพิจารณา",
+  },
+  {
+    id: 5,
+    title: "รับเงินรวดเร็ว",
+    description:
+      "รับเงินสินเชื่อได้ทันที ตามเงื่อนไขของบริษัท",
+  },
+];
+
+export const timeData = [
+  {
+    id: 1,
+    valuename: "08:30-12:00",
+    labelname: "08:30-12:00",
+  },
+  {
+    id: 2,
+    valuename: "12:00-13:00",
+    labelname: "12:00-13:00",
+  },
+  {
+    id: 3,
+    valuename: "13:00-15:00",
+    labelname: "13:00-15:00",
+  },
+  {
+    id: 4,
+    valuename: "15:00-17:30",
+    labelname: "15:00-17:30",
+  },
+  {
+    id: 5,
+    valuename: "ทุกช่วงเวลา",
+    labelname: "ทุกช่วงเวลา",
+  },
+]

@@ -5,17 +5,29 @@
 ====================================================== */
 import { Box, Typography } from "@mui/material";
 import VideoCard from "@/app/components/cards/VideoCard/VideoCard";
+import { useLocale } from "@/app/providers/LocaleContext";
 
 /* ======================================================
    COMPONENT
 ====================================================== */
 export default function HomeIntroSection() {
+  const { messages } = useLocale();
+  const loanFeatures = [
+    messages.loan_features.low_interest,
+    messages.loan_features.easy_payment,
+    messages.loan_features.reduce_principal_interest,
+  ];
+
   return (
     <Box
       sx={{
         width: "100%",
         background: "linear-gradient(90deg, #011643 0%, #243865 100%)",
-        py: { xs: 4, md: 8 },
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        msUserSelect: "none",
+        pt: { xs: 4, md: 8 },
+        pb: { xs: 6.5, md: 8 },
         px: { xs: 2, md: 6 },
       }}
     >
@@ -26,7 +38,7 @@ export default function HomeIntroSection() {
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
           alignItems: "center",
-          gap: { xs: 4, md: 6 },
+          gap: { xs: 4, md: 4, lg: 6 },
         }}
       >
         {/* ======================================================
@@ -35,38 +47,49 @@ export default function HomeIntroSection() {
         <Box
           sx={{
             flex: 1,
-            p: { xs: 2.5, md: 3 },
+            p: { xs: 2.5, md: 1, lg: 3 },
             color: "#fff",
           }}
         >
           {/* TITLE */}
           <Typography
             sx={{
-              fontSize: { xs: "22px", md: "32px" },
+              fontSize: { xs: 34, sm: 44, md: 36, lg: 48 },
               fontWeight: 700,
               color: "var(--main-yellow-500)",
               mb: 2,
             }}
           >
-            ศักดิ์สยาม สินเชื่อเพื่อสังคม
+            {messages?.video_section?.title_main}
+
+            <Box
+              component="span"
+              sx={{
+                display: { xs: "block", md: "inline" },
+              }}
+            >
+              {" "}
+              {messages?.video_section?.title_sub}
+            </Box>
           </Typography>
 
           {/* DESC */}
           <Typography
+            variant="body1"
             sx={{
-              fontSize: { xs: "14px", md: "18px" },
+              fontSize: "18px",
               lineHeight: 1.8,
               opacity: 0.9,
               mb: 2.5,
             }}
           >
-            เรามุ่งมั่นในการให้บริการทางการเงิน เพื่อยกระดับคุณภาพชีวิตของประชาชน
-            และเกษตรกรลูกค้ากว่า 50,000 รายทั่วประเทศ ด้วยบริการที่ได้มาตรฐาน
+            {messages?.video_section?.description}
           </Typography>
 
           {/* LIST */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
-            {["ดอกเบี้ยถูก", "ผ่อนสบาย", "ลดต้น ลดดอก"].map((item, index) => (
+            {loanFeatures.map((item, index) => (
+
               <Box
                 key={index}
                 sx={{
@@ -94,7 +117,7 @@ export default function HomeIntroSection() {
                   />
                 </Box>
 
-                <Typography sx={{ fontSize: "16px" }}>
+                <Typography variant="h6">
                   {item}
                 </Typography>
               </Box>

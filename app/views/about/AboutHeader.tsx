@@ -1,67 +1,148 @@
 "use client";
 
-/* ======================================================
-   IMPORT
-====================================================== */
-import { Box, Typography } from "@mui/material";
-import Banner from "@/app/components/ui/Banner/Banner";
-import Breadcrumb from "@/app/components/ui/Breadcrumb/Breadcrumb";
+import { Box, Container, Typography } from "@mui/material";
 
-/* ======================================================
-   COMPONENT
-====================================================== */
-export default function AboutHeader() {
+import EachBanner from "@/app/components/ui/Banner/EachBanner";
+import Breadcrumb from "@/app/components/ui/Breadcrumb/Breadcrumb";
+import { useLocale } from "@/app/providers/LocaleContext";
+
+type AboutHeaderProps = {
+  title: string;
+  bannerNum: number;
+  hideTitle?: boolean;
+};
+
+export default function AboutHeader({
+  title,
+  bannerNum,
+  hideTitle = false,
+}: AboutHeaderProps) {
+  const { messages } = useLocale();
+
   return (
     <Box sx={{ position: "relative" }}>
-      
-      {/* ================= BANNER ================= */}
-      <Banner src="/Banner/PicturePC_About.jpg" />
+      {/* ======================================================
+          BANNER
+      ====================================================== */}
+      <Box sx={{ position: "relative" }}>
+        <EachBanner num={bannerNum} />
 
-      {/* ================= OVERLAY TITLE ================= */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: { xs: 20, md: 40 },
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "100%",
-          maxWidth: "lg",
-          px: 2,
-        }}
-      >
-        <Typography
-          sx={{
-            color: "#fff",
-            fontSize: { xs: "24px", md: "36px" },
-            fontWeight: 700,
-          }}
-        >
-          เกี่ยวกับเรา
-        </Typography>
+        {!hideTitle && (
+          <Box
+            sx={{
+              position: "absolute",
 
-        {/* 🔥 เส้นเหลือง corporate */}
-        <Box
-          sx={{
-            width: "120px",
-            height: "4px",
-            background: "var(--color-secondary)",
-            mt: 1,
-            borderRadius: "2px",
-          }}
-        />
+              /* ======================================================
+                 DESKTOP = LEFT CENTER
+                 MOBILE = TOP CENTER
+              ====================================================== */
+              left: {
+                xs: "50%",
+                md: "6%",
+              },
+
+              top: {
+                xs: "12%",
+                sm: "14%",
+                md: "50%",
+              },
+
+              transform: {
+                xs: "translateX(-50%)",
+                md: "translateY(-50%)",
+              },
+
+              width: {
+                xs: "92%",
+                sm: "88%",
+                md: "650px",
+                lg: "750px",
+              },
+
+              zIndex: 5,
+
+              textAlign: {
+                xs: "center",
+                md: "left",
+              },
+            }}
+          >
+            {/* ======================================================
+                TITLE
+            ====================================================== */}
+            <Typography
+              component="h1"
+              sx={{
+                color: "#fff",
+
+                fontSize: {
+                  xs: "clamp(40px,10vw,64px)",
+                  sm: "clamp(52px,9vw,78px)",
+                  md: "3.5rem",
+                  lg: "4.5rem",
+                },
+
+                fontWeight: 800,
+
+                lineHeight: 1.05,
+
+                letterSpacing: "-0.02em",
+
+                textShadow: `
+                    0 2px 4px rgba(0,0,0,0.45),
+                    0 6px 16px rgba(0,0,0,0.30),
+                    0 12px 32px rgba(0,0,0,0.18)
+                  `,
+              }}
+            >
+              {title}
+            </Typography>
+
+            {/* ======================================================
+                YELLOW LINE
+            ====================================================== */}
+            <Box
+              sx={{
+                width: {
+                  xs: 120,
+                  md: 160,
+                },
+
+                height: 6,
+
+                background: "#ffd000",
+
+                mt: 2,
+
+                mx: {
+                  xs: "auto",
+                  md: 0,
+                },
+
+                borderRadius: 999,
+
+                boxShadow: `
+                  0 0 12px rgba(255,193,7,.45),
+                  0 4px 12px rgba(0,0,0,.2)
+                `,
+              }}
+            />
+          </Box>
+        )}
       </Box>
 
-      {/* ================= BREADCRUMB ================= */}
-      <Box sx={{ maxWidth: "lg", mx: "auto", mt: 2, px: 2 }}>
+      {/* ======================================================
+          BREADCRUMB
+      ====================================================== */}
+      <Container maxWidth="xl">
         <Breadcrumb
           items={[
-            { label: "หน้าหลัก", type: "link", href: "/" },
-            { label: "ย้อนกลับ", type: "back" },
-            { label: "เกี่ยวกับเรา", type: "current" },
+            { label: messages.common.home, type: "link", href: "/" },
+            { label: messages.common.back, type: "back" },
+            { label: title, type: "current" },
           ]}
         />
-      </Box>
-
+      </Container>
     </Box>
   );
 }

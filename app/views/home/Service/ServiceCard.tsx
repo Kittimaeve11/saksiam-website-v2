@@ -8,6 +8,9 @@ import Image from "next/image";
 import { Box, Card, Typography } from "@mui/material";
 import { useLocale } from "@/app/providers/LocaleContext";
 import TextButton from "@/app/components/ui/Button/TextButton";
+import { loanItem } from "@/app/Utils/type";
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO!;
 
 /* ======================================================
    TYPES
@@ -17,6 +20,9 @@ type ServiceCardProps = {
   image: string;
   title: string;
   description: string;
+  route: string;
+  item: loanItem;
+  handleClick: (item: loanItem) => Promise<void>;
 };
 
 /* ======================================================
@@ -27,22 +33,33 @@ export default function ServiceCard({
   image,
   title,
   description,
+  item,
+  handleClick,
 }: ServiceCardProps) {
   const { messages } = useLocale();
 
   return (
     <Card
+      className="fade-in"
       variant="outlined"
       sx={{
         borderRadius: 7,
         display: "flex",
         flexDirection: "column",
+
+        width: "100%",
+        maxWidth: "355px",
+        mx: "auto",
+
         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
         overflow: "hidden",
-        transition: "transform 0.2s, box-shadow 0.2s",
+
+        transition:
+          "transform 0.25s ease, box-shadow 0.25s ease",
+
         border: "transparent",
         gap: 1,
-        width: "100%",
+
         position: "relative",
         cursor: "pointer",
 
@@ -56,6 +73,7 @@ export default function ServiceCard({
       }}
     >
       {/* ================= IMAGE ================= */}
+
       <Box
         sx={{
           position: "relative",
@@ -65,11 +83,11 @@ export default function ServiceCard({
         }}
       >
         <Image
-          src={image}
+          src={`${BASE_URL}/${image}`}
           alt={title}
           fill
+          unoptimized
           sizes="(max-width: 768px) 100vw, 33vw"
-          loading="lazy"
           style={{
             objectFit: "cover",
             transition: "transform 0.4s ease",
@@ -78,31 +96,30 @@ export default function ServiceCard({
       </Box>
 
       {/* ================= CONTENT ================= */}
-      <Box sx={{ px: 4, py: 2, flexGrow: 1 }}>
+
+      <Box
+        sx={{
+          mx: 4,
+          my: 1,
+          flexGrow: 1,
+        }}
+      >
         <Box sx={{ mb: 2 }}>
-          
-          {/* 🔥 FIX: ใช้ sx เท่านั้น กันโดน override */}
           <Typography
             sx={{
-              fontWeight: 700, // 🔥 ใช้ 700 แทน 600 (รองรับแน่นอน)
               color: "var(--color-primary)",
               fontSize: 18,
-              lineHeight: 1.4,
+              fontWeight: 600,
             }}
           >
             {title}
           </Typography>
 
-          {/* 🔥 FIX: color + font ใส่ใน sx */}
           <Typography
             variant="caption"
             sx={{
               mt: 0.5,
               color: "rgba(0,0,0,0.6)",
-              display: "block",
-              fontWeight: 400,
-              lineHeight: 1.6,
-              fontSize: 14,
             }}
           >
             {description}
@@ -110,11 +127,13 @@ export default function ServiceCard({
         </Box>
 
         <TextButton
+          onClick={() => handleClick(item)}
           sx={{
             width: "100%",
             textAlign: "center",
             borderRadius: 8,
             mb: 1,
+            color: "#fff",
           }}
         >
           {messages.home.view_detail}

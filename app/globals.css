@@ -163,6 +163,7 @@
 body {
    font-family: var(--font-sukhumvit), sans-serif;
    -webkit-font-smoothing: antialiased;
+   background-color: #FDFDFD;
 }
 
 
@@ -226,12 +227,42 @@ body {
 body {
    margin: 0;
    padding: 0;
+   background-color: #FDFDFD;
 
+}
+
+html,
+body {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+body > * {
+  min-width: 0;
+}
+
+main {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 * {
    margin: 0;
    padding: 0;
+   box-sizing: border-box;
 
 }
 
@@ -306,5 +337,75 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+
+
+/* globals.css */
+/* .grecaptcha-badge {
+  visibility: hidden !important;
+} */
+
+
+/* ======================================================
+   PAGE SCROLLBAR
+   ใช้เฉพาะ Scrollbar ของหน้าเว็บ
+====================================================== */
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 10px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: #2b2b2b;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    #243865 0%,
+    #316ac8 100%
+  );
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    #1B2E57 0%,
+    #2563EB 100%
+  );
+}
+
+html::-webkit-scrollbar-button,
+body::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* กันเลื่อนแนวนอน */
+html,
+body {
+  overflow-x: hidden;
+}
+/* ====== Mourning mode ====== */
+.home-mourning-mode {
+  filter: grayscale(1);
+}
+
+.mourning-ribbon-mobile {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .mourning-ribbon-desktop {
+    display: none;
+  }
+
+  .mourning-ribbon-mobile {
+    display: block;
   }
 }

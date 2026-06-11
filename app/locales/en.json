@@ -10,7 +10,8 @@
         "news": "News & Activities",
         "faq": "FAQ",
         "sustainability": "Sustainability",
-        "investor_relations": "Investor Relations"
+        "investor_relations": "Investor Relations",
+        "back": "Back"
     },
     "brand": {
         "name": "Saksiam Loans – Finance for Society",
@@ -32,11 +33,13 @@
     },
     "customer_reviews": {
         "title": "Trusted by Our Customers",
-        "description": "More than 50,000 customers have received our services, with genuine reviews from real experiences."
+        "description_1": "Over 50,000 customers trust us",
+        "description_2": "with genuine customer reviews."
     },
     "video_section": {
-        "title": "Saksiam Loans for Society",
-        "description": "Watch our service introduction video to understand our process and discover why over 50,000 customers trust Saksiam."
+        "title_main": "Saksiam",
+        "title_sub": "Social Finance",
+        "description": "We are committed to providing financial services that improve the quality of life of people and farmers nationwide. With standardized services, we proudly serve more than 50,000 customers across Thailand."
     },
     "loan_features": {
         "low_interest": "Low Interest",
@@ -101,7 +104,10 @@
     },
     "branch": {
         "head_office": "Head Office",
-        "branch": "Branch"
+        "branch": "Branch",
+        "province": "Province",
+        "or": "Or",
+        "search": "Find a branch near you"
     },
     "common": {
         "home": "Home",
@@ -125,6 +131,18 @@
         "motorcycle_hire_purchase": "New Motorcycle Hire Purchase Loan"
     },
     "ask": "Ask",
-    "selete":"Selete",
-    "loading": "Loading"
+    "selete": "Selete",
+    "loading": "Loading",
+    "about": {
+        "history": "Saksiam History",
+        "vision_mission": "Vision & Mission",
+        "organization_structure": "Organizational Structure",
+        "board_of_directors": "Board of Directors",
+        "board_committees": "Board Committees",
+        "audit_committee": "Audit Committee",
+        "risk_committee": "Risk Management Committee",
+        "nomination_committee": "Nomination and Remuneration Committee",
+        "governance_committee": "Corporate Governance and Sustainability Committee",
+        "board_skills_matrix": "Board Skills Matrix"
+    }
 }

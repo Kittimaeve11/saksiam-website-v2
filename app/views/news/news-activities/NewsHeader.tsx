@@ -1,19 +1,13 @@
 "use client";
 
-/* ======================================================
-   IMPORT
-====================================================== */
-import { Box } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { useLocale } from "@/app/providers/LocaleContext";
 
 import Breadcrumb from "@/app/components/ui/Breadcrumb/Breadcrumb";
 import NewsBanner from "./NewsBanner";
 
-/* ======================================================
-   TYPE
-====================================================== */
 type News = {
-  id: number;
+  id: string | number;
   categoryTH: string;
   categoryEN: string;
   titleTH: string;
@@ -28,20 +22,16 @@ type Props = {
   data: News[];
 };
 
-/* ======================================================
-   COMPONENT
-====================================================== */
 export default function NewsHeader({ data }: Props) {
   const { messages } = useLocale();
 
   return (
     <Box sx={{ position: "relative" }}>
-      
-      {/* ================= BANNER ================= */}
-      <NewsBanner data={data} />
+      <Box className="fade-in">
+        <NewsBanner data={data} />
+      </Box>
 
-      {/* ================= BREADCRUMB ================= */}
-      <Box sx={{ mx: "auto" }}>
+      <Container maxWidth="xl">
         <Breadcrumb
           items={[
             {
@@ -59,8 +49,7 @@ export default function NewsHeader({ data }: Props) {
             },
           ]}
         />
-      </Box>
-
+      </Container>
     </Box>
   );
 }

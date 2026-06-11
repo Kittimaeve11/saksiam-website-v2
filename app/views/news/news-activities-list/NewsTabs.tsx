@@ -1,50 +1,59 @@
 "use client";
 
-/* ====================================================== */
 import Tabs, { TabItem } from "@/app/components/ui/Tabs/Tabs";
+import TabsSkeleton from "@/app/components/ui/Tabs/Tabsskeleton";
 import { useLocale } from "@/app/providers/LocaleContext";
 
-/* ====================================================== */
-export type TabType = "all" | "news" | "activity";
+export type TabType = string;
+
+export type EditorialType = {
+  id: string;
+  nameTH: string;
+  nameEN: string;
+};
 
 type Props = {
   tab: TabType;
   setTab: (val: TabType) => void;
+  editorialTypes: EditorialType[];
+  loading?: boolean;
 };
 
-/* ====================================================== */
-export default function NewsTabs({ tab, setTab }: Props) {
-  const { messages } = useLocale();
+export const getEditorialTabValue = (item: EditorialType): TabType => {
+  const nameEN = item.nameEN.toLowerCase();
 
-  /* ======================================================
-     🔥 FIX TYPE (กัน TS แดง)
-  ====================================================== */
-  const newsText = (messages as any)?.news;
+  if (nameEN === "news") return "news";
+  if (nameEN === "activity" || nameEN === "activities") return "activity";
 
-  /* ======================================================
-     🔥 TABS DATA (type-safe)
-  ====================================================== */
+  return item.id;
+};
+
+export default function NewsTabs({
+  tab,
+  setTab,
+  editorialTypes,
+  loading = false,
+}: Props) {
+  const { locale } = useLocale();
+
+  if (loading) {
+    return <TabsSkeleton count={3} />;
+  }
+
   const tabs: TabItem<TabType>[] = [
     {
-      label: newsText?.all ?? "ทั้งหมด",
+      label: locale === "en" ? "All" : "ทั้งหมด",
       value: "all",
     },
-    {
-      label: newsText?.news ?? "ข่าวสาร",
-      value: "news",
-    },
-    {
-      label: newsText?.activity ?? "กิจกรรม",
-      value: "activity",
-    },
+    ...editorialTypes.map((item) => ({
+      label: locale === "en" ? item.nameEN : item.nameTH,
+      value: getEditorialTabValue(item),
+    })),
   ];
 
-  /* ====================================================== */
   return (
-    <Tabs<TabType>
-      tabs={tabs}
-      value={tab}
-      onChange={setTab}
-    />
+    <div className="fade-in">
+      <Tabs<TabType> tabs={tabs} value={tab} onChange={setTab} />
+    </div>
   );
 }

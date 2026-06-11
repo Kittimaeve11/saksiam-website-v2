@@ -18,12 +18,16 @@ type BreadcrumbItem = {
 
 type Props = {
   items: BreadcrumbItem[];
+  colorVariant?: "default" | "light";
 };
 
 /* ======================================================
    COMPONENT
 ====================================================== */
-export default function Breadcrumb({ items }: Props) {
+export default function Breadcrumb({
+  items,
+  colorVariant = "default",
+}: Props) {
   const router = useRouter();
 
   /* ======================================================
@@ -43,7 +47,6 @@ export default function Breadcrumb({ items }: Props) {
   return (
     <Box
       sx={{
-        px: 20,
         py: 3,
         borderRadius: "8px",
         display: "inline-flex",
@@ -53,7 +56,11 @@ export default function Breadcrumb({ items }: Props) {
       <Box
         sx={{
           fontSize: "16px",
-          color: "var(--main-blue-400)",
+          color:
+            colorVariant === "light"
+              ? "var(--gray-100)"
+              : "var(--main-blue-400)",
+
           display: "flex",
           alignItems: "center",
           flexWrap: "wrap",
@@ -75,12 +82,31 @@ export default function Breadcrumb({ items }: Props) {
                 component="span"
                 onClick={() => handleClick(item)}
                 sx={{
-                  cursor: item.type !== "current" ? "pointer" : "default",
+                  cursor:
+                    item.type !== "current"
+                      ? "pointer"
+                      : "default",
+
                   color:
                     item.type === "current"
-                      ? "var(--main-blue-300)"
+                      ? colorVariant === "light"
+                        ? "#FFFFFF"
+                        : "var(--main-blue-300)"
                       : "inherit",
-                  fontWeight: item.type === "current" ? 500 : 400,
+
+                  fontWeight:
+                    item.type === "current"
+                      ? 500
+                      : 400,
+
+                  transition: "0.2s",
+
+                  "&:hover": {
+                    opacity:
+                      item.type !== "current"
+                        ? 0.8
+                        : 1,
+                  },
                 }}
               >
                 {item.label}
@@ -90,7 +116,11 @@ export default function Breadcrumb({ items }: Props) {
               {!isLast && (
                 <Box
                   component="span"
-                  sx={{ mx: 0.5, opacity: 0.6, display: "flex" }}
+                  sx={{
+                    mx: 0.5,
+                    opacity: 0.6,
+                    display: "flex",
+                  }}
                 >
                   <MdKeyboardDoubleArrowRight />
                 </Box>

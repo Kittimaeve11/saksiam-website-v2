@@ -1,34 +1,40 @@
 "use client";
 
-/* ====================================================== */
 import Tabs, { TabItem } from "@/app/components/ui/Tabs/Tabs";
-
-/* 🔥 i18n */
+import TabsSkeleton from "@/app/components/ui/Tabs/Tabsskeleton";
 import { useLocale } from "@/app/providers/LocaleContext";
-
-/* ====================================================== */
-type TabType = "all" | "loan" | "contact";
+import type { FaqTypeItem } from "@/app/Utils/type";
 
 type Props = {
-  tab: TabType;
-  setTab: (val: TabType) => void;
+  tab: string;
+  setTab: (val: string) => void;
+  faqTypes: FaqTypeItem[];
+  loading?: boolean;
 };
 
-/* ====================================================== */
-export default function FaqTabs({ tab, setTab }: Props) {
-  const { messages } = useLocale();
+export default function FaqTabs({
+  tab,
+  setTab,
+  faqTypes,
+  loading = false,
+}: Props) {
+  const { messages, locale } = useLocale();
 
-  const tabs: TabItem<TabType>[] = [
+  if (loading) {
+    return <TabsSkeleton count={3} />;
+  }
+
+  const tabs: TabItem<string>[] = [
     { label: messages?.faq?.all || "ทั้งหมด", value: "all" },
-    { label: messages?.faq?.loan || "สินเชื่อ", value: "loan" },
-    { label: messages?.faq?.contact || "การติดต่อ", value: "contact" },
+    ...faqTypes.map((item) => ({
+      label: locale === "en" ? item.nameEN || item.nameTH : item.nameTH || item.nameEN,
+      value: item.id,
+    })),
   ];
 
   return (
-    <Tabs
-      tabs={tabs}
-      value={tab}
-      onChange={setTab}
-    />
+    <div className="fade-in">
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
+    </div>
   );
 }

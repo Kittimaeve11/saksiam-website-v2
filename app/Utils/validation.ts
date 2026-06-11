@@ -1,3 +1,5 @@
+import { FormConctactDataErrors, FormContactData, FormLoanData, FormLoanDataErrors } from "./type";
+
 export const validateForm = (formData: any, services: any[] = []) => {
   const errors: any = {};
 
@@ -130,3 +132,159 @@ export const validateForm = (formData: any, services: any[] = []) => {
 
   return errors;
 };
+
+//Loan
+export const validataLoanForm = (
+  formData: FormLoanData
+): FormLoanDataErrors => {
+
+  const errors: FormLoanDataErrors = {}
+  // ลูกค้าเดิม / ใหม่
+  if (formData.isCuntomer === null) {
+    errors.isCuntomer =
+      'กรุณาระบุว่าเคยเป็นลูกค้าศักดิ์สยามหรือไม่'
+  }
+  // สินเชื่อ
+  if (!formData.selectedLoan) {
+    errors.selectedLoan = 'กรุณาเลือกสินเชื่อที่ต้องการสมัคร'
+  }
+  // ✅ typeCar เช็คเฉพาะตอนที่ selectedLoan มีค่า typeCar
+  if (
+    formData.selectedLoan?.vehicleType &&
+    !formData.typeCar
+  ) {
+    errors.typeCar = 'กรุณาเลือกประเภทรถ'
+  }
+  // วงเงิน
+  if (!formData.amount) {
+    errors.amount =
+      'กรุณากรอกจำนวนวงเงินที่ต้องการ'
+  }
+
+  // ✅ เช็ค min/max วงเงิน
+  else if (formData.selectedLoan) {
+
+    const amount = Number(
+      formData.amount.replace(/,/g, "")
+    );
+
+    // กรอกไม่ใช่ตัวเลข
+    if (isNaN(amount)) {
+      errors.amount =
+        'กรุณากรอกวงเงินเป็นตัวเลข';
+    }
+
+    else {
+
+      const minAmount = Number(
+        formData.selectedLoan.minamount
+      );
+
+      const maxAmount = Number(
+        formData.selectedLoan.maxamount
+      );
+
+      // ต่ำกว่าขั้นต่ำ
+      if (amount < minAmount) {
+        errors.amount =
+          `กรุณากรอกวงเงินตั้งแต่ ${minAmount.toLocaleString()} บาท`;
+      }
+
+      // สูงกว่าขั้นสูงสุด
+      else if (amount > maxAmount) {
+        errors.amount =
+          `กรุณากรอกวงเงินไม่เกิน ${maxAmount.toLocaleString()} บาท`;
+      }
+    }
+  }
+  // เวลาที่สะดวก
+  if (!formData.selectedtime) {
+    errors.selectedtime = 'กรุณาเลือกช่วงเวลาที่สะดวก'
+  }
+  // ชื่อ
+  if (!formData.fullname) {
+    errors.fullname = 'กรุณากรอกชื่อ-นามสกุล'
+  }
+
+  // เบอร์โทร
+  // เบอร์โทร
+  if (!formData.phone) {
+    errors.phone =
+      'กรุณากรอกหมายเลขโทรศัพท์'
+  }
+
+  // ต้องเป็นตัวเลขเท่านั้น
+  else if (!/^[0-9]+$/.test(formData.phone)) {
+    errors.phone =
+      'กรุณากรอกเฉพาะตัวเลข';
+  }
+
+  // ต้อง 10 หลัก
+  else if (formData.phone.length !== 10) {
+    errors.phone =
+      'กรอกหมายเลข 10 หลัก';
+  }
+  // -------------------------------------------------------------------
+  // ✅ ไม่เช็คบ้านเลขที่แล้ว
+  // -------------------------------------------------------------------
+if (!formData.province) {
+  errors.province = '*กรุณาเลือกจังหวัด'
+}
+
+if (!formData.amphoe) {
+  errors.amphoe = '*กรุณาเลือกอำเภอ'
+}
+
+if (!formData.district) {
+  errors.district = '*กรุณาเลือกตำบล'
+}
+
+if (
+  !formData.province ||
+  !formData.amphoe ||
+  !formData.district
+) {
+  errors.address = '*กรุณากรอกที่อยู่'
+}
+
+  return errors
+}
+
+
+//Contact
+export const validataContactForm = (formData: FormContactData): FormConctactDataErrors => {
+  const errors: FormConctactDataErrors = {}
+  // ชื่อ
+  if (!formData.fullname) {
+    errors.fullname = 'กรุณากรอกชื่อ-นามสกุล'
+  }
+
+  // เบอร์โทร
+  // เบอร์โทร
+  if (!formData.phone) {
+    errors.phone =
+      'กรุณากรอกหมายเลขโทรศัพท์'
+  }
+
+  // ต้องเป็นตัวเลขเท่านั้น
+  else if (!/^[0-9]+$/.test(formData.phone)) {
+    errors.phone =
+      'กรุณากรอกเฉพาะตัวเลข';
+  }
+
+  // ต้อง 10 หลัก
+  else if (formData.phone.length !== 10) {
+    errors.phone =
+      'กรอกหมายเลข 10 หลัก';
+  }
+  // topic
+  if (!formData.selectedTopic) {
+    errors.selectedTopic = 'กรุณาเลือกสินเชื่อที่ต้องการสมัคร'
+  }
+
+  if (!formData.detail) {
+    errors.detail = 'กรุณากรอกระบุข้อความ'
+  }
+  return errors
+} 
+

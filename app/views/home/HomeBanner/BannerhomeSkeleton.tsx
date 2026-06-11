@@ -17,7 +17,10 @@ export default function BannerhomeSkeleton({
       sx={{
         width: "100%",
         position: "relative",
-        aspectRatio: ratio,
+        aspectRatio: {
+          xs: "678 / 1032",
+          md: ratio,
+        },
         overflow: "hidden",
       }}
     >

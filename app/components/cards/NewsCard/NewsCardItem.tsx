@@ -2,13 +2,14 @@
 
 /* ====================================================== */
 import Image from "next/image";
-import { Box, Typography } from "@mui/material";
+import { Box, Card, CardContent, Typography } from "@mui/material";
 import { useLocale } from "@/app/providers/LocaleContext";
+import { formatViews } from "@/app/Utils/formatViews";
 import Link from "next/link"; // 🔥 เพิ่ม
 
 /* ====================================================== */
 type News = {
-  id: number;
+  id: string | number;
   categoryTH: string;
   categoryEN: string;
   titleTH: string;
@@ -37,13 +38,17 @@ export default function NewsCardItem({ item }: { item: News }) {
   const title = locale === "th" ? item.titleTH : item.titleEN;
 
   const href = `/news-activities/${item.id}`; // 🔥 route
+  const imageSrc = item.images?.[0] || "/images/placeholder.jpg";
+  const isRemoteImage =
+    imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
 
   return (
     <Link
       href={href}
       style={{ textDecoration: "none", display: "block", height: "100%" }}
     >
-      <Box
+      <Card
+        elevation={0}
         sx={{
           borderRadius: "20px",
           background: "#fff",
@@ -56,7 +61,7 @@ export default function NewsCardItem({ item }: { item: News }) {
           `,
 
           cursor: "pointer",
-          transition: "all .3s ease",
+          transition: "transform 0.2s, box-shadow 0.2s",
 
           display: "flex",
           flexDirection: "column",
@@ -68,9 +73,10 @@ export default function NewsCardItem({ item }: { item: News }) {
               0 6px 12px rgba(0,0,0,0.06),
               0 20px 32px rgba(0,0,0,0.10)
             `,
-            "& .image-overlay": {
-              background: "rgba(0,0,0,0.7)",
-            },
+          },
+
+          "&:hover img": {
+            transform: "scale(1.08)",
           },
         }}
       >
@@ -84,9 +90,10 @@ export default function NewsCardItem({ item }: { item: News }) {
           }}
         >
           <Image
-            src={item.images[0]}
+            src={imageSrc}
             alt=""
             fill
+            unoptimized={isRemoteImage}
             sizes="(max-width: 600px) 100vw,
                    (max-width: 900px) 50vw,
                    25vw"
@@ -95,25 +102,18 @@ export default function NewsCardItem({ item }: { item: News }) {
               transition: "transform .4s ease",
             }}
           />
-
-          <Box
-            className="image-overlay"
-            sx={{
-              position: "absolute",
-              inset: 0,
-              background: "rgba(0,0,0,0)",
-              zIndex: 1,
-            }}
-          />
         </Box>
 
         {/* ================= CONTENT ================= */}
-        <Box
+        <CardContent
           sx={{
             p: 2,
             display: "flex",
             flexDirection: "column",
             flexGrow: 1,
+            "&:last-child": {
+              pb: 2,
+            },
           }}
         >
           {/* TAG */}
@@ -170,7 +170,16 @@ export default function NewsCardItem({ item }: { item: News }) {
             >
               {/* DATE */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box component="i" className="fi fi-br-calendar" sx={{ fontSize: 16 }} />
+                <Box
+                  component="i"
+                  className="fi fi-br-calendar"
+                  sx={{
+                    fontSize: 16,
+                    lineHeight: 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                />
                 <Typography sx={{ fontSize: 14 }}>
                   {formatDate(item.createdAt)}
                 </Typography>
@@ -181,15 +190,24 @@ export default function NewsCardItem({ item }: { item: News }) {
 
               {/* VIEW */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box component="i" className="fi fi-sr-eye" sx={{ fontSize: 16 }} />
+                <Box
+                  component="i"
+                  className="fi fi-sr-eye"
+                  sx={{
+                    fontSize: 16,
+                    lineHeight: 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                />
                 <Typography sx={{ fontSize: 14 }}>
-                  {(item.views || 1777).toLocaleString()} ครั้ง
+                  {formatViews(item.views, locale)}
                 </Typography>
               </Box>
             </Box>
           </Box>
-        </Box>
-      </Box>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

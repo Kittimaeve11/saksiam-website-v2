@@ -1,17 +1,16 @@
-'use client';
+"use client";
 
 import React, {
   createContext,
-  useState,
   useContext,
-  ReactNode,
-  useEffect
+  useEffect,
+  useState,
+  type ReactNode,
 } from "react";
 
 import en from "../locales/en.json";
 import th from "../locales/th.json";
 
-/* ====================================================== */
 type Locale = "th" | "en";
 type Messages = typeof en;
 
@@ -21,28 +20,40 @@ interface LocaleContextType {
   switchLocale: (newLocale: Locale) => void;
 }
 
-/* ====================================================== */
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
-/* ====================================================== */
-export function LocaleProvider({ children }: { children: ReactNode }) {
+const isLocale = (value: unknown): value is Locale =>
+  value === "th" || value === "en";
 
-  // ✅ server + client ต้องเริ่มเหมือนกัน
-  const [locale, setLocale] = useState<Locale>("th");
+const saveLocale = (newLocale: Locale) => {
+  localStorage.setItem("locale", newLocale);
+  document.cookie = `locale=${newLocale}; path=/; max-age=31536000; samesite=lax`;
+  document.documentElement.lang = newLocale;
+};
 
-  // ✅ อัปเดตหลัง mount (ไม่ทำให้ hydration พัง)
+export function LocaleProvider({
+  children,
+  initialLocale = "th",
+}: {
+  children: ReactNode;
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocale] = useState<Locale>(() => {
+    if (typeof window === "undefined") return initialLocale;
+
+    const saved = localStorage.getItem("locale");
+    return isLocale(saved) ? saved : initialLocale;
+  });
+
   useEffect(() => {
-    const saved = localStorage.getItem("locale") as Locale | null;
-    if (saved && saved !== locale) {
-      setLocale(saved);
-    }
-  }, []);
+    saveLocale(locale);
+  }, [locale]);
 
   const messages: Messages = locale === "en" ? en : th;
 
   const switchLocale = (newLocale: Locale) => {
     setLocale(newLocale);
-    localStorage.setItem("locale", newLocale);
+    saveLocale(newLocale);
   };
 
   return (
@@ -52,7 +63,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/* ====================================================== */
 export function useLocale() {
   const context = useContext(LocaleContext);
 
