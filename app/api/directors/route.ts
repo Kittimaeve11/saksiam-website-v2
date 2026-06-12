@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiFetch } from "../client";
+import { buildImageUrl } from "@/app/Utils/imageUrl";
 
 type RawRecord = Record<string, unknown>;
 
@@ -12,8 +13,6 @@ type Director = {
   picture: string;
   tag: string;
 };
-
-const PHOTO_BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO || "";
 
 const toText = (value: unknown): string =>
   typeof value === "string" ? value : "";
@@ -32,16 +31,7 @@ const getResultList = (response: unknown): RawRecord[] => {
 };
 
 const toImageUrl = (src: string): string => {
-  if (!src) return "";
-  if (
-    src.startsWith("http://") ||
-    src.startsWith("https://") ||
-    src.startsWith("/")
-  ) {
-    return src;
-  }
-
-  return `${PHOTO_BASE_URL}${src}`;
+  return buildImageUrl(src);
 };
 
 const normalizeDirector = (item: RawRecord): Director => ({

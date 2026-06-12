@@ -16,6 +16,7 @@ export default function OrgStructureSection() {
 
   useEffect(() => {
     let active = true;
+    let loadingFallbackTimer: ReturnType<typeof setTimeout> | null = null;
     const cached = getCachedApiResponse<AboutMenuBannerItem | null>(endpoint);
     if (cached) {
       setData(cached.data || null);
@@ -26,6 +27,9 @@ export default function OrgStructureSection() {
     const fetchBanner = async () => {
       try {
         setLoading(true);
+        loadingFallbackTimer = setTimeout(() => {
+          if (active) setLoading(false);
+        }, 5000);
 
         const res = await apiFetch<AboutMenuBannerItem | null>(
           endpoint
@@ -36,12 +40,14 @@ export default function OrgStructureSection() {
         }
 
         if (active) {
+          if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
           setData(res.data || null);
         }
       } catch (error) {
         console.error("Org structure banner fetch error:", error);
 
         if (active) {
+          if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
           setData(null);
         }
       } finally {
@@ -55,6 +61,7 @@ export default function OrgStructureSection() {
 
     return () => {
       active = false;
+      if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
     };
   }, [endpoint]);
 

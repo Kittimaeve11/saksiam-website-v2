@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Grid, Typography } from "@mui/material";
 import { useLocale } from "@/app/providers/LocaleContext";
 import { apiFetch, getCachedApiResponse } from "@/app/api/client";
 import type { DirectorApiItem } from "@/app/Utils/type";
+import { buildImageUrl } from "@/app/Utils/imageUrl";
 
 import DirectorCard from "../../../components/cards/DirectorCard/DirectorCard";
 import type { Director } from "../../../components/cards/DirectorCard/DirectorCard";
 
 import DirectorCardSkeleton from "../../../components/cards/DirectorCard/DirectorCardSkeleton";
-
-const PHOTO_BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO || "";
-
 
 const toText = (value: string | number | null | undefined): string => {
   if (typeof value === "number") return String(value);
@@ -20,12 +18,7 @@ const toText = (value: string | number | null | undefined): string => {
 };
 
 const toImageUrl = (src: string): string => {
-  if (!src) return "";
-  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/")) {
-    return src;
-  }
-
-  return `${PHOTO_BASE_URL}${src}`;
+  return buildImageUrl(src);
 };
 
 const normalizeDirector = (item: DirectorApiItem): Director => ({
@@ -47,6 +40,7 @@ export default function BoardSection() {
     .filter((item) => item.id && (item.nameTH || item.nameEN));
   const [directors, setDirectors] = useState<Director[]>(initialDirectors);
   const [loading, setLoading] = useState(!cached);
+  const shouldFadeContentRef = useRef(!cached);
 
   useEffect(() => {
     const fetchDirectors = async () => {
@@ -153,6 +147,7 @@ export default function BoardSection() {
 
         {!loading && featured && (
           <Grid
+            className={shouldFadeContentRef.current ? "api-content-fade-in" : undefined}
             container
             size={12}
             sx={{
@@ -168,6 +163,7 @@ export default function BoardSection() {
 
         {!loading && (
           <Grid
+            className={shouldFadeContentRef.current ? "api-content-fade-in" : undefined}
             container
             size={12}
             spacing={{ xs: 5, md: 7 }}

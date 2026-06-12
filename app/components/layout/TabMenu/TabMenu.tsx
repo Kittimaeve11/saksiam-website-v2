@@ -129,7 +129,8 @@ export default function TabMenu({
       <Box
         sx={{
           display: { xs: "flex", lg: "none" },
-          width: "100vw",
+          width: "100%",
+          maxWidth: "100%",
           height: 49,
           bgcolor: isHomeMourningMode ? "#3c3c3c" : "var(--color-primary)",
           alignItems: "center",
@@ -137,6 +138,7 @@ export default function TabMenu({
           gap: 2,
           px: 2,
           position: "relative",
+          overflow: "hidden",
           zIndex: 1200,
         }}
       >
@@ -311,16 +313,27 @@ export default function TabMenu({
       <Box
         sx={{
           display: { xs: "none", lg: "flex" },
-          width: "100vw",
+          width: "100%",
+          maxWidth: "100%",
           height: 49,
           bgcolor: isHomeMourningMode ? "#3c3c3c" : "var(--color-primary)",
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
+          overflow: "hidden",
           zIndex: 1200,
         }}
       >
-        <Box sx={{ display: "flex", gap: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 4,
+            maxWidth: "100%",
+            minWidth: 0,
+            px: 2,
+            boxSizing: "border-box",
+          }}
+        >
 
           <Box component={Link} href="/" sx={menuStyle("/")}>
             {messages.menu.home}

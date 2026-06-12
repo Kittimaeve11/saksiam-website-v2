@@ -44,7 +44,7 @@ export default function Page() {
     <Box sx={{ background: "#f5f7fb", width: "100%", overflowX: "clip" }}>
       <ContactHeader onErrorChange={setErrorCount} />
       {data ? (
-        <Box className="fade-in">
+        <Box>
           <ContactInfo data={data} errorCount={errorCount} />
           <ContactSocial data={data} />
         </Box>

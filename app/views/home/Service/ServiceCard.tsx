@@ -38,11 +38,10 @@ export default function ServiceCard({
 }: ServiceCardProps) {
   const { messages } = useLocale();
 
-  return (
-    <Card
-      className="fade-in"
-      variant="outlined"
-      sx={{
+    return (
+      <Card
+        variant="outlined"
+        sx={{
         borderRadius: 7,
         display: "flex",
         flexDirection: "column",

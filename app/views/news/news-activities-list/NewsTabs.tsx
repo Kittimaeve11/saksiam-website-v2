@@ -52,7 +52,7 @@ export default function NewsTabs({
   ];
 
   return (
-    <div className="fade-in">
+    <div>
       <Tabs<TabType> tabs={tabs} value={tab} onChange={setTab} />
     </div>
   );

@@ -10,8 +10,7 @@ import type {
   TestimonialApiItem,
 } from "./type";
 import { fetchGalleryMap, getImagesForEditorial } from "./editorialGallery";
-
-const PHOTO_BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO || "";
+import { buildImageUrl } from "./imageUrl";
 
 const toText = (value: string | number | null | undefined): string =>
   typeof value === "string" ? value.trim() : "";
@@ -22,12 +21,7 @@ const toNumber = (value: number | string | null | undefined): number => {
 };
 
 const toImageUrl = (src: string): string => {
-  if (!src) return "";
-  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/")) {
-    return src;
-  }
-
-  return `${PHOTO_BASE_URL}${src}`;
+  return buildImageUrl(src);
 };
 
 const stripHtml = (value: string): string =>

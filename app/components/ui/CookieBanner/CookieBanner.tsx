@@ -7,7 +7,6 @@ import {
   Box,
   Typography,
   Button,
-  Switch,
   Fade,
   IconButton,
 } from "@mui/material";
@@ -32,12 +31,22 @@ export default function CookieBanner() {
 
   /* ================= LOAD ================= */
   useEffect(() => {
-    const saved = Cookies.get(COOKIE_NAME);
-    if (!saved) {
-      setShowBanner(true);
-    } else {
-      setSettings(JSON.parse(saved));
-    }
+    let active = true;
+    const timer = window.setTimeout(() => {
+      if (!active) return;
+
+      const saved = Cookies.get(COOKIE_NAME);
+      if (!saved) {
+        setShowBanner(true);
+      } else {
+        setSettings(JSON.parse(saved));
+      }
+    }, 0);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   /* ================= ACTION ================= */
@@ -100,14 +109,16 @@ export default function CookieBanner() {
         <Box
           sx={{
             position: "fixed",
-            bottom: 20,
-            // right: 20,
-            left: 20,
+            bottom: { xs: 12, sm: 20 },
+            left: { xs: 12, sm: 20 },
+            right: { xs: 12, sm: "auto" },
             zIndex: 9999,
-            width: "100%",
-            maxWidth: 420,
-            p: 2.5,
-            borderRadius: "16px",
+            width: { xs: "auto", sm: "100%" },
+            maxWidth: { xs: "none", sm: 420 },
+            maxHeight: { xs: "calc(100dvh - 24px)", sm: "none" },
+            overflowY: { xs: "auto", sm: "visible" },
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: { xs: "14px", sm: "16px" },
             background: "rgba(255,255,255,0.95)",
             backdropFilter: "blur(10px)",
             boxShadow: "0 10px 40px rgba(0,0,0,0.18)",
@@ -116,7 +127,7 @@ export default function CookieBanner() {
         >
           <Typography
             sx={{
-              fontSize: 16,
+              fontSize: { xs: 15, sm: 16 },
               fontWeight: 700,
               color: "var(--color-primary)",
 
@@ -131,25 +142,39 @@ export default function CookieBanner() {
               src="/Gif/Eating_Cookie.gif"
               alt="cookie"
               sx={{
-                width: 35,
-                height: 35,
+                width: { xs: 30, sm: 35 },
+                height: { xs: 30, sm: 35 },
                 display: "block",
+                flexShrink: 0,
               }}
             />
 
             นโยบายคุกกี้
           </Typography>
 
-          <Typography sx={{ fontSize: 13, color: "#667085", mb: 2 }}>
+          <Typography
+            sx={{
+              fontSize: { xs: 12.5, sm: 13 },
+              color: "#667085",
+              mb: 2,
+              lineHeight: 1.65,
+            }}
+          >
             เว็บไซต์ของเรามีการใช้งานคุกกี้ (Cookies) เพื่อมอบประสบการณ์ที่ดียิ่งขึ้นให้แก่คุณ รวมถึงเสนอสิทธิประโยชน์ที่ตรงตามความสนใจของคุณมากที่สุด ถ้าคุณยังใช้งานต่อไปโดยไม่ปฏิเสธคุกกี้ เราจะเก็บคุกกี้เพื่อวัตถุประสงค์ข้างต้น ทั้งนี้ คุณสามารถศึกษารายละเอียดเกี่ยวกับการใช้คุกกี้ของเราได้ที่ {" "}
-            <Link href="/policy/POL202507290" target="_blank">
+            <Link href="http://localhost:8080/api/policyapi/PO2605150002" target="_blank">
               <span style={{ color: "var(--color-primary)", textDecoration: "underline" }}>
                 นโยบายการใช้งานคุกกี้
               </span>
             </Link>
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 1,
+            }}
+          >
             <Button
               fullWidth
               variant="contained"
@@ -158,7 +183,8 @@ export default function CookieBanner() {
               sx={{
                 background: "var(--color-primary)",
                 borderRadius: "10px",
-                fontSize: 13,
+                fontSize: { xs: 12.5, sm: 13 },
+                minHeight: { xs: 42, sm: 36 },
                 boxShadow: "none", // กันชัวร์
 
                 "&:hover": {
@@ -176,7 +202,8 @@ export default function CookieBanner() {
               onClick={() => setShowSettings(true)}
               sx={{
                 borderRadius: "10px",
-                fontSize: 13,
+                fontSize: { xs: 12.5, sm: 13 },
+                minHeight: { xs: 42, sm: 36 },
               }}
             >
               ตั้งค่า
@@ -201,24 +228,27 @@ export default function CookieBanner() {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 9999,
-            p: 2,
+            p: { xs: 1.25, sm: 2 },
           }}
         >
           <Box
             sx={{
               width: "100%",
-              maxWidth: 820,
+              maxWidth: { xs: "100%", sm: 820 },
+              maxHeight: { xs: "calc(100dvh - 20px)", sm: "calc(100dvh - 32px)" },
               bgcolor: "#fff",
-              borderRadius: "24px",
+              borderRadius: { xs: "18px", sm: "24px" },
               overflow: "hidden",
               boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
             {/* ================= HEADER ================= */}
             <Box
               sx={{
-                px: 3,
-                py: 2,
+                px: { xs: 2, sm: 3 },
+                py: { xs: 1.5, sm: 2 },
                 borderBottom: "1px solid #E4E7EC",
                 display: "flex",
                 justifyContent: "space-between",
@@ -229,7 +259,7 @@ export default function CookieBanner() {
                 <Box
                   component="img"
                   src="/Icons/logo_sakSiamText.png"
-                  sx={{ height: 60 }}
+                  sx={{ height: { xs: 40, sm: 60 }, maxWidth: { xs: 220, sm: "none" } }}
                 />
 
               </Box>
@@ -246,10 +276,10 @@ export default function CookieBanner() {
             </Box>
 
             {/* ================= CONTENT ================= */}
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 2, sm: 3 }, overflowY: "auto" }}>
               <Typography
                 sx={{
-                  fontSize: 20,
+                  fontSize: { xs: 18, sm: 20 },
                   fontWeight: 700,
                   mb: 1,
                 }}
@@ -260,8 +290,9 @@ export default function CookieBanner() {
               <Typography
                 sx={{
                   color: "#667085",
-                  mb: 3,
-                  fontSize: 14,
+                  mb: { xs: 2, sm: 3 },
+                  fontSize: { xs: 13, sm: 14 },
+                  lineHeight: 1.7,
                 }}
               >
                 บริษัทจะใช้คุกกี้เมื่อท่านได้เข้าเยี่ยมชมเว็บไซต์ของบริษัท
@@ -278,8 +309,8 @@ export default function CookieBanner() {
                     key={item.key}
                     onClick={() => toggleSection(item.key)}
                     sx={{
-                      p: 2.5,
-                      mb: 2,
+                      p: { xs: 1.6, sm: 2.5 },
+                      mb: { xs: 1.25, sm: 2 },
                       borderRadius: "14px",
                       bgcolor: "#F2F4F7",
                       cursor: "pointer",
@@ -294,14 +325,16 @@ export default function CookieBanner() {
                       sx={{
                         display: "flex",
                         justifyContent: "space-between",
-                        alignItems: "center",
+                        alignItems: "flex-start",
+                        gap: { xs: 1, sm: 2 },
                       }}
                     >
                       <Box
                         sx={{
                           display: "flex",
                           gap: 1.2,
-                          alignItems: "center",
+                          alignItems: "flex-start",
+                          minWidth: 0,
                         }}
                       >
                         <Box sx={{ color: "#98A2B3" }}>
@@ -311,7 +344,8 @@ export default function CookieBanner() {
                         <Typography
                           sx={{
                             fontWeight: 600,
-                            fontSize: 15,
+                            fontSize: { xs: 13.5, sm: 15 },
+                            lineHeight: 1.45,
                           }}
                         >
                           {item.label}
@@ -322,11 +356,12 @@ export default function CookieBanner() {
                       <Box
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleSetting(item.key as any);
+                          toggleSetting(item.key as keyof typeof settings);
                         }}
                         sx={{
                           width: 46,
                           height: 24,
+                          flex: "0 0 auto",
                           borderRadius: "999px",
                           display: "flex",
                           alignItems: "center",
@@ -364,7 +399,7 @@ export default function CookieBanner() {
                       <Typography
                         sx={{
                           mt: 1.5,
-                          fontSize: 14,
+                          fontSize: { xs: 12.8, sm: 14 },
                           color: "#475467",
                           lineHeight: 1.7,
                         }}
@@ -381,15 +416,17 @@ export default function CookieBanner() {
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
-                  mt: 4,
+                  mt: { xs: 2.5, sm: 4 },
                   flexWrap: "wrap",
-                  gap: 2,
+                  gap: { xs: 1.25, sm: 2 },
                 }}
               >
                 <Box
                   sx={{
                     display: "flex",
-                    gap: 2,
+                    flexDirection: { xs: "column", sm: "row" },
+                    width: { xs: "100%", sm: "auto" },
+                    gap: { xs: 1, sm: 2 },
                   }}
                 >
                   <Button
@@ -400,6 +437,9 @@ export default function CookieBanner() {
                       bgcolor: "var(--color-primary)",
                       borderRadius: "10px",
                       px: 3,
+                      width: { xs: "100%", sm: "auto" },
+                      minHeight: { xs: 42, sm: 36 },
+                      fontSize: { xs: 12.5, sm: 14 },
                       boxShadow: "none",
                       "&:hover": {
                         bgcolor: "var(--color-primary-hover)",
@@ -416,6 +456,9 @@ export default function CookieBanner() {
                     sx={{
                       borderRadius: "10px",
                       px: 3,
+                      width: { xs: "100%", sm: "auto" },
+                      minHeight: { xs: 42, sm: 36 },
+                      fontSize: { xs: 12.5, sm: 14 },
                     }}
                   >
                     ไม่ยอมรับคุกกี้ทั้งหมด
@@ -425,7 +468,13 @@ export default function CookieBanner() {
                 <Button
                   variant="outlined"
                   onClick={saveSettings}
-                  sx={{ borderRadius: "10px", px: 3 }}
+                  sx={{
+                    borderRadius: "10px",
+                    px: 3,
+                    width: { xs: "100%", sm: "auto" },
+                    minHeight: { xs: 42, sm: 36 },
+                    fontSize: { xs: 12.5, sm: 14 },
+                  }}
                 >
                   ยืนยันตัวเลือกของฉัน
                 </Button>

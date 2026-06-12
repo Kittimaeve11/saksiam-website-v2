@@ -368,11 +368,9 @@ export default function Navbar({
                   lineHeight: 1,
                 }}
               >
-                {contact ? (
-                  <span className="fade-in">
-                    {contact.callCenter}
-                  </span>
-                ) : (
+                  {contact ? (
+                    <span>{contact.callCenter}</span>
+                  ) : (
                   <span className="loading-text">
                     {messages.loading}
                     <span className="loading-dots">
@@ -413,7 +411,7 @@ export default function Navbar({
 
               <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
-              <Link href="/job" style={{ textDecoration: "none" }}>
+              <Link href="https://saksiam.com/job" style={{ textDecoration: "none" }}>
                 <Typography
                   sx={{
                     fontWeight: isActive("/job") ? 600 : 400,
@@ -525,7 +523,7 @@ export default function Navbar({
 
             <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
-            <Link href="/job" style={{ textDecoration: "none" }}>
+            <Link href="https://saksiam.com/job" style={{ textDecoration: "none" }}>
               <Typography
                 sx={{
                   fontWeight: isActive("/job") ? 600 : 400,

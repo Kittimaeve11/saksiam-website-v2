@@ -9,6 +9,7 @@ import {
     useTheme
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import useLockPageScroll from '@/app/components/form/useLockPageScroll';
 
 interface TopicDropDownseleteitem {
     selecte: string | number | null;
@@ -40,6 +41,8 @@ const TopicDropDownselete: React.FC<
 }) => {
     const theme = useTheme();
     const { messages } = useLocale();
+    const [menuOpen, setMenuOpen] = useState(false);
+    useLockPageScroll(menuOpen);
 
     const [data, setData] = useState<
         BasicDropDownSeleteProps[]
@@ -147,7 +150,10 @@ const TopicDropDownselete: React.FC<
                 }}
                 slotProps={{
                     select: {
+                        onOpen: () => setMenuOpen(true),
+                        onClose: () => setMenuOpen(false),
                         MenuProps: {
+                            disableScrollLock: true,
                             slotProps: {
                                 paper: {
                                     sx: {

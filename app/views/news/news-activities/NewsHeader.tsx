@@ -27,7 +27,7 @@ export default function NewsHeader({ data }: Props) {
 
   return (
     <Box sx={{ position: "relative" }}>
-      <Box className="fade-in">
+      <Box>
         <NewsBanner data={data} />
       </Box>
 

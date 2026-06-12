@@ -95,7 +95,6 @@ export default async function Page({
   return (
     <Box
       component="main"
-      className="fade-in"
       sx={{
         background:
           "linear-gradient(180deg, rgba(244,248,252,0.95) 0%, #fff 34%)",

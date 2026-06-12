@@ -1,8 +1,7 @@
 import { apiFetch } from "../api/client";
+import { buildImageUrl } from "./imageUrl";
 
 type RawRecord = Record<string, unknown>;
-
-const PHOTO_BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO || "";
 
 const ownerKeys = [
   "editoriaID",
@@ -77,12 +76,7 @@ const pick = (item: RawRecord, keys: string[]): unknown => {
 };
 
 export const toEditorialImageUrl = (src: string): string => {
-  if (!src) return "";
-  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/")) {
-    return src;
-  }
-
-  return `${PHOTO_BASE_URL}${src}`;
+  return buildImageUrl(src);
 };
 
 export const parseGalleryValue = (value: unknown): string[] => {

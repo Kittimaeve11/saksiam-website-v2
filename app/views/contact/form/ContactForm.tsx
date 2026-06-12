@@ -1,15 +1,17 @@
 import BasicTextDetailField from '@/app/components/form/BasicTextDetailField';
 import BasicTextField from '@/app/components/form/BasicTextField';
 import {
+    ApplicationResponse,
     FormConctactDataErrors, 
     FormContactData
 } from '@/app/Utils/type';
 import { validataContactForm } from '@/app/Utils/validation';
-import { Box, Card, Grid } from '@mui/material';
+import { Box, Card, Grid, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import TopicDropDownselete from '@/app/views/Topic/TopicDropDownselete';
 import TextButton from '@/app/components/ui/Button/TextButton';
 import { apiFetch } from '@/app/api/client';
+import { verifyRecaptcha } from '@/app/Utils/recaptcha';
 
 type Props = {
     onErrorChange?: (count: number) => void;
@@ -107,8 +109,14 @@ const ContactForm = ({ onErrorChange }: Props) => {
         };
 
         try {
+            setError((prev) => ({
+                ...prev,
+                captcha: "",
+            }));
 
-            const response = await apiFetch<any>(
+            await verifyRecaptcha("contact_submit");
+
+            const response = await apiFetch<ApplicationResponse>(
                 '/api/applicationcmcapi',
                 {
                     method: 'POST',
@@ -174,16 +182,16 @@ const ContactForm = ({ onErrorChange }: Props) => {
         <Card
             elevation={0}
             sx={{
-                position: { md: 'absolute' },
-                right: { md: 21 },
-                top: { md: 90 },
+                position: { lg: 'absolute' },
+                right: { lg: 21 },
+                top: { lg: 90 },
 
                 width: {
                     xs: '100%',
-                    md: 490
+                    lg: 490
                 },
 
-                mt: { xs: 3, md: 0 },
+                mt: { xs: 3, lg: 0 },
 
                 borderRadius: '40px',
 
@@ -336,6 +344,18 @@ const ContactForm = ({ onErrorChange }: Props) => {
                     >
                         ส่งข้อความ
                     </TextButton>
+                    {error.captcha && (
+                        <Typography
+                            sx={{
+                                mt: 1,
+                                color: "error.main",
+                                fontSize: 13,
+                                textAlign: "center",
+                            }}
+                        >
+                            {error.captcha}
+                        </Typography>
+                    )}
                 </Box>
             </Box>
         </Card>

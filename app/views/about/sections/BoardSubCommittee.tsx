@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Box, Grid, Typography } from "@mui/material";
 
 import { apiFetch, getCachedApiResponse } from "@/app/api/client";
 import type { DirectorApiItem } from "@/app/Utils/type";
 import { useLocale } from "@/app/providers/LocaleContext";
+import { buildImageUrl } from "@/app/Utils/imageUrl";
 
 import DirectorCard from "../../../components/cards/DirectorCard/DirectorCard";
 import type { Director } from "../../../components/cards/DirectorCard/DirectorCard";
 import DirectorCardSkeleton from "../../../components/cards/DirectorCard/DirectorCardSkeleton";
-
-const PHOTO_BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO || "";
 
 const committees = [
   {
@@ -43,12 +42,7 @@ const toText = (value: string | number | null | undefined): string => {
 };
 
 const toImageUrl = (src: string): string => {
-  if (!src) return "";
-  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/")) {
-    return src;
-  }
-
-  return `${PHOTO_BASE_URL}${src}`;
+  return buildImageUrl(src);
 };
 
 const normalizeDirector = (item: DirectorApiItem): Director => ({
@@ -62,6 +56,8 @@ const normalizeDirector = (item: DirectorApiItem): Director => ({
 });
 
 const normalize = (value: string): string => value.replace(/\s+/g, "");
+const ABOUT_TARGET_CLASS = "about-target-pending";
+const ABOUT_TARGET_KEY = "saksiam-about-target";
 
 export default function BoardSubCommittee() {
   const { messages } = useLocale();
@@ -74,8 +70,47 @@ export default function BoardSubCommittee() {
   const [directors, setDirectors] = useState<Director[]>(initialDirectors);
   const [loading, setLoading] = useState(!cached);
   const targetSection = searchParams.get("section");
+  const fetchedEndpointRef = useRef("");
+  const shouldFadeContentRef = useRef(!cached);
 
   useEffect(() => {
+    let active = true;
+    let frame = 0;
+    let scrollFrame = 0;
+
+    const scrollToTarget = () => {
+      if (!targetSection) return;
+      let tries = 0;
+
+      const finishFooterTarget = () => {
+        window.sessionStorage.removeItem(ABOUT_TARGET_KEY);
+        document.documentElement.classList.remove(ABOUT_TARGET_CLASS);
+      };
+
+      const attemptScroll = () => {
+        const isFooterTarget =
+          document.documentElement.classList.contains(ABOUT_TARGET_CLASS);
+        const target = document.getElementById(targetSection);
+
+        if (target || tries >= 20) {
+          target?.scrollIntoView({
+            behavior: isFooterTarget ? "auto" : "smooth",
+            block: "start",
+          });
+
+          if (isFooterTarget) {
+            requestAnimationFrame(finishFooterTarget);
+          }
+          return;
+        }
+
+        tries += 1;
+        scrollFrame = requestAnimationFrame(attemptScroll);
+      };
+
+      frame = requestAnimationFrame(attemptScroll);
+    };
+
     const fetchDirectors = async () => {
       try {
         const cached = getCachedApiResponse<DirectorApiItem[]>(endpoint);
@@ -86,6 +121,7 @@ export default function BoardSubCommittee() {
 
           setDirectors(directors);
           setLoading(false);
+          scrollToTarget();
           return;
         }
 
@@ -94,17 +130,31 @@ export default function BoardSubCommittee() {
           .map(normalizeDirector)
           .filter((item) => item.id && (item.nameTH || item.nameEN));
 
-        setDirectors(directors);
+        if (active) setDirectors(directors);
       } catch (error) {
         console.error("fetch subcommittee directors error:", error);
-        setDirectors([]);
+        if (active) setDirectors([]);
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+          scrollToTarget();
+        }
       }
     };
 
-    fetchDirectors();
-  }, [endpoint]);
+    if (fetchedEndpointRef.current !== endpoint) {
+      fetchedEndpointRef.current = endpoint;
+      fetchDirectors();
+    } else if (!loading) {
+      scrollToTarget();
+    }
+
+    return () => {
+      active = false;
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(scrollFrame);
+    };
+  }, [endpoint, loading, targetSection]);
 
   const groupedCommittees = useMemo(
     () =>
@@ -122,19 +172,6 @@ export default function BoardSubCommittee() {
         .filter((group) => group.members.length > 0),
     [directors]
   );
-
-  useEffect(() => {
-    if (loading || !targetSection) return;
-
-    const frame = requestAnimationFrame(() => {
-      document.getElementById(targetSection)?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [groupedCommittees, loading, targetSection]);
 
   if (!loading && groupedCommittees.length === 0) return null;
 
@@ -192,6 +229,7 @@ export default function BoardSubCommittee() {
         {!loading &&
           groupedCommittees.map((group) => (
             <Grid
+              className={shouldFadeContentRef.current ? "api-content-fade-in" : undefined}
               key={group.id}
               id={group.id}
               size={12}

@@ -1,11 +1,5 @@
 "use client";
 
-declare global {
-    interface Window {
-        grecaptcha: any;
-    }
-}
-
 import { apiFetch } from '@/app/api/client'
 import { timeData } from '@/app/api/service/route'
 import AddressSearch from '@/app/components/form/AddressSearch';

@@ -70,16 +70,14 @@ export default function NewsListPage({
       setColumns(getColumns());
     };
 
+    setTab(normalizeTab(tabParam, editorialTypes));
+    setPage(1);
+
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
-
-  useEffect(() => {
-    setTab(normalizeTab(tabParam, editorialTypes));
-    setPage(1);
   }, [editorialTypes, tabParam]);
 
   const filtered = useMemo(() => {
@@ -190,7 +188,7 @@ export default function NewsListPage({
         )}
 
         {!loading && filtered.length > 0 && (
-          <Box className="fade-in">
+          <Box>
             <NewsGrid data={paginated} />
           </Box>
         )}

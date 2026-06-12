@@ -38,7 +38,7 @@ export default function DirectorCard({
   const imageSrc = director.picture || "/images/placeholder.jpg";
 
   return (
-    <Box className="fade-in">
+    <Box>
       <Grid
         container
         sx={{

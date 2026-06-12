@@ -168,7 +168,7 @@ export default function Page() {
   const detailHtml = locale === "en" ? data.detailEN : data.detailTH;
 
   return (
-    <Box className="fade-in">
+    <Box>
       <NewsDetailHeader data={data} />
 
       <Box

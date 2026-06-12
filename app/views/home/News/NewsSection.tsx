@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Typography, Button, Container } from "@mui/material";
 import NewsCard from "@/app/components/cards/NewsCard/NewsCard";
+import NewsCardSkeleton from "@/app/components/cards/NewsCard/NewsCardskeleton";
 import { IoIosArrowForward } from "react-icons/io";
 import { useLocale } from "@/app/providers/LocaleContext";
 import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
@@ -43,10 +44,55 @@ const getResponsivePerView = () => {
   return 1;
 };
 
+function HomeNewsSkeletonCards() {
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr",
+        "@media (min-width:714px)": {
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        },
+        "@media (min-width:900px)": {
+          gridTemplateColumns: "1fr",
+        },
+        "@media (min-width:1200px)": {
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+        },
+      }}
+    >
+      {[0, 1].map((item) => (
+        <Box
+          key={item}
+          sx={{
+            px: 2,
+            py: 2,
+            display: {
+              xs: item === 0 ? "block" : "none",
+            },
+            "@media (min-width:714px)": {
+              display: "block",
+            },
+            "@media (min-width:900px)": {
+              display: item === 0 ? "block" : "none",
+            },
+            "@media (min-width:1200px)": {
+              display: "block",
+            },
+          }}
+        >
+          <NewsCardSkeleton />
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
 /* ====================================================== */
 export default function NewsSection({ news }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperHeight, setSwiperHeight] = useState(0);
+  const [swiperReady, setSwiperReady] = useState(false);
 
   // 🔥 เพิ่ม (ใช้คำนวณ dot)
   const [perView, setPerView] = useState(getResponsivePerView);
@@ -56,7 +102,9 @@ export default function NewsSection({ news }: Props) {
 
   /* ====================================================== */
   const updateHeight = useCallback(() => {
-    const activeSlide = document.querySelector(".swiper-slide-active");
+    const activeSlide =
+      swiperRef.current?.slides?.[swiperRef.current.activeIndex] ||
+      document.querySelector(".swiper-slide-active");
 
     if (activeSlide) {
       const h = (activeSlide as HTMLElement).offsetHeight;
@@ -233,6 +281,7 @@ export default function NewsSection({ news }: Props) {
           >
             <Box
               sx={{
+                position: "relative",
                 py: 0,
                 "& .swiper-slide > div": {
                   opacity: 1,
@@ -247,6 +296,27 @@ export default function NewsSection({ news }: Props) {
                 },
               }}
             >
+              <Box
+                aria-hidden="true"
+                sx={{
+                  width: "100%",
+                  opacity: swiperReady ? 0 : 1,
+                  transition: "opacity 0.22s ease",
+                  pointerEvents: "none",
+                }}
+              >
+                <HomeNewsSkeletonCards />
+              </Box>
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  opacity: swiperReady ? 1 : 0,
+                  transition: "opacity 0.24s ease",
+                  pointerEvents: swiperReady ? "auto" : "none",
+                }}
+              >
               <Swiper
                 onSwiper={(swiper) => {
                   swiperRef.current = swiper;
@@ -255,14 +325,52 @@ export default function NewsSection({ news }: Props) {
                   const view = getResponsivePerView();
                   setPerView(view);
 
-                  setTimeout(updateHeight, 0);
+                  window.requestAnimationFrame(() => {
+                    swiper.update();
+                    updateHeight();
+                    setSwiperReady(true);
+                  });
                 }}
                 slidesPerView={perView}
+                slidesPerGroup={perView}
                 spaceBetween={8}
+                observer
+                observeParents
+                resizeObserver
+                watchOverflow
+                breakpoints={{
+                  0: {
+                    slidesPerView: 1,
+                    slidesPerGroup: 1,
+                  },
+                  714: {
+                    slidesPerView: 2,
+                    slidesPerGroup: 2,
+                  },
+                  900: {
+                    slidesPerView: 1,
+                    slidesPerGroup: 1,
+                  },
+                  1200: {
+                    slidesPerView: 2,
+                    slidesPerGroup: 2,
+                  },
+                }}
                 style={{
                   paddingRight: "10px", // 🔥 สำคัญ
                 }}
                 // 🔥 sync ตอน breakpoint เปลี่ยน
+                onBreakpoint={(swiper) => {
+                  const view =
+                    Number(swiper.params.slidesPerView) ||
+                    getResponsivePerView();
+
+                  setPerView(view);
+                  setActiveIndex(
+                    Math.floor(swiper.realIndex / view)
+                  );
+                  window.requestAnimationFrame(updateHeight);
+                }}
                 onSlideChange={(swiper) => {
                   const view = getResponsivePerView();
                   setPerView(view);
@@ -282,6 +390,7 @@ export default function NewsSection({ news }: Props) {
                   </SwiperSlide>
                 ))}
               </Swiper>
+              </Box>
             </Box>
 
             <Box sx={{

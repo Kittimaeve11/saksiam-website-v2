@@ -15,6 +15,7 @@ export default function BoardSkillsMatrix() {
 
   useEffect(() => {
     let active = true;
+    let loadingFallbackTimer: ReturnType<typeof setTimeout> | null = null;
     const cached = getCachedApiResponse<AboutMenuBannerItem | null>(endpoint);
     if (cached) {
       setData(cached.data || null);
@@ -25,6 +26,9 @@ export default function BoardSkillsMatrix() {
     const fetchBanner = async () => {
       try {
         setLoading(true);
+        loadingFallbackTimer = setTimeout(() => {
+          if (active) setLoading(false);
+        }, 5000);
 
         const res = await apiFetch<AboutMenuBannerItem | null>(
           endpoint
@@ -35,6 +39,7 @@ export default function BoardSkillsMatrix() {
         }
 
         if (active) {
+          if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
           setData(res.data || null);
         }
       } catch (error) {
@@ -44,6 +49,7 @@ export default function BoardSkillsMatrix() {
         );
 
         if (active) {
+          if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
           setData(null);
         }
       } finally {
@@ -57,6 +63,7 @@ export default function BoardSkillsMatrix() {
 
     return () => {
       active = false;
+      if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
     };
   }, [endpoint]);
 

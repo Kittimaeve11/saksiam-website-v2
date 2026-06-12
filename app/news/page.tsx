@@ -33,7 +33,6 @@ export default async function Page() {
       <NewsHeader data={bannerNews} />
 
       <Box
-        className="fade-in"
         component="main"
         sx={{
           width: "100%",

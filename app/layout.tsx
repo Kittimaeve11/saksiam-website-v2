@@ -15,6 +15,7 @@ import { LocaleProvider } from "./providers/LocaleContext";
 import ThemeMode from "./providers/ThemeMode";
 // import GoogleAnalytics from "./providers/GoogleAnalytics";
 import ToastProvider from "./providers/ToastProvider";
+import ApiCacheReset from "./providers/ApiCacheReset";
 
 /* ======================================================
    LAYOUT COMPONENTS
@@ -31,6 +32,7 @@ import Footer from "./components/layout/Footer/Footer";
 
 import FloatingButtons from "./components/ui/FloatingButtons/FloatingButtons";
 import BackToTopButton from "./components/ui/BackToTopButton/BackToTopButton";
+import CookieBanner from "./components/ui/CookieBanner/CookieBanner";
 import { getWebsiteMourningMode } from "./Utils/websiteTheme";
 
 /* ======================================================
@@ -106,6 +108,43 @@ const localeBootstrapScript = `
   })();
 `;
 
+const scrollRestoreBootstrapScript = `
+  (function () {
+    try {
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+
+      var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+      var isReload = nav && nav.type === "reload";
+      var raw = sessionStorage.getItem("saksiam-scroll-restore");
+      var shouldFade = !!isReload;
+
+      if (raw) {
+        var data = JSON.parse(raw);
+        var page = location.pathname + location.search;
+        var shouldRestore =
+          data &&
+          data.page === page &&
+          typeof data.y === "number" &&
+          data.y > 0 &&
+          typeof data.time === "number" &&
+          Date.now() - data.time < 60000;
+
+        if (shouldRestore) {
+          shouldFade = true;
+
+          document.documentElement.classList.add("scroll-restore-pending");
+        }
+      }
+
+      if (shouldFade) {
+        document.documentElement.classList.add("page-refresh-fade-pending");
+      }
+    } catch (_) {}
+  })();
+`;
+
 export default async function RootLayout({
   children,
 }: {
@@ -127,6 +166,9 @@ export default async function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{ __html: localeBootstrapScript }}
+        />
+        <script
+          dangerouslySetInnerHTML={{ __html: scrollRestoreBootstrapScript }}
         />
 
         <link
@@ -155,6 +197,7 @@ export default async function RootLayout({
 
           {/* Theme Provider */}
           <ThemeMode />
+          <ApiCacheReset />
 
           {/* Locale Provider */}
           <LocaleProvider initialLocale={initialLocale}>
@@ -183,7 +226,7 @@ export default async function RootLayout({
           {/* Floating UI */}
           <FloatingButtons />
           <BackToTopButton />
-          {/* <CookieBanner /> */}
+          <CookieBanner />
 
 
         </MuiProvider>

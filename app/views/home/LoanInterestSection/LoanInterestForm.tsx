@@ -1,10 +1,4 @@
 "use client";
-
-declare global {
-  interface Window {
-    grecaptcha: any;
-  }
-}
 interface ApplicationResponse {
   application_id: number;
 }
@@ -24,6 +18,7 @@ import TextButton from '@/app/components/ui/Button/TextButton';
 import { apiFetch } from '@/app/api/client';
 import PrivacyConsent from './PrivacyConsent';
 import CloseIcon from "@mui/icons-material/Close";
+import { verifyRecaptcha } from '@/app/Utils/recaptcha';
 
 const LoanInterestForm = () => {
   const [isCuntomer, setIsCuntomer] =
@@ -208,87 +203,12 @@ const LoanInterestForm = () => {
 
     try {
 
-      // reset captcha error
-      // setError((prev) => ({
-      //   ...prev,
-      //   captcha: ""
-      // }));
+      setError((prev) => ({
+        ...prev,
+        captcha: "",
+      }));
 
-      // // check grecaptcha
-      // if (
-      //   typeof window === "undefined" ||
-      //   !window.grecaptcha
-      // ) {
-
-      //   setError((prev) => ({
-      //     ...prev,
-      //     captcha:
-      //       "*ระบบ captcha ยังไม่พร้อม กรุณาลองใหม่"
-      //   }));
-
-      //   return;
-      // }
-
-      // // wait ready
-      // await new Promise<void>((resolve) => {
-      //   window.grecaptcha.ready(() => {
-      //     resolve();
-      //   });
-      // });
-
-      // // get token
-      // const token =
-      //   await window.grecaptcha.execute(
-      //     process.env
-      //       .NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
-      //     {
-      //       action: "submit"
-      //     }
-      //   );
-
-      // if (!token) {
-
-      //   setError((prev) => ({
-      //     ...prev,
-      //     captcha:
-      //       "*ไม่สามารถยืนยันความปลอดภัยได้"
-      //   }));
-
-      //   return;
-      // }
-
-      // // verify backend
-      // const res = await fetch(
-      //   "/api/verify-captcha",
-      //   {
-      //     method: "POST",
-
-      //     headers: {
-      //       "Content-Type":
-      //         "application/json",
-      //     },
-
-      //     body: JSON.stringify({
-      //       token
-      //     }),
-      //   }
-      // );
-
-      // const data = await res.json();
-
-      // if (
-      //   !data.success ||
-      //   data.score < 0.5
-      // ) {
-
-      //   setError((prev) => ({
-      //     ...prev,
-      //     captcha:
-      //       "*ระบบตรวจพบความเสี่ยง กรุณาลองใหม่"
-      //   }));
-
-      //   return;
-      // }
+      await verifyRecaptcha("loan_submit");
 
       // =========================
       // SUBMIT API จริง
@@ -682,6 +602,18 @@ const LoanInterestForm = () => {
                   >
                     ยืนยันการสมัครสินเชื่อ
                   </TextButton>
+                  {error.captcha && (
+                    <Typography
+                      sx={{
+                        mt: 1,
+                        color: "error.main",
+                        fontSize: 13,
+                        textAlign: "center",
+                      }}
+                    >
+                      {error.captcha}
+                    </Typography>
+                  )}
 
                 </>
               )

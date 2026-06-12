@@ -244,10 +244,9 @@ export default function ServiceClient() {
             const description = item.detail;
 
             return (
-              <Grid
-                key={item.id}
-                className="fade-in"
-                size={{
+                <Grid
+                  key={item.id}
+                  size={{
                   xs: 12,
                   sm: 6,
                   lg: 4,

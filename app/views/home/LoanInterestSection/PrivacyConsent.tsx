@@ -136,10 +136,9 @@ export default function PrivacyConsent() {
 
   const detail = locale === "en" ? policy.detailEN : policy.detailTH;
 
-  return (
-    <Box
-      className="fade-in"
-      sx={{
+    return (
+      <Box
+        sx={{
         px: { xs: 1, md: 3 },
         py: 1,
         color: "var(--gray-700)",

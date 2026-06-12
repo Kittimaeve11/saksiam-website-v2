@@ -14,27 +14,48 @@ export default function ContactHero({ onErrorChange }: Props) {
                 position: "relative",
                 width: "100%",
                 overflow: "hidden",
-                minHeight: { xs: "auto", md: 1100, lg: 1100, xl: 1050 },
-                pb: { xs: 4, md: 0 },
+                minHeight: { xs: "auto", lg: 1100, xl: 1050 },
+                pb: { xs: 4, lg: 0 },
             }}
         >
             <Box
                 sx={{
                     width: "100%",
-                    height: { xs: "auto", md: "100%" },
-                    position: { xs: "relative", md: "absolute" },
-                    inset: { md: 0 },
-                    top: { md: 0 },
-                    bottom: { md: 0 },
+                    height: { xs: "auto", lg: "100%" },
+                    position: { xs: "relative", lg: "absolute" },
+                    inset: { lg: 0 },
+                    top: { lg: 0 },
+                    bottom: { lg: 0 },
                     overflow: "hidden",
-                    aspectRatio: { xs: "2530 / 1412", md: "auto" },
+                    aspectRatio: { xs: "2530 / 1412", lg: "auto" },
+
                     backgroundColor: "#d8e2ee",
-                    backgroundImage: "url('/company/SAKsiam.jpg')",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center top",
-                    backgroundRepeat: "no-repeat",
                 }}
-            />
+            >
+                <Box
+                    component="img"
+                    src="/company/SAKsiam.jpg"
+                    alt=""
+                    draggable={false}
+                    sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "left top",
+                        display: "block",
+                        userSelect: "none",
+                        WebkitUserDrag: "none",
+                        "@media (min-width:1200px) and (max-width:1500px)": {
+                            left: "-900px",
+                            width: "calc(100% + 900px)",
+                            maxWidth: "none",
+                        },
+                    }}
+                />
+            </Box>
 
             <Box
                 sx={{
@@ -42,9 +63,9 @@ export default function ContactHero({ onErrorChange }: Props) {
                     mx: "auto",
                     position: "relative",
                     zIndex: 1,
-                    px: { xs: 4, md: 6 },
-                    pt: { xs: 0, md: "90px" },
-                    minHeight: { md: "100%" },
+                    px: { xs: 3, sm: 4, lg: 6 },
+                    pt: { xs: 0, lg: "90px" },
+                    minHeight: { lg: "100%" },
                 }}
             >
                 <ContactForm onErrorChange={onErrorChange} />

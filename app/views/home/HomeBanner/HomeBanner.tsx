@@ -26,9 +26,12 @@ const isRemoteImage = (src: string) =>
 /* ====================================================== */
 function FadeSlider({ banners, ratio }: SliderProps) {
   const slides = [banners[banners.length - 1], ...banners, banners[0]];
+  const firstBanner = banners[0] || "";
 
   const [index, setIndex] = useState(1);
   const [enableTransition, setEnableTransition] = useState(true);
+  const [initialImageLoaded, setInitialImageLoaded] = useState(false);
+  const [fadeInitialImage, setFadeInitialImage] = useState(false);
 
   const startX = useRef(0);
   const isDragging = useRef(false);
@@ -37,6 +40,7 @@ function FadeSlider({ banners, ratio }: SliderProps) {
   const isAnimating = useRef(false);
 
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const preloadedBannerRef = useRef("");
 
   /* ====================================================== */
   const resetAutoplay = () => {
@@ -51,11 +55,43 @@ function FadeSlider({ banners, ratio }: SliderProps) {
   };
 
   useEffect(() => {
+    let active = true;
+    let image: HTMLImageElement | null = null;
+    let frame = 0;
+
+    if (firstBanner && preloadedBannerRef.current !== firstBanner) {
+      preloadedBannerRef.current = firstBanner;
+      image = new window.Image();
+      image.src = firstBanner;
+
+      if (image.complete) {
+        setInitialImageLoaded(true);
+        setFadeInitialImage(false);
+      } else {
+        setInitialImageLoaded(false);
+        setFadeInitialImage(true);
+
+        image.onload = () => {
+          if (active) setInitialImageLoaded(true);
+        };
+      }
+    }
+
     resetAutoplay();
+
+    if (!enableTransition) {
+      frame = requestAnimationFrame(() => {
+        setEnableTransition(true);
+      });
+    }
+
     return () => {
+      active = false;
+      if (image) image.onload = null;
+      cancelAnimationFrame(frame);
       if (autoTimer.current) clearTimeout(autoTimer.current);
     };
-  }, []);
+  }, [enableTransition, firstBanner]);
 
   /* ======================================================
      🔥 FIX LOOP + NO WHITE SCREEN
@@ -80,14 +116,6 @@ function FadeSlider({ banners, ratio }: SliderProps) {
 
     resetAutoplay();
   };
-
-  useEffect(() => {
-    if (!enableTransition) {
-      requestAnimationFrame(() => {
-        setEnableTransition(true);
-      });
-    }
-  }, [enableTransition]);
 
   /* ====================================================== */
   const goNext = () => {
@@ -180,6 +208,9 @@ function FadeSlider({ banners, ratio }: SliderProps) {
                 alt=""
                 fill
                 unoptimized={isRemoteImage(src)}
+                onLoad={() => {
+                  if (src === firstBanner) setInitialImageLoaded(true);
+                }}
 
                 priority
                 loading="eager"
@@ -191,6 +222,8 @@ function FadeSlider({ banners, ratio }: SliderProps) {
                   objectFit: "cover",
                   backfaceVisibility: "hidden",
                   transform: "translateZ(0)",
+                  opacity: fadeInitialImage && !initialImageLoaded ? 0 : 1,
+                  transition: fadeInitialImage ? "opacity 0.8s ease-in" : "none",
                 }}
               />
 
@@ -337,17 +370,13 @@ export default function HomeBanner({ banners }: { banners: HomeBannerItem[] }) {
     <Box sx={{ width: "100%", overflow: "hidden", backgroundColor: "#243865" }}>
       {!!pcBanners.length && (
         <Box sx={{ display: { xs: "none", md: "block" } }}>
-          <Box className="fade-in">
-            <FadeSlider banners={pcBanners} ratio="3840 / 1191" />
-          </Box>
+          <FadeSlider banners={pcBanners} ratio="3840 / 1191" />
         </Box>
       )}
 
       {!!mobileApiBanners.length && (
         <Box sx={{ display: { xs: "block", md: "none" } }}>
-          <Box className="fade-in">
-            <FadeSlider banners={mobileApiBanners} ratio="678 / 1032" />
-          </Box>
+          <FadeSlider banners={mobileApiBanners} ratio="678 / 1032" />
         </Box>
       )}
     </Box>

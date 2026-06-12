@@ -87,7 +87,7 @@ export default function FaqContent() {
             ))}
           </Box>
         ) : !filtered.length ? (
-          <Box sx={{ textAlign: "center", py: 8 }}>
+          <Box className="fade-in" sx={{ textAlign: "center", py: 8 }}>
             <Typography sx={{ color: "var(--gray-500)", fontWeight: 600 }}>
               {locale === "en" ? "No data found" : "ไม่พบข้อมูล"}
             </Typography>

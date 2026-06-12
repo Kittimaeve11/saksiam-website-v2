@@ -393,6 +393,10 @@ export interface ContactData {
   callCenter: string;
   fax: string;
   email: string[];
+  companyTH: string;
+  companyEN: string;
+  addressTH: string;
+  addressEN: string;
 
   company_name: {
     th: string;

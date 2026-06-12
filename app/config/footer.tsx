@@ -84,7 +84,7 @@ export const footerMenu = [
             { label: { th: "สาขาให้บริการ", en: "Branch Locations" }, href: "/branchlocations" },
             { label: { th: "ข่าวและกิจกรรม", en: "News & Activities" }, href: "/news" },
             { label: { th: "คำถามที่พบบ่อย", en: "Frequently Asked Questions (FAQ)" }, href: "/faq" },
-            { label: { th: "ร่วมงานกับเรา", en: "Careers" }, href: "/job" },
+            { label: { th: "ร่วมงานกับเรา", en: "Careers" }, href: "https://saksiam.com/job" },
             { label: { th: "นักลงทุนสัมพันธ์", en: "Investor Relations" }, href: "https://investor.saksiam.com/th" },
             { label: { th: "โครงสร้างองค์กร", en: "Organizational Structure" }, href: "/about?tab=organization-structure" },
             { label: { th: "คณะกรรมการบริษัท", en: "Board of Directors" }, href: "/about?tab=board-of-directors" },

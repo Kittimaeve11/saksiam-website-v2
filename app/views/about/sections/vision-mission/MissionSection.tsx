@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Typography } from "@mui/material";
 
 import { apiFetch, getCachedApiResponse } from "@/app/api/client";
 import type { MissionApiItem, MissionItem } from "@/app/Utils/type";
+import { buildImageUrl } from "@/app/Utils/imageUrl";
 import MissionCard, { MissionCardSkeleton } from "./MissionCard";
-
-const PHOTO_BASE_URL = process.env.NEXT_PUBLIC_API_PHOTO || "";
 
 const toText = (value: string | number | null | undefined): string => {
   if (typeof value === "number") return String(value);
@@ -15,12 +14,7 @@ const toText = (value: string | number | null | undefined): string => {
 };
 
 const toImageUrl = (src: string): string => {
-  if (!src) return "";
-  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/")) {
-    return src;
-  }
-
-  return `${PHOTO_BASE_URL}${src}`;
+  return buildImageUrl(src);
 };
 
 const stripHtml = (value: string): string =>
@@ -57,6 +51,7 @@ export default function MissionSection() {
     .filter((item) => (item.titleTH || item.titleEN) && (item.detailTH || item.detailEN));
   const [items, setItems] = useState<MissionItem[]>(initialItems);
   const [loading, setLoading] = useState(!cached);
+  const shouldFadeContentRef = useRef(!cached);
 
   useEffect(() => {
     let active = true;
@@ -119,6 +114,7 @@ export default function MissionSection() {
       </Typography>
 
       <Box
+        className={!loading && shouldFadeContentRef.current ? "api-content-fade-in" : undefined}
         sx={{
           display: { xs: "grid", lg: "none" },
           gridTemplateColumns: {
@@ -149,6 +145,7 @@ export default function MissionSection() {
       </Box>
 
       <Box
+        className={!loading && shouldFadeContentRef.current ? "api-content-fade-in" : undefined}
         sx={{
           display: { xs: "none", lg: "flex" },
           flexDirection: "column",

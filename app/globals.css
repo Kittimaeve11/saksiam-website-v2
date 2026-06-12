@@ -1,3 +1,13 @@
+:root.scroll-restore-pending body,
+:root.page-refresh-fade-pending body,
+:root.about-target-pending body {
+   opacity: 0;
+}
+
+body {
+   transition: opacity 0.24s ease;
+}
+
 :root {
 
    /* ======================================================
@@ -236,19 +246,24 @@ body {
   width: 100%;
   min-width: 100%;
   max-width: 100%;
+  position: relative;
 }
 
 body {
   min-height: 100vh;
 }
 
-body > * {
+body > *,
+body > div,
+body > div > * {
   min-width: 0;
+  max-width: 100%;
 }
 
 main {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   overflow-x: clip;
 }
 
@@ -331,6 +346,11 @@ svg {
   animation: fadeIn 0.8s ease-in forwards;
 }
 
+.api-content-fade-in {
+  opacity: 0;
+  animation: fadeIn 0.42s ease-out forwards;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -341,10 +361,25 @@ svg {
 }
 
 
-/* globals.css */
-/* .grecaptcha-badge {
+/* Show reCAPTCHA only while a submit check is running. */
+html:not(.recaptcha-checking) .grecaptcha-badge,
+html:not(.recaptcha-checking) iframe[src*="recaptcha"],
+html:not(.recaptcha-checking) iframe[src*="google.com/recaptcha"],
+html:not(.recaptcha-checking) div[style*="z-index: 2000000000"] {
   visibility: hidden !important;
-} */
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.grecaptcha-badge {
+  transition: opacity 0.2s ease !important;
+}
+
+html.recaptcha-checking .grecaptcha-badge {
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
 
 
 /* ======================================================
