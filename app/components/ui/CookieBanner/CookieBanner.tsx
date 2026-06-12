@@ -161,7 +161,7 @@ export default function CookieBanner() {
             }}
           >
             เว็บไซต์ของเรามีการใช้งานคุกกี้ (Cookies) เพื่อมอบประสบการณ์ที่ดียิ่งขึ้นให้แก่คุณ รวมถึงเสนอสิทธิประโยชน์ที่ตรงตามความสนใจของคุณมากที่สุด ถ้าคุณยังใช้งานต่อไปโดยไม่ปฏิเสธคุกกี้ เราจะเก็บคุกกี้เพื่อวัตถุประสงค์ข้างต้น ทั้งนี้ คุณสามารถศึกษารายละเอียดเกี่ยวกับการใช้คุกกี้ของเราได้ที่ {" "}
-            <Link href="http://localhost:8080/api/policyapi/PO2605150002" target="_blank">
+            <Link href="/policy/PO2605150002" target="_blank">
               <span style={{ color: "var(--color-primary)", textDecoration: "underline" }}>
                 นโยบายการใช้งานคุกกี้
               </span>
