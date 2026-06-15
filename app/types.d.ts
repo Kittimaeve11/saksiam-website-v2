@@ -9,3 +9,10 @@ declare module "lightgallery/css/lg-autoplay.css";
 declare module "lightgallery/css/lg-share.css";
 declare module "lightgallery/css/lg-rotate.css";
 declare module "*.css";
+
+
+declare global {
+  interface Window {
+    longdo: any;
+  }
+}

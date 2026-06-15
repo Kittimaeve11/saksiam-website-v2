@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Box, Typography, Stack, Button } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 
 export default function NotFound() {
   return (
@@ -17,17 +17,23 @@ export default function NotFound() {
         background:
           "radial-gradient(circle at top, #0f172a 0, #020617 55%, #000 100%)",
         color: "#f9fafb",
-        p: 3,
+        p: { xs: 2, sm: 3 },
+        minHeight: "100dvh",
+        overflowY: "auto",
       }}
     >
-      <Box sx={{ maxWidth: 480 }}>
-
-        {/* ERROR */}
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: { xs: 340, sm: 480 },
+          py: { xs: 3, sm: 0 },
+        }}
+      >
         <Typography
           sx={{
             letterSpacing: "0.2em",
             textTransform: "uppercase",
-            fontSize: "0.8rem",
+            fontSize: { xs: "0.72rem", sm: "0.8rem" },
             opacity: 0.7,
             mb: 1,
           }}
@@ -35,65 +41,61 @@ export default function NotFound() {
           Error 404
         </Typography>
 
-        {/* GIF */}
         <Box
           component="img"
           src="/Gif/404-error.gif"
           alt="404 error"
           sx={{
-            width: "220px",
-            mb: 2,
+            width: { xs: 150, sm: 220 },
+            mb: { xs: 1.5, sm: 2 },
             mx: "auto",
             display: "block",
           }}
         />
 
-        {/* TITLE */}
         <Typography
           sx={{
-            fontSize: "2.4rem",
-            lineHeight: 1.1,
+            fontSize: { xs: "1.55rem", sm: "2.4rem" },
+            lineHeight: { xs: 1.2, sm: 1.1 },
             fontWeight: 700,
             mb: 1,
+            overflowWrap: "anywhere",
           }}
         >
           ไม่พบหน้าที่คุณต้องการ
         </Typography>
 
-        {/* DESCRIPTION */}
         <Typography
           sx={{
-            fontSize: "0.98rem",
+            fontSize: { xs: "0.88rem", sm: "0.98rem" },
+            lineHeight: { xs: 1.65, sm: 1.6 },
             opacity: 0.8,
-            mb: 3,
+            mb: { xs: 2.5, sm: 3 },
           }}
         >
           ลิงก์ที่คุณเข้าถึงอาจถูกย้ายหรือลบออกจากเว็บไซต์แล้ว
-          <br />
+          <Box component="br" sx={{ display: { xs: "none", sm: "block" } }} />
           คุณสามารถกลับไปที่หน้าแรกของเว็บไซต์เพื่อเริ่มต้นใหม่ได้
         </Typography>
 
-        {/* BUTTON */}
-        <Stack
-          direction="row"
-          sx={{ justifyContent: "center" }} // 
-        >
+        <Stack direction="row" sx={{ justifyContent: "center" }}>
           <Button
             component={Link}
             href="/"
             sx={{
-              px: 3,
-              py: 1.2,
+              width: { xs: "100%", sm: "auto" },
+              px: { xs: 2, sm: 3 },
+              py: { xs: 1.1, sm: 1.2 },
               borderRadius: "999px",
               background:
                 "linear-gradient(135deg, #FFE066 0%, #FFD10D 45%, #FFC400 100%)",
               color: "#1C3563",
               fontWeight: 600,
-              fontSize: "0.95rem",
+              fontSize: { xs: "0.9rem", sm: "0.95rem" },
               textTransform: "none",
               boxShadow: "0 10px 30px rgba(255, 209, 13, 0.35)",
               transition: "all 0.3s ease",
-              minWidth: 180,
+              minWidth: { xs: 0, sm: 180 },
 
               "&:hover": {
                 background:
@@ -104,7 +106,6 @@ export default function NotFound() {
             กลับหน้าแรก
           </Button>
         </Stack>
-
       </Box>
     </Box>
   );
