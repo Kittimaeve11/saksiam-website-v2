@@ -61,18 +61,22 @@ function loadRecaptchaScript(siteKey: string) {
   return recaptchaScriptPromise;
 }
 
-function withTimeout<T>(promise: Promise<T>) {
+function withTimeout<T>(promise: PromiseLike<T>) {
   return new Promise<T>((resolve, reject) => {
     const timeoutId = window.setTimeout(() => {
       reject(new Error("reCAPTCHA verification timed out"));
     }, RECAPTCHA_TIMEOUT_MS);
 
-    promise
-      .then(resolve)
-      .catch(reject)
-      .finally(() => {
+    Promise.resolve(promise).then(
+      (value) => {
         window.clearTimeout(timeoutId);
-      });
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      }
+    );
   });
 }
 

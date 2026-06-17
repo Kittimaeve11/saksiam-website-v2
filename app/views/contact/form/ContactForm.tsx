@@ -12,6 +12,7 @@ import TopicDropDownselete from '@/app/views/Topic/TopicDropDownselete';
 import TextButton from '@/app/components/ui/Button/TextButton';
 import { apiFetch } from '@/app/api/client';
 import { verifyRecaptcha } from '@/app/Utils/recaptcha';
+import { showSuccessAlert } from '@/app/components/ui/SweetAlert/SweetAlert';
 
 type Props = {
     onErrorChange?: (count: number) => void;
@@ -127,14 +128,14 @@ const ContactForm = ({ onErrorChange }: Props) => {
                 }
             );
 
-            if (!response.status || !response.data) {
+            if (!response.status) {
                 throw new Error(
                     response.message ||
                     "บันทึกข้อมูลไม่สำเร็จ"
                 );
             }
 
-            const customer_id = response.data.customer_id;
+            const customer_id = response.data?.customer_id ?? 0;
 
             const payloadlog = {
                 actionType: 6,
@@ -142,10 +143,14 @@ const ContactForm = ({ onErrorChange }: Props) => {
                     `สอบถามเพิ่มเติม ชื่อผู้แจ้งเรื่อง: ${fullname} เบอร์โทรศัพท์: ${phone} หัวข้อ: ${selectedTopic}`,
                 datatype: 'ติดต่อสอบถาม',
                 dataname: selectedTopic || '',
-                dataID: customer_id
+                dataID: customer_id,
+                typeUser: '\u0e1c\u0e39\u0e49\u0e40\u0e22\u0e35\u0e48\u0e22\u0e21\u0e0a\u0e21\u0e40\u0e27\u0e47\u0e1a\u0e44\u0e0b\u0e15\u0e4c',
+                datatypeID: '0',
+                brandtype: '0'
             };
 
-            await apiFetch(
+            try {
+                await apiFetch(
                 '/api/logapi',
                 {
                     method: 'POST',
@@ -154,7 +159,10 @@ const ContactForm = ({ onErrorChange }: Props) => {
                     },
                     body: JSON.stringify(payloadlog),
                 }
-            );
+                );
+            } catch (logError) {
+                console.error("contact log error:", logError);
+            }
 
 
 
@@ -164,10 +172,27 @@ const ContactForm = ({ onErrorChange }: Props) => {
                 payload
             );
 
+            await showSuccessAlert({
+                text: response.message || "บันทึกข้อมูลเรียบร้อย",
+            });
+
+            seFullname("");
+            seEmail("");
+            setPhone("");
+            setDetail("");
+            setSelectedTopic(null);
+            setError({
+                fullname: '',
+                email: '',
+                phone: '',
+                selectedTopic: '',
+                detail: ''
+            });
+
         } catch (err) {
 
             console.error(
-                "captcha error:",
+                "contact submit error:",
                 err
             );
 
