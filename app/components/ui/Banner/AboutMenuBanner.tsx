@@ -12,13 +12,19 @@ type Props = {
   num?: number;
   data?: AboutMenuBannerItem | null;
   loading?: boolean;
+  objectFit?: "contain" | "cover";
 };
 
 const getImageUrl = (path: string) => {
   return buildImageUrl(path);
 };
 
-export default function AboutMenuBanner({ num, data, loading = false }: Props) {
+export default function AboutMenuBanner({
+  num,
+  data,
+  loading = false,
+  objectFit = "contain",
+}: Props) {
   const endpoint = num ? `/api/bannerapi/${num}` : "";
   const cached = endpoint
     ? getCachedApiResponse<AboutMenuBannerItem | null>(endpoint)
@@ -205,7 +211,7 @@ export default function AboutMenuBanner({ num, data, loading = false }: Props) {
             width: "100%",
             height: "100%",
             display: "block",
-            objectFit: "contain",
+            objectFit,
             userSelect: "none",
             WebkitUserDrag: "none",
           }}

@@ -27,7 +27,7 @@ export default function PhilosophyBannerSection() {
         lineHeight: 0,
       }}
     >
-      <AboutMenuBanner num={16} />
+      <AboutMenuBanner num={16} objectFit="cover" />
     </Box>
   );
 }

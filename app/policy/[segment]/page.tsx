@@ -96,13 +96,29 @@ export default async function Page({
     <Box
       component="main"
       sx={{
+        position: "relative",
+        isolation: "isolate",
+        overflow: "hidden",
         background:
           "linear-gradient(180deg, rgba(244,248,252,0.95) 0%, #fff 34%)",
-        pt: { xs: 7, md: 10 },
-        pb: { xs: 8, md: 12 },
+        pt: { xs: 7, md: 8 },
+        pb: { xs: 2, md: 4 },
+        "&::before": {
+          content: '""',
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+          backgroundImage:
+            'url("/Icons/logo saksiam59(150x150px).png")',
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          backgroundSize: { xs: "230px 230px", md: "420px 420px" },
+          opacity: 0.06,
+        },
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
         <Box
           sx={{
             mb: { xs: 4, md: 6 },

@@ -109,7 +109,7 @@ const normalizeContact = (data: RawContactApiData = {}) => {
     },
     images: {
       cover: buildImageUrl(toText(data.images?.cover)),
-      qr_line: buildImageUrl(toText(data.images?.qr_line)),
+      qr_line: "/Social/Qrcode-Line.png",
       register: buildImageUrl(register),
     },
   };

@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server";
-import { dataBranchType } from "@/app/Utils/branchType";
+export const dataBranchType = [
+  { id: 1, valuename: 'branch', labelname: 'สาขา' },
+  { id: 2, valuename: 'agency', labelname: 'หน่วย' },
+  { id: 3, valuename: 'office', labelname: 'สำนักงาน' },
+]
 
-export function GET() {
-  return NextResponse.json({ status: true, data: dataBranchType });
+export async function GET() {
+  return Response.json({ data: dataBranchType });
 }

@@ -61,8 +61,10 @@ export default function FaqContent() {
 
       <Box
         sx={{
-          m: { xs: 0, md: 2 },
-          mb: { xs: 5, md: 6 },
+          mx: { xs: 0, md: 2 },
+          mt: { xs: 0, md: 2 },
+          mb: 0,
+          pb: { xs: 5, md: 6 },
         }}
       >
         <Typography

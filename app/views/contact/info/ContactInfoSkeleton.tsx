@@ -13,7 +13,7 @@ export default function ContactInfoSkeleton({ errorCount = 0 }: Props) {
         maxWidth: "1200px",
         mx: "auto",
         px: 2,
-        mt: { xs: 4, md: `calc(-96px + ${errorCount * 44}px)` },
+        mt: { xs: 4, lg: `calc(-96px + ${errorCount * 44}px)` },
         position: "relative",
         zIndex: 2,
         transition: "margin-top 0.25s ease",

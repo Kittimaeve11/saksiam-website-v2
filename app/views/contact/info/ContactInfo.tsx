@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Typography } from "@mui/material";
+import { useLocale } from "@/app/providers/LocaleContext";
 import type { ContactData } from "@/app/Utils/type";
 
 type Props = {
@@ -8,24 +9,38 @@ type Props = {
   errorCount?: number;
 };
 
+const splitOfficeHours = (value: string) =>
+  value
+    .split(/(?=วันเสาร์|Saturday)/)
+    .map((text) => text.trim())
+    .filter(Boolean);
+
 export default function ContactInfo({ data, errorCount = 0 }: Props) {
+  const { locale, messages } = useLocale();
+  const officeHoursText =
+    locale === "en" ? data.office_hours.en : data.office_hours.th;
+  const officeHours = splitOfficeHours(officeHoursText);
+  const email = [data.contact.email_main, data.contact.email_sub].filter(Boolean);
+  const phoneLabel = locale === "en" ? "Tel" : "โทร";
+  const faxLabel = locale === "en" ? "Fax" : "แฟกซ์";
+
   const items = [
     {
-      title: "เวลาทำการ",
-      desc: [
-        "• วันจันทร์ - ศุกร์ เวลา 08:00 - 16:30 น.",
-        "วันเสาร์อาจเปิดให้บริการ ติดต่อสาขาก่อนเข้ารับบริการ",
-      ],
+      title: messages.contact.working_hours,
+      desc: officeHours.map((text, index) => `${index === 0 ? "• " : ""}${text}`),
       icon: "fi fi-sr-clock",
     },
     {
-      title: "เบอร์ติดต่อ",
-      desc: [`• โทร : ${data.callCenter}`, `• แฟกซ์ : ${data.fax}`],
+      title: messages.contact.phone,
+      desc: [
+        `• ${phoneLabel} : ${data.contact.callcenter}`,
+        `• ${faxLabel} : ${data.contact.fax}`,
+      ],
       icon: "fi fi-sr-phone-flip",
     },
     {
-      title: "ช่องทางสอบถามเพิ่มเติม",
-      desc: data.email.map((mail) => `• ${mail}`),
+      title: messages.contact.more_channels,
+      desc: email.map((mail) => `• ${mail}`),
       icon: "fi fi-sr-envelope",
     },
   ];
@@ -36,7 +51,7 @@ export default function ContactInfo({ data, errorCount = 0 }: Props) {
         maxWidth: "1200px",
         mx: "auto",
         px: 2,
-        mt: { xs: 4, md: `calc(-96px + ${errorCount * 44}px)` },
+        mt: { xs: 4, lg: `calc(-96px + ${errorCount * 44}px)` },
         position: "relative",
         zIndex: 2,
         transition: "margin-top 0.25s ease",
@@ -128,8 +143,7 @@ export default function ContactInfo({ data, errorCount = 0 }: Props) {
                   sx={{
                     fontSize: "14px",
                     color:
-                      text.includes("เสาร์") ||
-                      text.includes("ก่อนเข้ารับบริการ")
+                      text.includes("วันเสาร์") || text.includes("Saturday")
                         ? "#E53935"
                         : "#667085",
                   }}

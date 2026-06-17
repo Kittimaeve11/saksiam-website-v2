@@ -10,7 +10,6 @@ import { footerMenu } from "@/app/config/footer";
 import { useLocale } from "@/app/providers/LocaleContext";
 import { getWebsiteMourningMode } from "@/app/Utils/websiteTheme";
 import { apiFetch } from "@/app/api/client";
-import { buildImageUrl } from "@/app/Utils/imageUrl";
 import { usePathname } from "next/navigation";
 
 import { useEffect, useState } from "react";
@@ -189,6 +188,19 @@ const toText = (value: string | number | null | undefined): string => {
   return typeof value === "string" ? value.trim() : "";
 };
 
+const toApiAssetUrl = (value: string | number | null | undefined): string => {
+  const src = toText(value);
+  const base =
+    process.env.NEXT_PUBLIC_API_PHOTO || process.env.NEXT_PUBLIC_API_URL || "";
+
+  if (!src) return "";
+  if (/^https?:\/\//i.test(src)) return src;
+  if (!src.startsWith("/")) return src;
+  if (!base) return src;
+
+  return `${base.replace(/\/+$/, "")}${src}`;
+};
+
 const normalizeContact = (data: RawContactApiData = {}): Contact => {
   const email = [
     toText(data.contact?.email_main),
@@ -210,7 +222,7 @@ const normalizeContact = (data: RawContactApiData = {}): Contact => {
       youtube: toText(data.social?.youtube),
       tiktok: toText(data.social?.tiktok),
     },
-    qrLine: buildImageUrl(toText(data.images?.qr_line)) || "/Social/Qrcode-Line.png",
+    qrLine: toApiAssetUrl(data.images?.qr_line) || "/Social/Qrcode-Line.png",
   };
 };
 

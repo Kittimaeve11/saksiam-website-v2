@@ -27,6 +27,7 @@ const EachBanner = ({ num }: { num: number }) => {
   const [data, setData] = useState<EachBanneritem | null>(cached?.data || null);
   const [loading, setLoading] = useState(!cached);
   const [imageReady, setImageReady] = useState(false);
+  const [showImageSkeleton, setShowImageSkeleton] = useState(false);
   const [fadeImage, setFadeImage] = useState(false);
   const fetchedEndpointRef = useRef("");
 
@@ -48,6 +49,7 @@ const EachBanner = ({ num }: { num: number }) => {
     let imageActive = true;
     let image: HTMLImageElement | null = null;
     let imageFallbackTimer: ReturnType<typeof setTimeout> | null = null;
+    let skeletonFallbackTimer: ReturnType<typeof setTimeout> | null = null;
     let fetchFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
     const fetchData = async () => {
@@ -92,6 +94,7 @@ const EachBanner = ({ num }: { num: number }) => {
 
     if (data && !imageSrc) {
       setImageReady(true);
+      setShowImageSkeleton(false);
       setFadeImage(false);
     } else if (imageSrc) {
       image = new window.Image();
@@ -99,26 +102,36 @@ const EachBanner = ({ num }: { num: number }) => {
 
       if (image.complete) {
         setImageReady(true);
+        setShowImageSkeleton(false);
         setFadeImage(false);
       } else {
         setImageReady(false);
+        setShowImageSkeleton(true);
         setFadeImage(true);
 
         image.onload = () => {
-          if (imageActive) setImageReady(true);
+          if (imageActive) {
+            setImageReady(true);
+            setShowImageSkeleton(false);
+          }
         };
         image.onerror = () => {
           if (imageActive) {
             setImageReady(true);
+            setShowImageSkeleton(false);
             setFadeImage(false);
           }
         };
         imageFallbackTimer = setTimeout(() => {
           if (imageActive) {
             setImageReady(true);
+            setShowImageSkeleton(false);
             setFadeImage(false);
           }
         }, 1200);
+        skeletonFallbackTimer = setTimeout(() => {
+          if (imageActive) setShowImageSkeleton(false);
+        }, 700);
       }
     }
 
@@ -126,6 +139,7 @@ const EachBanner = ({ num }: { num: number }) => {
       fetchActive = false;
       imageActive = false;
       if (imageFallbackTimer) clearTimeout(imageFallbackTimer);
+      if (skeletonFallbackTimer) clearTimeout(skeletonFallbackTimer);
       if (fetchFallbackTimer) clearTimeout(fetchFallbackTimer);
       if (loading && !data && fetchedEndpointRef.current === endpoint) {
         fetchedEndpointRef.current = "";
@@ -165,7 +179,7 @@ const EachBanner = ({ num }: { num: number }) => {
           overflow: "hidden",
         }}
       >
-        {!imageReady && (
+        {showImageSkeleton && (
           <Box
             sx={{
               position: "absolute",
@@ -183,9 +197,13 @@ const EachBanner = ({ num }: { num: number }) => {
           src={imageSrc}
           alt={data.name}
           draggable={false}
-          onLoad={() => setImageReady(true)}
+          onLoad={() => {
+            setImageReady(true);
+            setShowImageSkeleton(false);
+          }}
           onError={() => {
             setImageReady(true);
+            setShowImageSkeleton(false);
             setFadeImage(false);
           }}
           onDragStart={(e) => e.preventDefault()}
@@ -198,7 +216,7 @@ const EachBanner = ({ num }: { num: number }) => {
             },
             backgroundColor: "#fff",
             display: "block",
-            opacity: imageReady ? undefined : 0,
+            opacity: imageReady ? 1 : 0.01,
             userSelect: "none",
             WebkitUserDrag: "none",
           }}

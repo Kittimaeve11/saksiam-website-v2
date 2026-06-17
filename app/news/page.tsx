@@ -16,18 +16,12 @@ export default async function Page() {
       sx={{
         minHeight: "100vh",
         overflow: "hidden",
-        backgroundImage: `
-          linear-gradient(
-            to bottom,
-            rgba(255,255,255,0.98) 0%,
-            rgba(255,255,255,0.9) 46%,
-            rgba(244,248,252,0.86) 100%
-          ),
-          url('/background/bg-new.jpg')
-        `,
-        backgroundSize: "100% 100%, min(1400px, 120vw) auto",
-        backgroundPosition: "top center, bottom center",
-        backgroundRepeat: "no-repeat, no-repeat",
+        backgroundColor: "#fff",
+        backgroundImage:
+          'url("/background/90f4e363-6472-4324-8eb1-2b84c1eabd1c 1.png")',
+        backgroundSize: "auto clamp(420px, 55vw, 760px)",
+        backgroundPosition: "left bottom",
+        backgroundRepeat: "no-repeat",
       }}
     >
       <NewsHeader data={bannerNews} />

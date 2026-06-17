@@ -235,6 +235,7 @@ export default function BoardSubCommittee() {
               size={12}
               sx={{ mb: { xs: 6, md: 7 } }}
             >
+              
               <Typography component="h3" sx={headingSx}>
                 {getCommitteeLabel(group.labelKey)}
               </Typography>

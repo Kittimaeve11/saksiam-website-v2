@@ -11,13 +11,33 @@ export default function Page() {
       sx={{
         backgroundColor: "white",
         minHeight: "100vh",
-        backgroundSize: "100% auto",
       }}
     >
       <EachBanner num={4} />
 
-      <Container maxWidth="xl">
-        <FaqContent />
+      <Container
+        maxWidth={false}
+        sx={{
+          position: "relative",
+          overflow: "hidden",
+          px: { xs: 2, md: 3 },
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            backgroundImage:
+              'url("/background/23655cd5-6444-4153-bd07-b3f71a81e34c.png")',
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center bottom",
+            backgroundSize: "100% auto",
+            pointerEvents: "none",
+          },
+        }}
+      >
+        <Box sx={{ position: "relative", zIndex: 1 }}>
+          <FaqContent />
+        </Box>
       </Container>
     </Box>
   );

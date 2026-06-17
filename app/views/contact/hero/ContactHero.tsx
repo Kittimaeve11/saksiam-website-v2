@@ -26,7 +26,7 @@ export default function ContactHero({ onErrorChange }: Props) {
                     inset: { lg: 0 },
                     top: { lg: 0 },
                     bottom: { lg: 0 },
-                    overflow: "hidden",
+                    overflow: "hidden", 
                     aspectRatio: { xs: "2530 / 1412", lg: "auto" },
 
                     backgroundColor: "#d8e2ee",
@@ -48,11 +48,6 @@ export default function ContactHero({ onErrorChange }: Props) {
                         display: "block",
                         userSelect: "none",
                         WebkitUserDrag: "none",
-                        "@media (min-width:1200px) and (max-width:1500px)": {
-                            left: "-900px",
-                            width: "calc(100% + 900px)",
-                            maxWidth: "none",
-                        },
                     }}
                 />
             </Box>
