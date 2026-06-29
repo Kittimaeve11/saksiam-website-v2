@@ -2,6 +2,7 @@
 
 /* ======================================================
    IMPORT
+   นำเข้า Component, Hook และเครื่องมือที่ใช้
 ====================================================== */
 import Image from "next/image";
 import Link from "next/link";
@@ -10,9 +11,11 @@ import { usePathname } from "next/navigation";
 import { useLocale } from "@/app/providers/LocaleContext";
 import React, { useEffect } from "react";
 import { getWebsiteMourningMode } from "@/app/Utils/websiteTheme";
+import LoadingText from "@/app/components/ui/LoadingText/LoadingText";
 
 /* ======================================================
-   COMPONENT
+   TYPE
+   กำหนดรูปแบบข้อมูล
 ====================================================== */
 type ContactInfo = {
   callCenter: string;
@@ -22,9 +25,17 @@ type NavbarProps = {
   initialMourningMode?: boolean;
 };
 
+/* ======================================================
+   CACHE
+   เก็บข้อมูล Contact เพื่อลดการเรียก API ซ้ำ
+====================================================== */
 let cachedNavbarContact: ContactInfo | null = null;
 let pendingNavbarContact: Promise<ContactInfo | null> | null = null;
 
+/* ======================================================
+   FETCH CONTACT
+   ดึงข้อมูล Contact จาก API
+====================================================== */
 const getNavbarContact = async () => {
   if (cachedNavbarContact) return cachedNavbarContact;
   if (pendingNavbarContact) return pendingNavbarContact;
@@ -43,11 +54,16 @@ const getNavbarContact = async () => {
   return pendingNavbarContact;
 };
 
+/* ======================================================
+   COMPONENT
+   Navbar หลักของเว็บไซต์
+====================================================== */
 export default function Navbar({
   initialMourningMode = false,
 }: NavbarProps): React.ReactElement {
   /* ================================
      Locale
+     จัดการภาษาและข้อความ
   ================================ */
   const { messages, locale, switchLocale } = useLocale();
   const [contact, setContact] = React.useState<ContactInfo | null>(cachedNavbarContact);
@@ -56,6 +72,7 @@ export default function Navbar({
 
   /* ================================
      Path
+     ตรวจสอบหน้าปัจจุบัน
   ================================ */
   const pathname = usePathname();
   const isHomePage = pathname === "/";
@@ -63,12 +80,17 @@ export default function Navbar({
 
   /* ================================
      Helper
+     ตรวจสอบเมนูที่กำลังใช้งาน
   ================================ */
   const isActive = (path: string): boolean => {
     if (!pathname) return false;
     return pathname === path || pathname.startsWith(path + "/");
   };
 
+  /* ================================
+     โหลดข้อมูลเริ่มต้น
+     ดึงข้อมูล Contact และโหมดไว้อาลัย
+  ================================ */
   useEffect(() => {
     let active = true;
 
@@ -80,6 +102,7 @@ export default function Navbar({
       if (active) setIsMourningMode(enabled);
     });
 
+    // ป้องกันการอัปเดต State หลัง Component ถูกยกเลิก
     return () => {
       active = false;
     };
@@ -90,6 +113,7 @@ export default function Navbar({
     <>
       {/* ======================================================
          DESKTOP NAVBAR
+         แสดงแถบนำทางสำหรับทุกขนาดหน้าจอ
       ====================================================== */}
       <Box
         sx={{
@@ -97,6 +121,7 @@ export default function Navbar({
           height: "120px",
           backgroundImage: "url('/Navbar/Navbar.png')",
 
+          // Tablet
           "@media (max-width:1200px)": {
             height: "170px",
             backgroundImage: "url('/Navbar/Navbar_Tablet.png')",
@@ -105,6 +130,7 @@ export default function Navbar({
             backgroundRepeat: "no-repeat",
           },
 
+          // Mobile
           "@media (max-width:764px)": {
             height: "150px",
             backgroundImage: "url('/Navbar/Navbar_Mobile.png')",
@@ -113,10 +139,11 @@ export default function Navbar({
             backgroundRepeat: "no-repeat",
           },
 
-
           backgroundRepeat: "no-repeat",
           backgroundSize: "100% 100%",
           backgroundPosition: "center",
+
+          // เปลี่ยนเป็นโหมดไว้อาลัย
           backgroundColor: isHomeMourningMode ? "#f4f4f4" : "transparent",
           filter: isHomeMourningMode ? "grayscale(1)" : "none",
 
@@ -124,26 +151,35 @@ export default function Navbar({
           zIndex: 1,
         }}
       >
+        {/* แสดงริบบิ้นไว้อาลัย */}
         {isMourningMode && (
           <Box
             aria-hidden
             sx={{
               position: "absolute",
               top: 0,
-              right: 0,
+              right: {
+                xs: 0,
+                sm: 0,
+                md: 0,
+                lg: -8,
+              },
               width: {
                 xs: 82,
                 sm: 100,
                 md: 118,
-                lg: 136,
+                lg: 120,
               },
               aspectRatio: "1 / 1",
+              lineHeight: 0,
+              overflow: "visible",
               zIndex: 30,
               pointerEvents: "none",
             }}
           >
+            {/* ริบบิ้นสำหรับ Desktop */}
             <Image
-              src="/commemorate/79c1ca87-4998-4627-b916-d2dfc2acd89f.png"
+              src="/commemorate/mourning-ribbon-desktop.png.png"
               alt=""
               fill
               sizes="136px"
@@ -153,8 +189,10 @@ export default function Navbar({
               }}
               className="mourning-ribbon-desktop"
             />
+
+            {/* ริบบิ้นสำหรับ Mobile */}
             <Image
-              src="/commemorate/79c1ca87-4998-4627-b916-d2dfc2acd89f%20copy.png"
+              src="/commemorate/mourning-badge-transparent.png"
               alt=""
               fill
               sizes="116px"
@@ -166,9 +204,10 @@ export default function Navbar({
             />
           </Box>
         )}
-
-        {/* ================= MAIN BAR ================= */}
-        <Box
+        {/* ======================================================
+            NAVBAR MAIN CONTAINER
+            จัดวางโครงสร้างหลักของ Navbar และกำหนดระยะห่างของแต่ละส่วน
+        ====================================================== */}        <Box
           sx={{
             height: "100%",
             display: "flex",
@@ -183,23 +222,23 @@ export default function Navbar({
             },
             pr: isMourningMode
               ? {
-                  xs: 10,
-                  sm: 12,
-                  md: 15,
-                  lg: 17,
-                  xl: "190px",
-                }
+                xs: 10,
+                sm: 12,
+                md: 15,
+                lg: 13,
+                xl: "145px",
+              }
               : {
-                  xs: 2,
-                  sm: 2,
-                  md: 4,
-                  lg: 4,
-                  xl: "100px",
-                },
+                xs: 2,
+                sm: 2,
+                md: 4,
+                lg: 4,
+                xl: "100px",
+              },
             boxSizing: "border-box",
           }}
         >
-          {/* LOGO */}
+          {/* โลโก้เว็บไซต์ */}
           <Link href="/" style={{ display: "block", width: "fit-content" }}>
             <Box
               sx={{
@@ -276,7 +315,7 @@ export default function Navbar({
             </Box>
           </Link>
 
-          {/* RIGHT */}
+          {/* ข้อมูลด้านขวา (แสดงเฉพาะ Desktop) */}
           <Stack
             spacing={0.5}
             sx={{
@@ -292,7 +331,7 @@ export default function Navbar({
               zIndex: 9999,
             }}
           >
-            {/* LANGUAGE */}
+            {/* สลับภาษา */}
             <Stack
               direction="row"
               spacing={1}
@@ -303,6 +342,8 @@ export default function Navbar({
                 overflow: "hidden",
               }}
             >
+
+              {/* ภาษาไทย */}
               <Typography
                 sx={{
                   cursor: locale === "th" ? "default" : "pointer",
@@ -318,8 +359,10 @@ export default function Navbar({
                 TH
               </Typography>
 
+              {/* ตัวคั่น */}
               <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
+              {/* ภาษาอังกฤษ */}
               <Typography
                 sx={{
                   cursor: locale === "en" ? "default" : "pointer",
@@ -336,7 +379,7 @@ export default function Navbar({
               </Typography>
             </Stack>
 
-            {/* PHONE */}
+            {/* ข้อมูลเบอร์ติดต่อ */}
             <Stack
               direction="row"
               spacing={1}
@@ -345,7 +388,7 @@ export default function Navbar({
                 lineHeight: 1,
               }}
             >
-              {/* ICON */}
+              {/* ไอคอนโทรศัพท์ */}
               <Box
                 component="i"
                 className="fi fi-sr-phone-flip"
@@ -358,7 +401,7 @@ export default function Navbar({
                 }}
               />
 
-              {/* TEXT */}
+              {/* หมายเลข Call Center */}
               <Typography
                 sx={{
                   fontSize: 26,
@@ -368,23 +411,15 @@ export default function Navbar({
                   lineHeight: 1,
                 }}
               >
-                  {contact ? (
-                    <span>{contact.callCenter}</span>
-                  ) : (
-                  <span className="loading-text">
-                    {messages.loading}
-                    <span className="loading-dots">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </span>
-                  </span>
-
+                {contact ? (
+                  <span className="fade-in">{contact.callCenter}</span>
+                ) : (
+                  <LoadingText text={messages.loading} />
                 )}
               </Typography>
             </Stack>
 
-            {/* MENU */}
+            {/* เมนูนำทาง */}
             <Stack
               direction="row"
               spacing={1}
@@ -396,6 +431,7 @@ export default function Navbar({
                 }
               }}
             >
+              {/* เมนูเกี่ยวกับเรา */}
               <Link href="/about" style={{ textDecoration: "none" }}>
                 <Typography
                   sx={{
@@ -409,8 +445,10 @@ export default function Navbar({
                 </Typography>
               </Link>
 
+              {/* ตัวคั่นเมนู */}
               <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
+              {/* เมนูร่วมงานกับเรา */}
               <Link href="https://saksiam.com/job" style={{ textDecoration: "none" }}>
                 <Typography
                   sx={{
@@ -424,8 +462,10 @@ export default function Navbar({
                 </Typography>
               </Link>
 
+              {/* ตัวคั่นเมนู */}
               <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
+              {/* เมนูติดต่อเรา */}
               <Link href="/contact" style={{ textDecoration: "none" }}>
                 <Typography
                   sx={{
@@ -442,10 +482,11 @@ export default function Navbar({
           </Stack>
         </Box>
 
-        {/* ======================================================
-         MOBILE
-      ====================================================== */}
 
+        {/* ======================================================
+            MOBILE NAVBAR
+            แสดงเมนูสำหรับ Tablet และ Mobile
+        ====================================================== */}
         <Box
           sx={{
             position: "absolute",
@@ -469,8 +510,9 @@ export default function Navbar({
             // textShadow: "0 2px 6px rgba(0,0,0,0.5)",
           }}
         >
-          {/* LANGUAGE */}
+          {/* สลับภาษา */}
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            {/* ภาษาไทย */}
             <Typography
               sx={{
                 cursor: locale === "th" ? "default" : "pointer",
@@ -486,8 +528,10 @@ export default function Navbar({
               TH
             </Typography>
 
+            {/* ตัวคั่น */}
             <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
+            {/* ภาษาอังกฤษ */}
             <Typography
               sx={{
                 cursor: locale === "en" ? "default" : "pointer",
@@ -505,8 +549,10 @@ export default function Navbar({
           </Stack>
 
 
-          {/* MENU */}
+          {/* เมนูนำทาง */}
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+
+            {/* เมนูเกี่ยวกับเรา */}
             <Link href="/about" style={{ textDecoration: "none" }}>
               <Typography
                 sx={{
@@ -521,8 +567,10 @@ export default function Navbar({
               </Typography>
             </Link>
 
+            {/* ตัวคั่น */}
             <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
+            {/* เมนูร่วมงานกับเรา */}
             <Link href="https://saksiam.com/job" style={{ textDecoration: "none" }}>
               <Typography
                 sx={{
@@ -537,8 +585,10 @@ export default function Navbar({
               </Typography>
             </Link>
 
+            {/* ตัวคั่น */}
             <Typography sx={{ color: "var(--color-primary)" }}>|</Typography>
 
+            {/* เมนูติดต่อเรา */}
             <Link href="/contact" style={{ textDecoration: "none" }}>
               <Typography
                 sx={{

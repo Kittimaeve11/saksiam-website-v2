@@ -4,6 +4,7 @@ import {
   getEditorialViewMap,
   incrementEditorialViews,
 } from "./store";
+import { toText } from "@/app/Utils/imageUrl";
 
 const toId = (value: unknown): string => {
   if (typeof value === "number" && Number.isFinite(value) && value > 0) {
@@ -15,11 +16,6 @@ const toId = (value: unknown): string => {
   }
 
   return "";
-};
-
-const toText = (value: unknown): string => {
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return typeof value === "string" ? value.trim() : "";
 };
 
 const writeEditorialViewLog = async (payload: {

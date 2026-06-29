@@ -1,6 +1,11 @@
 "use client";
 
 import { Box } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+    getCachedContactCoverImage,
+    getContactCoverImage,
+} from "@/app/Utils/contactHero";
 import ContactForm from "../form/ContactForm";
 
 type Props = {
@@ -8,6 +13,20 @@ type Props = {
 };
 
 export default function ContactHero({ onErrorChange }: Props) {
+    const [coverImage, setCoverImage] = useState(getCachedContactCoverImage);
+
+    useEffect(() => {
+        let active = true;
+
+        getContactCoverImage().then((image) => {
+            if (active) setCoverImage(image);
+        });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
     return (
         <Box
             sx={{
@@ -34,7 +53,7 @@ export default function ContactHero({ onErrorChange }: Props) {
             >
                 <Box
                     component="img"
-                    src="/company/SAKsiam.jpg"
+                    src={coverImage}
                     alt=""
                     draggable={false}
                     sx={{

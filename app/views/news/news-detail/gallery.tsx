@@ -15,6 +15,9 @@ import "lightgallery/css/lg-thumbnail.css";
 import lgThumbnail from "lightgallery/plugins/thumbnail";
 import lgZoom from "lightgallery/plugins/zoom";
 
+const LIGHT_GALLERY_LICENSE_KEY =
+  process.env.NEXT_PUBLIC_LIGHTGALLERY_LICENSE_KEY || "saksiam-website-gallery";
+
 /* ====================================================== */
 type Props = {
   images: string[];
@@ -86,10 +89,9 @@ export default function Gallery({ images = [] }: Props) {
       dynamicEl={dynamicElements}
       speed={400}
       plugins={[lgThumbnail, lgZoom]}
+      licenseKey={LIGHT_GALLERY_LICENSE_KEY}
       download
       counter
-
-      
     >
       <Box
         sx={{

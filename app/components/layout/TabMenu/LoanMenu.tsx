@@ -7,7 +7,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from 'react'
 
 
-const LoanMenu = () => {
+type LoanMenuProps = {
+    onItemClick?: () => void;
+};
+
+const LoanMenu = ({ onItemClick }: LoanMenuProps) => {
     const router = useRouter();
     const endpoint = "/api/listloanappapi";
     const cached = getCachedApiResponse<loanItem[]>(endpoint);
@@ -70,6 +74,7 @@ const LoanMenu = () => {
         }
 
         // 🔥 ไปหน้าถัดไป
+        onItemClick?.();
         router.push(`/services/${item.nameEN}`);
     };
     return (
@@ -81,6 +86,20 @@ const LoanMenu = () => {
                 gap: 0.5,
             }}
         >
+            {!data.length && (
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 1.25,
+                        pl: 4,
+                        fontSize: 14,
+                        opacity: 0.8,
+                    }}
+                >
+                    กำลังโหลด
+                </Box>
+            )}
+
             {data.map((item, index) => (
                 <Box
                     key={index}

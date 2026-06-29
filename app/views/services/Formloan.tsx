@@ -11,9 +11,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import TextButton from '@/app/components/ui/Button/TextButton'
 import { BasicDropDownSeleteLoanProps, FormLoanData, FormLoanDataErrors } from '@/app/Utils/type';
 import { validataLoanForm } from '@/app/Utils/validation';
-import { Box, Card, Checkbox, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, Grid, IconButton, Link, Paper, RadioGroup, Typography, useTheme } from '@mui/material'
+import { Box, Card, Checkbox, Dialog, DialogContent, DialogTitle, Grid, IconButton, Link, Typography } from '@mui/material'
 import React, { useState } from 'react'
-import PrivacyConsent from '@/app/views/home/LoanInterestSection/PrivacyConsent';
+
+import PrivacyConsent from '../home/LoanInterestSection/PrivacyConsent';
+import { verifyRecaptcha } from '@/app/Utils/recaptcha';
 interface FormloanProps {
     loanid: number | undefined
     name: string | undefined
@@ -32,9 +34,9 @@ const Formloan: React.FC<FormloanProps> = ({
     minamount,
     maxamount
 }) => {
-    console.log('minamount', minamount)
     const [isCuntomer, setIsCuntomer] =
         useState<number | null>(null);
+
     const [selectedLoan, setSelectedLoan] =
         useState<BasicDropDownSeleteLoanProps | null>({
             id: loanid || 0,
@@ -303,6 +305,12 @@ const Formloan: React.FC<FormloanProps> = ({
 
             //   return;
             // }
+            setError((prev) => ({
+                ...prev,
+                captcha: "",
+            }));
+
+            await verifyRecaptcha("loan_submit");
 
             // =========================
             // SUBMIT API จริง
@@ -332,6 +340,7 @@ const Formloan: React.FC<FormloanProps> = ({
                 actionType: 5,
                 actionDetail:
                     `สมัครสินเชื่อออนไลน์ ชื่อผู้สมัคร: ${fullname} เบอร์โทรศัพท์: ${phone} ประเภทสินเชื่อ: ${selectedLoan?.name}`,
+                typeUser: "ผู้เยี่ยมชมเว็บไซต์",
                 datatype: 'สมัครสินเชื่อออนไลน์',
                 dataname:
                     selectedLoan?.name || '',
@@ -352,11 +361,6 @@ const Formloan: React.FC<FormloanProps> = ({
                         payloadlog
                     ),
                 }
-            );
-
-            console.log(
-                "SUBMIT SUCCESS",
-                payload
             );
 
             // await fetch(...)
@@ -397,7 +401,7 @@ const Formloan: React.FC<FormloanProps> = ({
                 sx={{
                     textAlign: 'left',
                     width: '100%',
-                    maxWidth: '600px',
+                    maxWidth: { xs: 'auto', md: '600px' },
                     margin: '0 auto',
                     mb: 5,
                 }}
@@ -438,6 +442,11 @@ const Formloan: React.FC<FormloanProps> = ({
                         sx={{
                             color: "#fff",
                             fontWeight: 600,
+                            fontSize: {
+                                xs: "1.5rem", // มือถือ
+                                sm: "1.8rem", // tablet
+                                md: "2.125rem", // desktop (ขนาด h4 เดิม)
+                            },
                         }}
                     >
                         สมัครยื่น{
@@ -490,7 +499,7 @@ const Formloan: React.FC<FormloanProps> = ({
                                 specify
                             />
                         </Grid>
-                        <Grid size={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <BasicTextField
                                 name="ชื่อ - นามสกุล"
                                 titlename="กรุณากรอกชื่อ - นามสกุล"
@@ -503,7 +512,7 @@ const Formloan: React.FC<FormloanProps> = ({
                                 specify
                             />
                         </Grid>
-                        <Grid size={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <BasicTextField
                                 name="เบอร์โทรศัพท์"
                                 titlename="กรุณากรอกเบอร์โทรศัพท์"

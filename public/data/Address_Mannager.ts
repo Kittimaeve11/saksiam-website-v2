@@ -54,12 +54,6 @@ export const addressList: AddressItem[] = tambons
 
     // ❌ ไม่มีอำเภอ
     if (!amphure) {
-      console.warn(
-        "ไม่พบ amphure_id:",
-        tambon.amphure_id,
-        tambon
-      );
-
       return null;
     }
 
@@ -69,12 +63,6 @@ export const addressList: AddressItem[] = tambons
 
     // ❌ ไม่มีจังหวัด
     if (!province) {
-      console.warn(
-        "ไม่พบ province_id:",
-        amphure.province_id,
-        amphure
-      );
-
       return null;
     }
 

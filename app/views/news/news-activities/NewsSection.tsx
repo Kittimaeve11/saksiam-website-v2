@@ -12,25 +12,8 @@ import "swiper/css/effect-fade";
 import NewsCard from "@/app/components/cards/NewsCard/NewsCard";
 import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 import { useLocale } from "@/app/providers/LocaleContext";
-
-type News = {
-  id: string | number;
-  typeID?: string;
-  categoryTH: string;
-  categoryEN: string;
-  titleTH: string;
-  titleEN: string;
-  detailTH: string;
-  detailEN: string;
-  createdAt: string;
-  images: string[];
-};
-
-type EditorialType = {
-  id: string;
-  nameTH: string;
-  nameEN: string;
-};
+import { getNewsListTabPath, toTabSlug } from "@/app/Utils/tabSlug";
+import type { News, EditorialType } from "@/app/Utils/type";
 
 type Props = {
   data: News[];
@@ -65,7 +48,7 @@ export default function NewsSection({
 
 
   const handleViewAll = () => {
-    router.push(`/news-activities?tab=${editorialType.id}`);
+    router.push(getNewsListTabPath(toTabSlug(editorialType.nameEN || editorialType.nameTH)));
   };
 
   const renderSlideContent = (group: News[]) => {
@@ -91,7 +74,10 @@ export default function NewsSection({
   };
 
   return (
-    <Box sx={{ mt: layoutIndex === 0 ? 0 : 6, mb: 6 }}>
+    <Box
+      className="api-content-fade-in"
+      sx={{ mt: layoutIndex === 0 ? 0 : 6, mb: 6 }}
+    >
       <Box
         sx={{
           display: "flex",

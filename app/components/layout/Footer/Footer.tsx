@@ -9,8 +9,9 @@ import { Box, Grid, Skeleton, Typography } from "@mui/material";
 import { footerMenu } from "@/app/config/footer";
 import { useLocale } from "@/app/providers/LocaleContext";
 import { getWebsiteMourningMode } from "@/app/Utils/websiteTheme";
+import { buildApiImageUrl, toText } from "@/app/Utils/imageUrl";
 import { apiFetch } from "@/app/api/client";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { useEffect, useState } from "react";
 
@@ -183,24 +184,6 @@ const getFooterPolicies = async () => {
   return pendingFooterPolicies;
 };
 
-const toText = (value: string | number | null | undefined): string => {
-  if (typeof value === "number") return String(value);
-  return typeof value === "string" ? value.trim() : "";
-};
-
-const toApiAssetUrl = (value: string | number | null | undefined): string => {
-  const src = toText(value);
-  const base =
-    process.env.NEXT_PUBLIC_API_PHOTO || process.env.NEXT_PUBLIC_API_URL || "";
-
-  if (!src) return "";
-  if (/^https?:\/\//i.test(src)) return src;
-  if (!src.startsWith("/")) return src;
-  if (!base) return src;
-
-  return `${base.replace(/\/+$/, "")}${src}`;
-};
-
 const normalizeContact = (data: RawContactApiData = {}): Contact => {
   const email = [
     toText(data.contact?.email_main),
@@ -222,7 +205,7 @@ const normalizeContact = (data: RawContactApiData = {}): Contact => {
       youtube: toText(data.social?.youtube),
       tiktok: toText(data.social?.tiktok),
     },
-    qrLine: toApiAssetUrl(data.images?.qr_line) || "/Social/Qrcode-Line.png",
+    qrLine: buildApiImageUrl(data.images?.qr_line) || "/Social/Qrcode-Line.png",
   };
 };
 
@@ -300,6 +283,7 @@ export default function Footer({
 
   const { locale } = useLocale();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const iconSize = 35;
 
   const [policies, setPolicies] = useState<Policy[]>(cachedFooterPolicies || []);
@@ -315,6 +299,77 @@ export default function Footer({
 
   const [errorPolicies, setErrorPolicies] = useState(false);
   const isHomeMourningMode = pathname === "/" && isMourningMode;
+  const footerBackgroundColor = isHomeMourningMode
+    ? "#383838"
+    : "var(--main-blue-950)";
+  const copyrightBackgroundColor = isHomeMourningMode
+    ? "#303030"
+    : "var(--main-blue-950)";
+  const mourningIconFilter = isHomeMourningMode ? "grayscale(1)" : "none";
+  const footerAccentColor = isHomeMourningMode
+    ? "var(--neutral-white)"
+    : "var(--main-yellow-500)";
+  const footerHoverColor = isHomeMourningMode
+    ? "var(--gray-200)"
+    : "var(--main-yellow-500)";
+  const currentSearch = searchParams.toString();
+  const currentHref = currentSearch ? `${pathname}?${currentSearch}` : pathname;
+
+  const getComparableUrl = (href: string) => {
+    try {
+      return new URL(href, "https://saksiam.local");
+    } catch {
+      return null;
+    }
+  };
+
+  const isFooterLinkActive = (href: string) => {
+    if (!href || isExternalHref(href) || href === "#") return false;
+
+    const target = getComparableUrl(href);
+    if (!target) return false;
+
+    const targetPath = target.pathname;
+    const targetTab = target.searchParams.get("tab");
+    const targetSection = target.searchParams.get("section");
+    const currentTab = searchParams.get("tab");
+    const currentSection = searchParams.get("section");
+
+    if (targetPath === "/news") {
+      return pathname === "/news" || pathname.startsWith("/news-activities-list");
+    }
+
+    if (targetPath === "/faq-tab-All") {
+      return pathname === "/faq" || pathname.startsWith("/faq-tab-");
+    }
+
+    if (targetPath === "/about") {
+      if (pathname !== "/about") return false;
+      if (targetTab && targetTab !== currentTab) return false;
+      if (targetSection && targetSection !== currentSection) return false;
+      return true;
+    }
+
+    if (targetPath.startsWith("/policy/")) {
+      return pathname === targetPath;
+    }
+
+    if (target.search) {
+      return currentHref === `${targetPath}${target.search}`;
+    }
+
+    return pathname === targetPath || pathname.startsWith(`${targetPath}/`);
+  };
+
+  const footerLinkSx = (active: boolean) => ({
+    fontSize: "16px",
+    textDecoration: "none",
+    color: active ? footerHoverColor : "inherit",
+    transition: "color 0.2s ease",
+    "&:hover": {
+      color: footerHoverColor,
+    },
+  });
 
   /* ================= FETCH ================= */
   useEffect(() => {
@@ -372,7 +427,8 @@ export default function Footer({
       component="footer"
       sx={{
         mt: "-1px",
-        backgroundColor: isHomeMourningMode ? "#383838" : "var(--main-blue-950)",
+        backgroundColor: footerBackgroundColor,
+        overflow: "hidden",
       }}
     >
       {/* ================= BACKGROUND ================= */}
@@ -424,6 +480,9 @@ export default function Footer({
               md: 15,   // 🔥 ดันเฉพาะตอน 2 คอลัม
               lg: 2      // 🔥 กลับเป็นปกติตอน 3 คอลัม
             },
+            "@media (min-width: 900px) and (max-width: 996px)": {
+              px: 4,
+            },
 
             py: 8,
           }}
@@ -445,6 +504,7 @@ export default function Footer({
                   ) : (
                     loanItems.map((item) => {
                       const isExternal = isExternalHref(item.href);
+                      const isActive = isFooterLinkActive(item.href);
 
                       return (
                         <Typography
@@ -456,14 +516,7 @@ export default function Footer({
                           scroll={isExternal ? undefined : false}
                           target={isExternal ? "_blank" : undefined}
                           rel={isExternal ? "noopener noreferrer" : undefined}
-                          sx={{
-                            fontSize: "16px",
-                            textDecoration: "none",
-                            color: "inherit",
-                            "&:hover": {
-                              color: "var(--main-yellow-500)",
-                            },
-                          }}
+                          sx={footerLinkSx(isActive)}
                         >
                           {locale === "th" ? item.nameTH : item.nameEN}
                         </Typography>
@@ -500,26 +553,25 @@ export default function Footer({
 
                   ) : policies.length > 0 ? (
                     // ================= SUCCESS =================
-                    policies.map((item) => (
-                      <Typography
+                    policies.map((item) => {
+                      const href = `/policy/${item.id}`;
+                      const isActive = isFooterLinkActive(href);
+
+                      return (
+                        <Typography
                           key={item.id}
                           component={Link}
-                          href={`/policy/${item.id}`}
-                          onMouseDown={() => prepareFooterNavigation(`/policy/${item.id}`)}
-                          onClick={() => prepareFooterNavigation(`/policy/${item.id}`)}
+                          href={href}
+                          prefetch={false}
+                          onMouseDown={() => prepareFooterNavigation(href)}
+                          onClick={() => prepareFooterNavigation(href)}
                           scroll={false}
-                          sx={{
-                          fontSize: "16px",
-                          textDecoration: "none",
-                          color: "inherit",
-                          "&:hover": {
-                            color: "var(--main-yellow-500)",
-                          },
-                        }}
-                      >
-                        {locale === "th" ? item.titleTH : item.titleEN}
-                      </Typography>
-                    ))
+                          sx={footerLinkSx(isActive)}
+                        >
+                          {locale === "th" ? item.titleTH : item.titleEN}
+                        </Typography>
+                      );
+                    })
                   ) : (
                     // ================= NO DATA =================
                     <Typography
@@ -548,6 +600,7 @@ export default function Footer({
                   <Stack spacing={0.7}>
                     {menu.items.map((item, i) => {
                       const isExternal = isExternalHref(item.href);
+                      const isActive = isFooterLinkActive(item.href);
 
                       return (
                         <Typography
@@ -559,14 +612,7 @@ export default function Footer({
                           scroll={isExternal ? undefined : false}
                           target={isExternal ? "_blank" : undefined}
                           rel={isExternal ? "noopener noreferrer" : undefined}
-                          sx={{
-                            fontSize: "16px",
-                            textDecoration: "none",
-                            color: "inherit",
-                            "&:hover": {
-                              color: "var(--main-yellow-500)",
-                            },
-                          }}
+                          sx={footerLinkSx(isActive)}
                         >
                           {item.label[locale]}
                         </Typography>
@@ -612,10 +658,19 @@ export default function Footer({
                 sx={{
                   alignItems: "center",
                   flexWrap: "wrap",   // 🔥 ให้มัน wrap ได้ตลอด
+                  "@media (min-width: 600px) and (max-width: 800px)": {
+                    alignItems: "flex-start",
+                  },
                 }}
               >
                 <Grid
                   size={{ xs: 12, sm: "grow" }}   // 🔥 mobile = เต็มแถว
+                  sx={{
+                    "@media (min-width: 600px) and (max-width: 800px)": {
+                      flexBasis: "100%",
+                      width: "100%",
+                    },
+                  }}
                 >
                   <Stack spacing={2}>
                     {/* EMAIL */}
@@ -632,11 +687,12 @@ export default function Footer({
                         className="fi fi-rr-envelope"
                         sx={{
                           fontSize: "18px",
-                          color: "var(--main-yellow-500)",
+                          color: footerAccentColor,
                           display: "flex",
                           alignItems: "center",
                           flex: "0 0 18px",
                           width: 18,
+                          filter: mourningIconFilter,
                         }}
                       />
                       <Typography sx={{ fontSize: "16px", flex: 1, minWidth: 0 }}>
@@ -675,10 +731,11 @@ export default function Footer({
                           sx={{
                             width: 40,
                             height: 40,
-                            border: "2.5px solid var(--main-yellow-500)",
+                            border: `2.5px solid ${footerAccentColor}`,
                             borderRadius: "10px",
                             justifyContent: "center",
                             alignItems: "center",
+                            filter: mourningIconFilter,
                           }}
                         >
                           <Grid
@@ -686,7 +743,7 @@ export default function Footer({
                             className="fi fi-sr-phone-call"
                             sx={{
                               fontSize: "20px",
-                              color: "var(--main-yellow-500)",
+                              color: footerAccentColor,
                               lineHeight: 0,
                               display: "flex",
                               alignItems: "center",
@@ -700,7 +757,7 @@ export default function Footer({
                           sx={{
                             fontSize: "36px",
                             fontWeight: 800,
-                            color: "var(--main-yellow-500)",
+                            color: footerAccentColor,
                           }}
                         >
                           {contact.callCenter}
@@ -720,6 +777,12 @@ export default function Footer({
                           width={iconSize}
                           height={iconSize}
                           alt="facebook"
+                          style={{
+                            width: iconSize,
+                            height: iconSize,
+                            objectFit: "contain",
+                            filter: mourningIconFilter,
+                          }}
                         />
                       </Link>
 
@@ -729,6 +792,12 @@ export default function Footer({
                           width={iconSize}
                           height={iconSize}
                           alt="youtube"
+                          style={{
+                            width: iconSize,
+                            height: iconSize,
+                            objectFit: "contain",
+                            filter: mourningIconFilter,
+                          }}
                         />
                       </Link>
 
@@ -738,6 +807,12 @@ export default function Footer({
                           width={iconSize}
                           height={iconSize}
                           alt="instagram"
+                          style={{
+                            width: iconSize,
+                            height: iconSize,
+                            objectFit: "contain",
+                            filter: mourningIconFilter,
+                          }}
                         />
                       </Link>
 
@@ -747,6 +822,12 @@ export default function Footer({
                           width={iconSize}
                           height={iconSize}
                           alt="tiktok"
+                          style={{
+                            width: iconSize,
+                            height: iconSize,
+                            objectFit: "contain",
+                            filter: mourningIconFilter,
+                          }}
                         />
                       </Link>
                     </Stack>
@@ -760,7 +841,13 @@ export default function Footer({
                     width: { xs: "100%", sm: "auto" },
                     display: "flex",
                     justifyContent: { xs: "flex-start", sm: "center" },
-                    mt: { xs: 2, sm: 0 },
+                    mt: { xs: 1, sm: 0 },
+                    "@media (min-width: 600px) and (max-width: 800px)": {
+                      flexBasis: "100%",
+                      width: "100%",
+                      justifyContent: "flex-start",
+                      mt: 1,
+                    },
                   }}
                 >
                   <Link href={contact?.social.line || "#"} target="_blank">
@@ -777,6 +864,7 @@ export default function Footer({
                         cursor: "pointer",
                         objectFit: "contain",
                         borderRadius: "18px",
+                        filter: mourningIconFilter,
                       }}
                     />
                   </Link>
@@ -791,7 +879,11 @@ export default function Footer({
       <Grid
         sx={{
           width: "100%",
-          backgroundColor: isHomeMourningMode ? "#303030" : "var(--main-blue-950)",
+          position: "relative",
+          zIndex: 3,
+          mt: "-3px",
+          backgroundColor: copyrightBackgroundColor,
+          boxShadow: `0 -4px 0 ${copyrightBackgroundColor}`,
           py: 1.5,
           textAlign: "center",
         }}

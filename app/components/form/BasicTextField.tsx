@@ -5,6 +5,14 @@ import { ComponentsTextModelProps } from "@/app/Utils/type";
 const mobileFontSx = { xs: 16, sm: "1rem" };
 const labelFontSx = { xs: 16, sm: "1.25rem" };
 
+const formatAmountInput = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+
+    if (!digits) return "";
+
+    return Number(digits).toLocaleString("en-US");
+};
+
 const BasicTextField: React.FC<ComponentsTextModelProps> = ({
     name,
     titlename,
@@ -35,8 +43,13 @@ const BasicTextField: React.FC<ComponentsTextModelProps> = ({
                 fullWidth
                 value={subject ?? ""}
                 onChange={(e) => {
-                    setsubject(e.target.value);
-                    handleFieldChange(fieldKey, e.target.value);
+                    const nextValue =
+                        fieldKey === "amount"
+                            ? formatAmountInput(e.target.value)
+                            : e.target.value;
+
+                    setsubject(nextValue);
+                    handleFieldChange(fieldKey, nextValue);
                 }}
                 slotProps={{
                     htmlInput: {

@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import "./globals.css";
 /* ======================================================
    MUI PROVIDER (Fix Hydration Error)
@@ -22,6 +23,7 @@ import ApiCacheReset from "./providers/ApiCacheReset";
 ====================================================== */
 
 import Navbar from "./components/layout/Navbar/Navbar";
+import ChromeVisibility from "./components/layout/ChromeVisibility/ChromeVisibility";
 import NavigationRestore from "./components/layout/NavigationRestore/NavigationRestore";
 import TabMenu from "./components/layout/TabMenu/TabMenu";
 import Footer from "./components/layout/Footer/Footer";
@@ -112,13 +114,10 @@ const scrollRestoreBootstrapScript = `
   (function () {
     try {
       if ("scrollRestoration" in history) {
-        history.scrollRestoration = "manual";
+        history.scrollRestoration = "auto";
       }
 
-      var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
-      var isReload = nav && nav.type === "reload";
       var raw = sessionStorage.getItem("saksiam-scroll-restore");
-      var shouldFade = !!isReload;
 
       if (raw) {
         var data = JSON.parse(raw);
@@ -132,14 +131,15 @@ const scrollRestoreBootstrapScript = `
           Date.now() - data.time < 60000;
 
         if (shouldRestore) {
-          shouldFade = true;
+          window.scrollTo(0, data.y);
 
-          document.documentElement.classList.add("scroll-restore-pending");
+          var keepScrollUntilReady = function () {
+            window.scrollTo(0, data.y);
+          };
+
+          requestAnimationFrame(keepScrollUntilReady);
+          setTimeout(keepScrollUntilReady, 0);
         }
-      }
-
-      if (shouldFade) {
-        document.documentElement.classList.add("page-refresh-fade-pending");
       }
     } catch (_) {}
   })();
@@ -164,13 +164,6 @@ export default async function RootLayout({
 
       {/* Flaticon Icons */}
       <head>
-        <script
-          dangerouslySetInnerHTML={{ __html: localeBootstrapScript }}
-        />
-        <script
-          dangerouslySetInnerHTML={{ __html: scrollRestoreBootstrapScript }}
-        />
-
         <link
           rel="stylesheet"
           href="https://cdn-uicons.flaticon.com/uicons-solid-rounded/css/uicons-solid-rounded.css"
@@ -189,6 +182,17 @@ export default async function RootLayout({
 
       <body
         className={sukhumvitTadmai.className}      >
+        <Script
+          id="locale-bootstrap"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: localeBootstrapScript }}
+        />
+        <Script
+          id="scroll-restore-bootstrap"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: scrollRestoreBootstrapScript }}
+        />
+
         {/* ======================================================
            MUI Provider (Fix SSR Hydration)
         ====================================================== */}
@@ -207,8 +211,10 @@ export default async function RootLayout({
 
             {/* Header */}
             <NavigationRestore />
-            <Navbar initialMourningMode={initialMourningMode} />
-            <TabMenu initialMourningMode={initialMourningMode} />
+            <ChromeVisibility>
+              <Navbar initialMourningMode={initialMourningMode} />
+              <TabMenu initialMourningMode={initialMourningMode} />
+            </ChromeVisibility>
 
             {/* Main Content */}
             <main
@@ -217,16 +223,20 @@ export default async function RootLayout({
             </main>
 
             {/* Footer */}
-            <Footer initialMourningMode={initialMourningMode} />
+            <ChromeVisibility>
+              <Footer initialMourningMode={initialMourningMode} />
+            </ChromeVisibility>
 
             {/* Toast Notification */}
             <ToastProvider />
 
           </LocaleProvider>
           {/* Floating UI */}
-          <FloatingButtons />
-          <BackToTopButton />
-          <CookieBanner />
+          <ChromeVisibility>
+            <FloatingButtons />
+            <BackToTopButton />
+            <CookieBanner />
+          </ChromeVisibility>
 
 
         </MuiProvider>

@@ -1,11 +1,26 @@
 import { Box, Container } from "@mui/material";
 
 import EachBanner from "@/app/components/ui/Banner/EachBanner";
+import { getFaqData } from "@/app/Utils/faqData";
 import FaqContent from "@/app/views/faq/FaqContent";
 
 export const dynamic = "force-dynamic";
 
-export default function Page() {
+type FaqPageProps = {
+  searchParams?: Promise<{
+    tab?: string;
+    tabSlug?: string;
+  }>;
+};
+
+export default async function Page({ searchParams }: FaqPageProps) {
+  const emptySearchParams: Awaited<NonNullable<FaqPageProps["searchParams"]>> = {};
+  const [faqData, params] = await Promise.all([
+    getFaqData(),
+    searchParams || Promise.resolve(emptySearchParams),
+  ]);
+  const tabParam = params.tabSlug || params.tab || null;
+
   return (
     <Box
       sx={{
@@ -20,7 +35,7 @@ export default function Page() {
         sx={{
           position: "relative",
           overflow: "hidden",
-          px: { xs: 2, md: 3 },
+          px: 0,
           "&::before": {
             content: '""',
             position: "absolute",
@@ -35,8 +50,16 @@ export default function Page() {
           },
         }}
       >
-        <Box sx={{ position: "relative", zIndex: 1 }}>
-          <FaqContent />
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            maxWidth: "lg",
+            mx: "auto",
+            px: { xs: 2, md: 3 },
+          }}
+        >
+          <FaqContent initialData={faqData} initialTabParam={tabParam} />
         </Box>
       </Container>
     </Box>

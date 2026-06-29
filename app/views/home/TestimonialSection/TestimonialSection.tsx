@@ -8,15 +8,9 @@ import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 import { IoIosArrowForward } from "react-icons/io";
 import VideoCard from "@/app/components/cards/VideoCard/VideoCard";
 import { useLocale } from "@/app/providers/LocaleContext";
+import type { TestimonialItem } from "@/app/Utils/type";
 
 /* ====================================================== */
-export type TestimonialItem = {
-  id: number;
-  title: string;
-  videoUrl: string;
-  videoId: string;
-};
-
 type Props = {
   testimonials: TestimonialItem[];
 };
@@ -24,25 +18,66 @@ type Props = {
 /* ====================================================== */
 export default function TestimonialSection({ testimonials }: Props) {
   const [active, setActive] = useState(0);
+  const [videoInteractive, setVideoInteractive] = useState(false);
   const data = testimonials;
   const startX = useRef(0);
+  const startY = useRef(0);
+  const dragMoved = useRef(false);
+  const interactionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { messages } = useLocale();
 
   const isDragging = useRef(false);
 
+  const resetVideoInteraction = () => {
+    if (interactionTimer.current) {
+      clearTimeout(interactionTimer.current);
+      interactionTimer.current = null;
+    }
+
+    setVideoInteractive(false);
+  };
+
+  const enableVideoInteraction = () => {
+    setVideoInteractive(true);
+
+    if (interactionTimer.current) {
+      clearTimeout(interactionTimer.current);
+    }
+
+    interactionTimer.current = setTimeout(() => {
+      setVideoInteractive(false);
+      interactionTimer.current = null;
+    }, 2500);
+  };
+
   const next = () => {
     if (!data.length) return;
+    resetVideoInteraction();
     setActive((prev) => (prev + 1) % data.length);
   };
 
   const prev = () => {
     if (!data.length) return;
+    resetVideoInteraction();
     setActive((prev) => (prev - 1 + data.length) % data.length);
   };
 
-  const handleStart = (x: number) => {
+  const handleStart = (x: number, y = 0) => {
     startX.current = x;
+    startY.current = y;
+    dragMoved.current = false;
     isDragging.current = true;
+  };
+
+  const handleMove = (x: number, y = 0) => {
+    if (!isDragging.current) return;
+
+    const diffX = Math.abs(x - startX.current);
+    const diffY = Math.abs(y - startY.current);
+
+    if (diffX > 8 || diffY > 8) {
+      dragMoved.current = true;
+    }
   };
 
   const handleEnd = (x: number) => {
@@ -188,10 +223,12 @@ export default function TestimonialSection({ testimonials }: Props) {
               lg: "translate(120px, -30px)",
             },
           }}
-          onMouseDown={(e) => handleStart(e.clientX)}
+          onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
+          onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
           onMouseUp={(e) => handleEnd(e.clientX)}
           onMouseLeave={(e) => handleEnd(e.clientX)}
-          onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+          onTouchStart={(e) => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
+          onTouchMove={(e) => handleMove(e.touches[0].clientX, e.touches[0].clientY)}
           onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
         >
           {/* 🔥 DRAG LAYER (ตัวรับ event จริง) */}
@@ -222,9 +259,55 @@ export default function TestimonialSection({ testimonials }: Props) {
               position: "relative",
               width: "100%",
               maxWidth: 530,
+              touchAction: "pan-y",
             }}
           >
             <VideoCard videoUrl={data[active]?.videoUrl} type="main" />
+
+            <Box
+              aria-hidden="true"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleStart(e.clientX, e.clientY);
+              }}
+              onMouseMove={(e) => {
+                e.stopPropagation();
+                handleMove(e.clientX, e.clientY);
+              }}
+              onMouseUp={(e) => {
+                e.stopPropagation();
+                handleEnd(e.clientX);
+              }}
+              onMouseLeave={(e) => {
+                e.stopPropagation();
+                handleEnd(e.clientX);
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                handleStart(e.touches[0].clientX, e.touches[0].clientY);
+              }}
+              onTouchMove={(e) => {
+                e.stopPropagation();
+                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                handleEnd(e.changedTouches[0].clientX);
+              }}
+              onClick={() => {
+                if (!dragMoved.current) {
+                  enableVideoInteraction();
+                }
+              }}
+              sx={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 4,
+                borderRadius: "20px",
+                pointerEvents: videoInteractive ? "none" : "auto",
+                touchAction: "pan-y",
+              }}
+            />
 
             {/* ARROW */}
             <IconButton
@@ -309,7 +392,10 @@ export default function TestimonialSection({ testimonials }: Props) {
             <DotSlider
               total={data.length}
               activeIndex={active}
-              onClick={(i: number) => setActive(i)}
+              onClick={(i: number) => {
+                resetVideoInteraction();
+                setActive(i);
+              }}
             />
           </Box>
         </Box>

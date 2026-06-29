@@ -8,7 +8,7 @@ import { useLocale } from "@/app/providers/LocaleContext";
 type Props = {
   item: FaqItem;
   isOpen: boolean;
-  onToggle: (id: number) => void;
+  onToggle: (id: string) => void;
   isLast?: boolean;
 };
 
@@ -47,7 +47,7 @@ export default function FaqCard({
   const { messages, locale } = useLocale();
 
   const question = locale === "en" ? item.questionEN : item.questionTH;
-  const answer = locale === "en" ? item.answerEN : item.answerTH;
+  const answer = locale === "en" ? item.answersEN : item.answersTH;
   const answerHtml = withAnswerPrefix(answer, messages.faq.ask);
 
   return (

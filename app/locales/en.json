@@ -134,6 +134,8 @@
     "selete": "Selete",
     "loading": "Loading",
     "about": {
+        "title1":"From One Branch to",
+        "title2":"Branches Nationwide",
         "history": "Saksiam History",
         "vision_mission": "Vision & Mission",
         "organization_structure": "Organizational Structure",
@@ -143,6 +145,8 @@
         "risk_committee": "Risk Management Committee",
         "nomination_committee": "Nomination and Remuneration Committee",
         "governance_committee": "Corporate Governance and Sustainability Committee",
-        "board_skills_matrix": "Board Skills Matrix"
+        "board_skills_matrix": "Board Skills Matrix",
+        "employees":"Employees",
+        "years":"Years"
     }
 }

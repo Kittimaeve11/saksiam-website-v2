@@ -107,33 +107,49 @@ export async function GET() {
 export const steps = [
   {
     id: 1,
-    title: "กรอกข้อมูลสมัครสินเชื่อ",
-    description:
+    titleTH: "กรอกข้อมูลสมัครสินเชื่อ",
+    titleEN: "Loan Application Form",
+    descriptionTH:
       "กรอกข้อมูลเบื้องต้นผ่านเว็บไซต์ หรือสมัครที่สาขาใกล้บ้าน",
+    descriptionEN:
+      "Fill out the preliminary information online or apply at a branch near you."
   },
   {
     id: 2,
-    title: "ส่งเอกสารประกอบการสมัคร",
-    description:
+        titleTH: "ส่งเอกสารประกอบการสมัคร",
+    titleEN: "Submit Supporting Documents",
+    descriptionTH:
       "เตรียมเอกสาร เช่น บัตรประชาชน และเล่มทะเบียนรถ",
+    descriptionEN:
+      "Prepare supporting documents, such as your national ID card and vehicle registration book."
   },
   {
     id: 3,
-    title: "ตรวจสอบและประเมินวงเงิน",
-    description:
+        titleTH: "ตรวจสอบและประเมินวงเงิน",
+    titleEN: "Review and Assess Your Credit Limit",
+    descriptionTH:
       "เจ้าหน้าที่ตรวจสอบข้อมูล และประเมินวงเงินสินเชื่อ",
+    descriptionEN:
+      "Our staff will review your information and assess your loan amount."
   },
   {
     id: 4,
-    title: "อนุมัติสินเชื่อ",
-    description:
+        titleTH: "อนุมัติสินเชื่อ",
+    titleEN: "Loan Approval",
+    descriptionTH:
       "เมื่อผ่านการอนุมัติ ลูกค้าจะได้รับแจ้งผลการพิจารณา",
+    descriptionEN:
+      "Upon approval, customers will be informed of the loan application decision."
+
   },
   {
     id: 5,
-    title: "รับเงินรวดเร็ว",
-    description:
+        titleTH: "รับเงินรวดเร็ว",
+    titleEN: "Receive Funds Quickly",
+    descriptionTH:
       "รับเงินสินเชื่อได้ทันที ตามเงื่อนไขของบริษัท",
+    descriptionEN:
+      "Loan funds can be disbursed immediately upon approval, subject to the company's terms and conditions."
   },
 ];
 

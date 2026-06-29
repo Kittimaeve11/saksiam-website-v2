@@ -13,21 +13,9 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import Link from "next/link";
+import type { HomeNewsItem } from "@/app/Utils/type";
 
 /* ====================================================== */
-export type HomeNewsItem = {
-  id: string | number;
-  categoryTH: string;
-  categoryEN: string;
-  titleTH: string;
-  titleEN: string;
-  detailTH: string;
-  detailEN: string;
-  createdAt: string;
-  images: string[];
-  views?: number;
-};
-
 type Props = {
   news: HomeNewsItem[];
 };
@@ -95,7 +83,7 @@ export default function NewsSection({ news }: Props) {
   const [swiperReady, setSwiperReady] = useState(false);
 
   // 🔥 เพิ่ม (ใช้คำนวณ dot)
-  const [perView, setPerView] = useState(getResponsivePerView);
+  const [perView, setPerView] = useState(2);
 
   const swiperRef = useRef<SwiperType | null>(null);
   const { messages } = useLocale();
@@ -247,6 +235,7 @@ export default function NewsSection({ news }: Props) {
             <Button
               component={Link}
               href="/news"
+              prefetch={false}
               sx={{
                 display: { xs: "none", md: "flex" },
                 mt: "auto",
@@ -283,6 +272,7 @@ export default function NewsSection({ news }: Props) {
               sx={{
                 position: "relative",
                 py: 0,
+                minHeight: swiperHeight ? `${swiperHeight}px` : undefined,
                 "& .swiper-slide > div": {
                   opacity: 1,
                   transform: "translateX(0) scale(1)",
@@ -405,6 +395,35 @@ export default function NewsSection({ news }: Props) {
                 }}
               />
             </Box>
+
+            <Button
+              component={Link}
+              href="/news"
+              prefetch={false}
+              sx={{
+                display: { xs: "flex", md: "none" },
+                mt: { xs: 3, md: 4 },
+                mx: "auto",
+                width: "fit-content",
+                alignItems: "center",
+                gap: "4px",
+                borderRadius: "16px",
+                border: "2px solid var(--main-blue-500)",
+                color: "var(--main-blue-500)",
+                px: 4,
+                py: 1,
+                fontSize: 16,
+                fontWeight: 500,
+                textTransform: "none",
+                "&:hover": {
+                  background: "rgba(36, 56, 101, 0.08)",
+                  borderColor: "var(--main-blue-500)",
+                },
+              }}
+            >
+              {messages.home.view_all_news}
+              <IoIosArrowForward size={16} />
+            </Button>
 
             {/* <Button
               component={Link}

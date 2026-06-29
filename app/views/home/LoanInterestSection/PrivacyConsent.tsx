@@ -5,11 +5,9 @@ import { Box, Skeleton, Typography } from "@mui/material";
 import { apiFetch, getCachedApiResponse } from "@/app/api/client";
 import { useLocale } from "@/app/providers/LocaleContext";
 import { toPolicyHtml, type Policy } from "@/app/Utils/policy";
+import { toText } from "@/app/Utils/imageUrl";
 
 type RawRecord = Record<string, unknown>;
-
-const toText = (value: unknown): string =>
-  typeof value === "string" ? value : "";
 
 const pick = (item: RawRecord, keys: string[]): unknown => {
   for (const key of keys) {
@@ -124,7 +122,7 @@ export default function PrivacyConsent() {
 
   if (!policy) {
     return (
-      <Box sx={{ px: { xs: 1, md: 3 }, py: 1 }}>
+      <Box className="api-content-fade-in" sx={{ px: { xs: 1, md: 3 }, py: 1 }}>
         <Typography sx={{ color: "var(--gray-500)", fontSize: 14 }}>
           {locale === "en"
             ? "Unable to load privacy policy."
@@ -138,6 +136,7 @@ export default function PrivacyConsent() {
 
     return (
       <Box
+        className="api-content-fade-in"
         sx={{
         px: { xs: 1, md: 3 },
         py: 1,

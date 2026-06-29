@@ -1,5 +1,6 @@
-import NewsDetaiSkeleton from "@/app/views/news/news-detail/NewsDetaiSkeleton";
+import NewsDetailLoading from "@/app/views/news/news-detail/NewsDetailLoading";
+
 
 export default function Loading() {
-  return <NewsDetaiSkeleton />;
+  return <NewsDetailLoading />;
 }

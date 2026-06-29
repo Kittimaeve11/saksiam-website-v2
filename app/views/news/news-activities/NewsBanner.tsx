@@ -15,18 +15,8 @@ import "swiper/css/effect-fade";
 import EachBanner from "@/app/components/ui/Banner/EachBanner";
 import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 import { useLocale } from "@/app/providers/LocaleContext";
+import type { News } from "@/app/Utils/type";
 
-type News = {
-    id: string | number;
-    categoryTH: string;
-    categoryEN: string;
-    titleTH: string;
-    titleEN: string;
-    detailTH: string;
-    detailEN: string;
-    createdAt: string;
-    images: string[];
-};
 
 type Props = {
     data: News[];
@@ -71,6 +61,7 @@ export default function NewsBanner({ data }: Props) {
             <EachBanner num={12} />
 
             <Box
+                className="api-content-fade-in"
                 sx={{
                     position: "absolute",
                     inset: 0,
@@ -302,7 +293,7 @@ export default function NewsBanner({ data }: Props) {
 
                                             <Button
                                                 component={Link}
-                                                href={`/news-activities/${item.id}`}
+                                                href={`/news-activities-list/${item.id}`}
                                                 variant="outlined"
                                                 sx={{
                                                     color: "#fff",

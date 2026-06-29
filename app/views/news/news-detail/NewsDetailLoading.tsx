@@ -2,7 +2,7 @@
 
 import { Box, Container, Grid, Skeleton, Stack } from "@mui/material";
 
-export default function NewsDetaiSkeleton() {
+export default function NewsDetailLoading() {
   return (
     <Box>
       <Container
@@ -119,10 +119,7 @@ export default function NewsDetaiSkeleton() {
               key={item}
               variant="text"
               sx={{
-                width:
-                  item === 4
-                    ? { xs: "78%", md: "72%" }
-                    : "100%",
+                width: item === 4 ? { xs: "78%", md: "72%" } : "100%",
                 height: { xs: 25, md: 28 },
                 borderRadius: 1,
               }}

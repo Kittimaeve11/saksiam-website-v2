@@ -15,6 +15,7 @@ import { useLocale } from "@/app/providers/LocaleContext";
 import { usePathname } from "next/navigation";
 import LoanMenu from "./LoanMenu";
 import { getWebsiteMourningMode } from "@/app/Utils/websiteTheme";
+import { ALL_TAB_SLUG, getFaqTabPath } from "@/app/Utils/tabSlug";
 
 /* ======================================================
    COMPONENT
@@ -47,7 +48,7 @@ export default function TabMenu({
     { label: messages.menu.solar, href: "https://solar.saksiam.com/" },
     { label: messages.menu.branch_finder, href: "/branchlocations" },
     { label: messages.menu.news, href: "/news" },
-    { label: messages.menu.faq, href: "/faq" },
+    { label: messages.menu.faq, href: getFaqTabPath(ALL_TAB_SLUG) },
     { label: messages.menu.sustainability, href: "https://sustainability.saksiam.com/th/home" },
     { label: messages.menu.investor_relations, href: "https://investor.saksiam.com/th" },
   ];
@@ -118,9 +119,11 @@ export default function TabMenu({
   const isNewsActive = () => {
     return (
       pathname.startsWith("/news") ||
-      pathname.startsWith("/news-activities")
+      pathname.startsWith("/news-activities-list") ||
+      pathname.startsWith("/news-activities-list-tab-")
     );
   };
+  const isFaqActive = () => pathname === "/faq" || pathname.startsWith("/faq-tab-");
 
 
   return (
@@ -138,7 +141,7 @@ export default function TabMenu({
           gap: 2,
           px: 2,
           position: "relative",
-          overflow: "hidden",
+          overflow: "visible",
           zIndex: 1200,
         }}
       >
@@ -197,10 +200,16 @@ export default function TabMenu({
             boxShadow: "0 12px 20px -10px rgba(0,0,0,0.3)",
             maxHeight: "70vh",
             overflowY: "auto",
+
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+
             zIndex: 1300,
           }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1, color: "#fff" }}>
+        >          <Box sx={{ display: "flex", flexDirection: "column", gap: 1, color: "#fff" }}>
 
             <Box
               component={Link}
@@ -267,7 +276,12 @@ export default function TabMenu({
 
               {/* SUBMENU */}
               {mobileLoanOpen && (
-                <LoanMenu/>
+                <LoanMenu
+                  onItemClick={() => {
+                    setMobileOpen(false);
+                    setMobileLoanOpen(false);
+                  }}
+                />
               )}
             </Box>
 
@@ -320,7 +334,7 @@ export default function TabMenu({
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          overflow: "hidden",
+          overflow: "visible",
           zIndex: 1200,
         }}
       >
@@ -372,7 +386,7 @@ export default function TabMenu({
                   zIndex: 1300,
                 }}
               >
-              <LoanMenu/>
+                <LoanMenu />
               </Box>
             )}
           </Box>
@@ -400,7 +414,11 @@ export default function TabMenu({
             {messages.menu.news}
           </Box>
 
-          <Box component={Link} href="/faq" sx={menuStyle("/faq")}>
+          <Box
+            component={Link}
+            href={getFaqTabPath(ALL_TAB_SLUG)}
+            sx={menuStyle(undefined, isFaqActive())}
+          >
             {messages.menu.faq}
           </Box>
 

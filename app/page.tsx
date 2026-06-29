@@ -20,7 +20,9 @@ export default async function Page() {
 
   return (
     <Box className={isMourningMode ? "home-mourning-mode" : undefined}>
-      <HomeBanner banners={banners} />
+      <Box className="api-content-fade-in">
+        <HomeBanner banners={banners} />
+      </Box>
 
       <HomeBrandStrip />
 
@@ -62,10 +64,14 @@ export default async function Page() {
       </Box>
 
       <Box sx={{ backgroundColor: "#E9F0FB", pb: 5 }}>
-        <NewsSection news={news} />
+        <Box className="api-content-fade-in">
+          <NewsSection news={news} />
+        </Box>
       </Box>
  
-      <TestimonialSection testimonials={testimonials} />
+      <Box className="api-content-fade-in">
+        <TestimonialSection testimonials={testimonials} />
+      </Box>
       <HomeIntroSection />
     </Box>
   );

@@ -1,12 +1,8 @@
 import { apiFetch } from "../client";
+import { toText } from "@/app/Utils/imageUrl";
 
 type ViewStore = Record<string, number>;
 type RawRecord = Record<string, unknown>;
-
-const toText = (value: unknown): string => {
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return typeof value === "string" ? value.trim() : "";
-};
 
 const getNested = (value: unknown, keys: string[]): unknown => {
   let current = value;
@@ -42,7 +38,7 @@ const isEditorialLog = (item: RawRecord): boolean => {
   );
   const text = `${datatype} ${actionDetail}`.toLowerCase();
 
-  if (text.includes("สาขา") || text.includes("à¸ªà¸²à¸‚à¸²")) {
+  if (text.includes("สาขา")) {
     return false;
   }
 
@@ -51,9 +47,7 @@ const isEditorialLog = (item: RawRecord): boolean => {
     text.includes("กิจกรรม") ||
     text.includes("editorial") ||
     text.includes("news") ||
-    text.includes("activity") ||
-    text.includes("à¸‚à¹ˆà¸²à¸§") ||
-    text.includes("à¸à¸´à¸ˆà¸à¸£à¸£à¸¡")
+    text.includes("activity")
   );
 };
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Box, Typography } from "@mui/material";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import NewsGrid from "@/app/views/news/news-activities-list/NewsGrid";
 import NewsTabs, {
@@ -18,6 +18,12 @@ import type {
   NewsListEditorialType,
   NewsListItem,
 } from "@/app/Utils/newsActivitiesList";
+import {
+  ALL_TAB_SLUG,
+  getNewsListTabPath,
+  isSameTabSlug,
+  normalizeTabSlug,
+} from "@/app/Utils/tabSlug";
 import Loading from "./loading";
 
 type NewsListApiResponse = {
@@ -39,19 +45,25 @@ const normalizeTab = (
   value: string | null,
   editorialTypes: EditorialType[]
 ): TabType => {
-  if (!value || value === "all") return "all";
+  if (!value || value.toLowerCase() === "all") return ALL_TAB_SLUG;
+
+  const normalizedSlug = normalizeTabSlug(value);
 
   const selectedType = editorialTypes.find(
-    (item) => item.id === value || getEditorialTabValue(item) === value
+    (item) =>
+      item.id === value ||
+      getEditorialTabValue(item).toLowerCase() === normalizedSlug.toLowerCase() ||
+      isSameTabSlug(value, item.nameEN)
   );
 
-  return selectedType ? getEditorialTabValue(selectedType) : value;
+  return selectedType ? getEditorialTabValue(selectedType) : normalizedSlug;
 };
 
 export default function Page() {
   const { messages, locale } = useLocale();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab");
+  const tabParam = searchParams.get("tabSlug") || searchParams.get("tab");
 
   const [data, setData] = useState<NewsListItem[]>([]);
   const [editorialTypes, setEditorialTypes] = useState<EditorialType[]>([]);
@@ -115,10 +127,12 @@ export default function Page() {
   }, [tabParam]);
 
   const filtered = useMemo(() => {
-    if (tab === "all") return data;
+    if (tab === ALL_TAB_SLUG) return data;
 
     const selectedType = editorialTypes.find(
-      (item) => getEditorialTabValue(item) === tab || item.id === tab
+      (item) =>
+        getEditorialTabValue(item).toLowerCase() === tab.toLowerCase() ||
+        item.id === tab
     );
 
     if (selectedType) {
@@ -129,11 +143,11 @@ export default function Page() {
       const categoryEN = item.categoryEN.toLowerCase();
       const categoryTH = item.categoryTH;
 
-      if (tab === "news") {
+      if (tab.toLowerCase() === "news") {
         return categoryEN === "news" || categoryTH === "ข่าวสาร";
       }
 
-      if (tab === "activity") {
+      if (["activity", "activities"].includes(tab.toLowerCase())) {
         return (
           categoryEN === "activity" ||
           categoryEN === "activities" ||
@@ -157,6 +171,7 @@ export default function Page() {
   const handleTabChange = (val: TabType) => {
     setTab(val);
     setPage(1);
+    router.push(getNewsListTabPath(val), { scroll: false });
   };
 
   const handlePageChange = (val: number) => {

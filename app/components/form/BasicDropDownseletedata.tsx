@@ -38,8 +38,9 @@ const BasicDropDownseletedata: React.FC<BasicDropDownseleteitem> = ({
 
     const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
         const value = event.target.value;
-        setSelected(value === "" ? null : (value as string));
-        handleFieldChange(fieldKey, value);
+        const nextValue = value === "" || value === "0" ? null : (value as string);
+        setSelected(nextValue);
+        handleFieldChange(fieldKey, nextValue);
     };
 
     return (
@@ -123,7 +124,7 @@ const BasicDropDownseletedata: React.FC<BasicDropDownseleteitem> = ({
                     </Box>
                 </MenuItem>
                 {statusOptions.map((product) => (
-                    <MenuItem key={product.id} value={product.id}>
+                    <MenuItem key={product.id} value={product.valuename}>
                         <Typography variant="body1" sx={{ fontSize: mobileFontSx }}>
                             {product.labelname}
                         </Typography>

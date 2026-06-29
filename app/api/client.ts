@@ -1,27 +1,52 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY!;
-
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface ApiResponse<T = unknown> {
-  status: boolean;
+  status: boolean | number;
   message?: string;
   data?: T;
   result?: T;
 }
 
-interface ApiFetchOptions extends RequestInit {
+export type ApiFetchOptions = Omit<RequestInit, "method"> & {
   method?: HttpMethod;
   memoryCache?: boolean;
-}
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+};
 
 const responseCache = new Map<string, ApiResponse<unknown>>();
 const pendingCache = new Map<string, Promise<ApiResponse<unknown>>>();
 
 const isBrowser = () => typeof window !== "undefined";
 
-const getUrl = (endpoint: string): string =>
-  `${BASE_URL.replace(/\/+$/, "")}/${endpoint.replace(/^\/+/, "")}`;
+const trimTrailingSlashes = (value: string): string => value.replace(/\/+$/, "");
+
+const getRequiredEnv = (name: string, value: string | undefined): string => {
+  if (value?.trim()) return value.trim();
+  throw new Error(`Missing required environment variable: ${name}`);
+};
+
+const getBaseUrl = (): string =>
+  trimTrailingSlashes(
+    getRequiredEnv("NEXT_PUBLIC_API_URL", process.env.NEXT_PUBLIC_API_URL)
+  );
+
+const getApiKey = (): string =>
+  getRequiredEnv("NEXT_PUBLIC_API_KEY", process.env.NEXT_PUBLIC_API_KEY);
+
+const isAbsoluteUrl = (value: string): boolean => /^https?:\/\//i.test(value);
+
+const getUrl = (endpoint: string): string => {
+  const value = endpoint.trim();
+
+  if (!value) throw new Error("apiFetch endpoint is required");
+
+  return isAbsoluteUrl(value)
+    ? value
+    : `${getBaseUrl()}/${value.replace(/^\/+/, "")}`;
+};
 
 const getRequestMethod = (options: ApiFetchOptions = {}): HttpMethod =>
   (options.method || "GET").toUpperCase() as HttpMethod;
@@ -34,6 +59,68 @@ const shouldUseMemoryCache = (options: ApiFetchOptions = {}): boolean =>
 
 const getCacheKey = (endpoint: string, options: ApiFetchOptions = {}): string =>
   `${getRequestMethod(options)}:${getUrl(endpoint)}`;
+
+const createHeaders = (options: ApiFetchOptions): Headers => {
+  const headers = new Headers(options.headers);
+
+  headers.set("X-API-KEY", getApiKey());
+
+  if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return headers;
+};
+
+const readResponsePayload = async (response: Response): Promise<unknown> => {
+  const text = await response.text();
+
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+const getErrorMessage = (payload: unknown, fallback: string): string => {
+  if (!payload) return fallback;
+  if (typeof payload === "string") return payload || fallback;
+  if (typeof payload !== "object" || Array.isArray(payload)) return fallback;
+
+  const record = payload as Record<string, unknown>;
+  const message = record.message || record.error || record.errors;
+
+  if (typeof message === "string") return message;
+  if (message) return JSON.stringify(message);
+
+  return fallback;
+};
+
+const normalizeApiResponse = <T>(payload: unknown): ApiResponse<T> => {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return {
+      status: true,
+      data: payload as T,
+    };
+  }
+
+  const record = payload as Record<string, unknown>;
+  const data =
+    record.data === undefined && record.result !== undefined
+      ? record.result
+      : record.data;
+
+  return {
+    ...record,
+    status:
+      typeof record.status === "boolean" || typeof record.status === "number"
+        ? record.status
+        : true,
+    data: data as T,
+  } as ApiResponse<T>;
+};
 
 export function getCachedApiResponse<T = unknown>(
   endpoint: string,
@@ -53,7 +140,8 @@ export async function apiFetch<T = unknown>(
   endpoint: string,
   options: ApiFetchOptions = {}
 ): Promise<ApiResponse<T>> {
-  const { memoryCache: _memoryCache, ...fetchOptions } = options;
+  const fetchOptions: ApiFetchOptions = { ...options };
+  delete fetchOptions.memoryCache;
   const url = getUrl(endpoint);
   const cacheKey = getCacheKey(endpoint, options);
   const useMemoryCache = shouldUseMemoryCache(options);
@@ -66,66 +154,24 @@ export async function apiFetch<T = unknown>(
     if (pending) return pending as Promise<ApiResponse<T>>;
   }
 
-  const userHeaders = (fetchOptions.headers || {}) as Record<string, string>;
-  const headers: Record<string, string> = {
-    ...userHeaders,
-    "X-API-KEY": API_KEY,
-  };
-
-  if (!(fetchOptions.body instanceof FormData)) {
-    headers["Content-Type"] = headers["Content-Type"] || "application/json";
-  }
-
   const request = (async () => {
-    const res = await fetch(url, {
+    const requestInit: RequestInit & ApiFetchOptions = {
       ...fetchOptions,
-      headers,
-      cache: "no-store",
-    });
+      headers: createHeaders(fetchOptions),
+    };
 
-    if (!res.ok) {
-      let message = `API Error: ${res.status}`;
-
-      try {
-        const errorData = await res.clone().json();
-
-        if (errorData && typeof errorData === "object") {
-          message =
-            errorData.message ||
-            errorData.error ||
-            errorData.errors ||
-            message;
-        }
-      } catch {
-        try {
-          const errorText = await res.text();
-          message = errorText || message;
-        } catch {
-          // Keep the original status message when the response body is empty.
-        }
-      }
-
-      if (typeof message !== "string") {
-        message = JSON.stringify(message);
-      }
-
-      throw new Error(message);
+    if (requestInit.cache === undefined && requestInit.next === undefined) {
+      requestInit.cache = "no-store";
     }
 
-    const data = await res.json();
-    const normalized =
-      data &&
-      typeof data === "object" &&
-      !Array.isArray(data) &&
-      data.data === undefined &&
-      data.result !== undefined
-        ? {
-            ...data,
-            data: data.result,
-          }
-        : data;
+    const res = await fetch(url, requestInit);
+    const payload = await readResponsePayload(res);
 
-    const response = normalized as ApiResponse<T>;
+    if (!res.ok) {
+      throw new Error(getErrorMessage(payload, `API Error: ${res.status}`));
+    }
+
+    const response = normalizeApiResponse<T>(payload);
 
     if (useMemoryCache && response.status !== false) {
       responseCache.set(cacheKey, response as ApiResponse<unknown>);

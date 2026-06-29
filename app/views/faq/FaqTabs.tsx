@@ -4,6 +4,7 @@ import Tabs, { TabItem } from "@/app/components/ui/Tabs/Tabs";
 import TabsSkeleton from "@/app/components/ui/Tabs/Tabsskeleton";
 import { useLocale } from "@/app/providers/LocaleContext";
 import type { FaqTypeItem } from "@/app/Utils/type";
+import { ALL_TAB_SLUG, toTabSlug } from "@/app/Utils/tabSlug";
 
 type Props = {
   tab: string;
@@ -11,6 +12,14 @@ type Props = {
   faqTypes: FaqTypeItem[];
   loading?: boolean;
 };
+
+const getTabLabel = (item: FaqTypeItem, locale: string): string =>
+  locale === "en"
+    ? item.nameEN || item.faqtypenameEN || item.nameTH
+    : item.nameTH || item.faqtypenameTH || item.nameEN;
+
+const getTabValue = (item: FaqTypeItem): string =>
+  toTabSlug(item.nameEN || item.nameTH || item.faqtypeID || item.id);
 
 export default function FaqTabs({
   tab,
@@ -25,10 +34,10 @@ export default function FaqTabs({
   }
 
   const tabs: TabItem<string>[] = [
-    { label: messages?.faq?.all || "ทั้งหมด", value: "all" },
+    { label: messages?.faq?.all || "ทั้งหมด", value: ALL_TAB_SLUG },
     ...faqTypes.map((item) => ({
-      label: locale === "en" ? item.nameEN || item.nameTH : item.nameTH || item.nameEN,
-      value: item.id,
+      label: getTabLabel(item, locale),
+      value: getTabValue(item),
     })),
   ];
 

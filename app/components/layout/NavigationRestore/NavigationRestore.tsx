@@ -6,7 +6,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 const SCROLL_RESTORE_KEY = "saksiam-scroll-restore";
 const ABOUT_TARGET_KEY = "saksiam-about-target";
 const RESTORE_CLASS = "scroll-restore-pending";
-const REFRESH_FADE_CLASS = "page-refresh-fade-pending";
 const ABOUT_TARGET_CLASS = "about-target-pending";
 const RESTORE_MAX_AGE = 60000;
 const RESTORE_SETTLE_TIMEOUT = 4500;
@@ -22,7 +21,6 @@ export default function NavigationRestore() {
     const showPage = () => {
       window.requestAnimationFrame(() => {
         document.documentElement.classList.remove(RESTORE_CLASS);
-        document.documentElement.classList.remove(REFRESH_FADE_CLASS);
         document.documentElement.classList.remove(ABOUT_TARGET_CLASS);
       });
     };
@@ -65,13 +63,15 @@ export default function NavigationRestore() {
     const saveScroll = () => {
       if (isRestoring) return;
 
+      const payload = JSON.stringify({
+        page: getPageKey(),
+        y: window.scrollY,
+        time: Date.now(),
+      });
+
       window.sessionStorage.setItem(
         SCROLL_RESTORE_KEY,
-        JSON.stringify({
-          page: getPageKey(),
-          y: window.scrollY,
-          time: Date.now(),
-        })
+        payload
       );
     };
     let saveFrame = 0;
@@ -82,6 +82,7 @@ export default function NavigationRestore() {
         saveScroll();
       });
     };
+    const saveScrollForReload = () => saveScroll();
 
     const restoreScroll = () => {
       const raw = window.sessionStorage.getItem(SCROLL_RESTORE_KEY);
@@ -162,21 +163,30 @@ export default function NavigationRestore() {
       }
     };
 
+    const nav = window.performance.getEntriesByType("navigation")[0] as
+      | PerformanceNavigationTiming
+      | undefined;
+    const isReload = nav?.type === "reload";
+
     if ("scrollRestoration" in window.history) {
-      window.history.scrollRestoration = "manual";
+      window.history.scrollRestoration = isReload ? "auto" : "manual";
     }
 
-    restoreScroll();
+    if (isReload) {
+      showPage();
+    } else {
+      restoreScroll();
+    }
 
     window.addEventListener("scroll", saveScrollSoon, { passive: true });
-    window.addEventListener("beforeunload", saveScroll);
-    window.addEventListener("pagehide", saveScroll);
+    window.addEventListener("beforeunload", saveScrollForReload);
+    window.addEventListener("pagehide", saveScrollForReload);
 
     return () => {
       if (saveFrame) window.cancelAnimationFrame(saveFrame);
       window.removeEventListener("scroll", saveScrollSoon);
-      window.removeEventListener("beforeunload", saveScroll);
-      window.removeEventListener("pagehide", saveScroll);
+      window.removeEventListener("beforeunload", saveScrollForReload);
+      window.removeEventListener("pagehide", saveScrollForReload);
     };
   }, [pathname, searchParams]);
 

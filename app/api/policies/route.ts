@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiFetch } from "../client";
+import { toText } from "@/app/Utils/imageUrl";
 
 type RawRecord = Record<string, unknown>;
 
@@ -8,9 +9,6 @@ type PolicyItem = {
   titleTH: string;
   titleEN: string;
 };
-
-const toText = (value: unknown): string =>
-  typeof value === "string" ? value : "";
 
 const pick = (item: RawRecord, keys: string[]): unknown => {
   for (const key of keys) {

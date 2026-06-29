@@ -1,5 +1,5 @@
 // -------------------------------------------
-// ----------------- Model --------------------
+// ----------------- Model -------------------
 // -------------------------------------------
 export interface ComponentsRadioModelProps {
   name: string;
@@ -57,10 +57,12 @@ export interface ApplicationResponse {
 }
 
 // -------------------------------------------
-// ----------------- Form --------------------
+// ------------------ Form -------------------
 // -------------------------------------------
 
-//Loan
+// -------------------------------------------
+// --------------- Loan Form -----------------
+// -------------------------------------------
 export interface FormLoanData {
   isCuntomer: number | null
   selectedLoan: BasicDropDownSeleteLoanProps | null
@@ -76,7 +78,9 @@ export interface FormLoanData {
   zipcode: string
   tambonsID: number | null
 }
-//Contact
+// -------------------------------------------
+// -------------- Contact Form ---------------
+// -------------------------------------------
 export interface FormContactData {
   fullname: string
   email: string
@@ -84,12 +88,14 @@ export interface FormContactData {
   selectedTopic: string | number | null
   detail: string
 }
-// -------------------------------------------------------------------
-// <-- error  -->
-// -------------------------------------------------------------------
+// -------------------------------------------
+// ------------- Form Errors -----------------
+// -------------------------------------------
 
 
-//Loan
+// -------------------------------------------
+// ---------- Loan Form Errors ---------------
+// -------------------------------------------
 export interface FormLoanDataErrors {
   isCuntomer?: string
   selectedLoan?: string
@@ -107,7 +113,9 @@ export interface FormLoanDataErrors {
   [key: string]: string | undefined
 }
 
-//Contact
+// -------------------------------------------
+// -------- Contact Form Errors --------------
+// -------------------------------------------
 export interface FormConctactDataErrors {
   fullname?: string
   email?: string
@@ -117,9 +125,12 @@ export interface FormConctactDataErrors {
   [key: string]: string | undefined
 }
 // -------------------------------------------
-// ----------------- Show --------------------
+// ------------------ Show -------------------
 // -------------------------------------------
-//
+
+// -------------------------------------------
+// ---------------- Banner -------------------
+// -------------------------------------------
 export interface bannerData {
   id: number
   name: string
@@ -129,169 +140,233 @@ export interface bannerData {
 }
 
 export type BannerApiItem = {
-  id?: number | string;
-  int_saksiam_banner_ID?: number | string;
-  picturePC?: string;
-  int_saksiam_banner_picturePC?: string;
-  pictureMoblie?: string;
-  pictureMobile?: string;
-  int_saksiam_banner_pictureMoblie?: string;
-  link?: string;
-  int_saksiam_banner_link?: string;
+  id: string;
+  name: string;
+  picturePC: string;
+  pictureMoblie: string;
+  link: string;
+  active: string;
 };
 
-//News
+// -------------------------------------------
+// ------------------ News -------------------
+// -------------------------------------------
 export type NewsApiItem = {
-  id?: string;
-  editoriaID?: string;
-  editoriaId?: string;
-  editoriaNum?: string;
-  int_saksiam_editoria_id?: string;
-  typeNameTH?: string;
-  typeNameEN?: string;
-  categoryTH?: string;
-  categoryEN?: string;
-  titleTH?: string;
-  titleEN?: string;
-  int_saksiam_editoria_titieTH?: string;
-  int_saksiam_editoria_titieEN?: string;
-  descriptionTH?: string;
-  descriptionEN?: string;
-  int_saksiam_editoria_descriptionTH?: string;
-  int_saksiam_editoria_descriptionEN?: string;
-  approvedate?: string;
-  createAt?: string;
-  int_saksiam_editoria_approvedate?: string;
-  galleryList?: string[] | string;
-  gallaryList?: string[] | string;
-  gallery?: string[] | string;
-  gallary?: string[] | string;
-  int_saksiam_editoria_gallary?: string[] | string;
+  editoriaNum: string;
+  typeID: string;
+  typeNameTH: string;
+  typeNameEN: string;
+  titleTH: string;
+  titleEN: string;
+  descriptionTH: string;
+  descriptionEN: string;
+  gallery: string[];
+  pin: string;
+  active: string;
+  createname: string;
+  createAt: string;
+  updateAt: string | null;
+  approvedate: string;
+  approvename: string;
+  note: string;
+  rejectReason: string;
+  reason: string;
+  improvement: string;
+  improvement_text: string;
+  improvementText: string;
+  cancellation: string;
 };
 
-
-export type TestimonialApiItem = {
-  id?: number | string;
-  vedioID?: number | string;
-  videoID?: number | string;
-  int_saksiam_vedio_id?: number | string;
-  title?: string;
-  nameTH?: string;
-  vedio_nameTH?: string;
-  int_saksiam_vedio_nameTH?: string;
-  videoUrl?: string;
-  link?: string;
-  linkVedio?: string;
-  vedio_link?: string;
-  int_saksiam_vedio_link?: string;
-  videoId?: string;
-  youtubeID?: string;
-  vedio_youtubeID?: string;
-  int_saksiam_vedio_youtubeID?: string;
-};
-export type TestimonialApiData = {
-  data?: TestimonialApiItem[];
-  total_count?: number;
+export type HomeNewsItem = {
+  id: string | number;
+  categoryTH: string;
+  categoryEN: string;
+  titleTH: string;
+  titleEN: string;
+  detailTH: string;
+  detailEN: string;
+  createdAt: string;
+  images: string[];
+  views?: number;
 };
 
-//Faq
-
-export type FaqItem = {
-  id: number;
-  category: string;
-  questionTH: string;
-  questionEN: string;
-  answerTH: string;
-  answerEN: string;
+  export type News = {
+  id: string | number;
+  categoryTH: string;
+  categoryEN: string;
+  titleTH: string;
+  titleEN: string;
+  detailTH: string;
+  detailEN: string;
+  createdAt: string;
+  images: string[];
 };
 
-export type FaqTypeItem = {
+export type EditorialType = {
   id: string;
   nameTH: string;
   nameEN: string;
 };
 
 
+
+export type EditorialTypeApiItem = {
+  id: string;
+  editorialtypeID: string;
+  typeeditoriaID: string;
+  nameTH: string;
+  nameEN: string;
+  editorialtypenameTH: string;
+  editorialtypenameEN: string;
+  active: string;
+  savename: string;
+  createAt: string;
+  updateAt: string | null;
+  editorialtypeorder: string | null;
+  typeeditoriaorder: string | null;
+};
+
+export type TestimonialApiItem = {
+  id: string;
+  title: string;
+  link: string;
+  youtubeID: string;
+};
+
+export type TestimonialItem = {
+  id: number;
+  title: string;
+  videoUrl: string;
+  videoId: string;
+};
+
+export type TestimonialApiData = {
+  data: TestimonialApiItem[];
+  total_count: number;
+};
+
+// -------------------------------------------
+// ------------------ FAQ --------------------
+// -------------------------------------------
+export type FaqItem = {
+  id: string;
+  faqtypeID: string;
+  typeID: string;
+  faqtypeNameTH: string;
+  faqtypeNameEN: string;
+  typeNameTH: string;
+  typeNameEN: string;
+  questionTH: string;
+  questionEN: string;
+  answersTH: string;
+  answersEN: string;
+  active: string;
+  savename: string;
+  createAt: string;
+  updateAt: string | null;
+  fqaorder: string | null;
+};
+
+export type FaqTypeItem = {
+  id: string;
+  faqtypeID: string;
+  typefaqID: string;
+  nameTH: string;
+  nameEN: string;
+  faqtypenameTH: string;
+  faqtypenameEN: string;
+  active: string;
+  savename: string;
+  createAt: string;
+  updateAt: string | null;
+  faqtypeorder: string | null;
+  typefaqorder: string | null;
+};
+
+
 export type FaqApiItem = {
-  id?: string | number;
-  fqaID?: string | number;
-  faqQuestionID?: string | number;
-  int_saksiam_fqa_id?: string | number;
-  faqtypeID?: string | number;
-  typeID?: string | number;
-  int_saksiam_fqa_type?: string | number;
-  questionTH?: string;
-  questionEN?: string;
-  int_saksiam_fqa_questionTH?: string;
-  int_saksiam_fqa_questionEN?: string;
-  answerTH?: string;
-  answerEN?: string;
-  answersTH?: string;
-  answersEN?: string;
-  int_saksiam_fqa_answersTH?: string;
-  int_saksiam_fqa_answersEN?: string;
+  id: string;
+  faqtypeID: string;
+  typeID: string;
+  faqtypeNameTH: string;
+  faqtypeNameEN: string;
+  typeNameTH: string;
+  typeNameEN: string;
+  questionTH: string;
+  questionEN: string;
+  answersTH: string;
+  answersEN: string;
+  active: string;
+  savename: string;
+  createAt: string;
+  updateAt: string | null;
+  fqaorder: string | null;
 };
 
 export type FaqTypeApiItem = {
-  id?: string | number;
-  faqtypeID?: string | number;
-  typeID?: string | number;
-  int_saksiam_typefqa_id?: string | number;
-  nameTH?: string;
-  nameEN?: string;
-  faqtypenameTH?: string;
-  faqtypenameEN?: string;
-  typeNameTH?: string;
-  typeNameEN?: string;
-  active?: boolean | number | string;
-  faqtypeactive?: boolean | number | string;
-  int_saksiam_typefqa_active?: boolean | number | string;
+  id: string;
+  faqtypeID: string;
+  typefaqID: string;
+  nameTH: string;
+  nameEN: string;
+  faqtypenameTH: string;
+  faqtypenameEN: string;
+  active: string;
+  savename: string;
+  createAt: string;
+  updateAt: string | null;
+  faqtypeorder: string | null;
+  typefaqorder: string | null;
 };
 
 
-//Team
+// -------------------------------------------
+// ------------------ Team -------------------
+// -------------------------------------------
 export type DirectorApiItem = {
-  id?: string | number;
-  nameTH?: string;
-  nameEN?: string;
-  positionTH?: string;
-  positionEN?: string;
-  picture?: string;
-  tag?: string;
+  id: string;
+  picture: string;
+  nameTH: string;
+  nameEN: string;
+  positionTH: string;
+  positionEN: string;
+  active: string;
+  createAt: string;
+  savename: string;
+  tag: string;
+  updateAt: string | null;
+  updatename: string | null;
+  changetime: string | null;
+  changename: string | null;
+  order: string | null;
 };
 
-//AboutMenu
+// -------------------------------------------
+// ------------ About Menu Banner ------------
+// -------------------------------------------
 export type AboutMenuBannerItem = {
-  id: number;
+  id: string;
   name: string;
   picturePC: string;
   pictureMoblie: string;
+  type: string;
+  link: string;
+  active: string;
+  createAt: string;
+  savename: string;
+  updateAt: string | null;
 };
 
-//Mission
+// -------------------------------------------
+// ---------------- Mission ------------------
+// -------------------------------------------
 export type MissionApiItem = {
-  id?: string | number;
-  missionID?: string | number;
-  mission_ID?: string | number;
-  int_saksiam_mission_id?: string | number;
-  titleTH?: string;
-  titleEN?: string;
-  topicTH?: string;
-  topicEN?: string;
-  nameTH?: string;
-  nameEN?: string;
-  mission_nameTH?: string;
-  mission_nameEN?: string;
-  detailTH?: string;
-  detailEN?: string;
-  descriptionTH?: string;
-  descriptionEN?: string;
-  mission_detailTH?: string;
-  mission_detailEN?: string;
-  image?: string;
-  picture?: string;
-  icon?: string;
-  mission_picture?: string;
+  mission_ID: string;
+  titleTH: string;
+  titleEN: string;
+  topicTH: string;
+  topicEN: string;
+  picture: string;
 };
 
 export type MissionItem = {
@@ -302,7 +377,9 @@ export type MissionItem = {
   detailEN: string;
   image: string;
 };
-// Loan
+// -------------------------------------------
+// ------------------ Loan -------------------
+// -------------------------------------------
 export interface loanDetail {
   id: number
   nameTH: string
@@ -330,7 +407,9 @@ export interface loanItem {
   detail: string
 }
 
-//history
+// -------------------------------------------
+// ---------------- History ------------------
+// -------------------------------------------
 export interface HistorySection {
   title_th: string
   title_en: string
@@ -371,15 +450,17 @@ export interface HistoryData {
 }
 
 
-//map
+// -------------------------------------------
+// ------------------ Map --------------------
+// -------------------------------------------
 export interface branchlocationsItem {
-  id: string; // ✅ เปลี่ยน
+  id: string;
   type: number;
   name: string;
   detail: string;
   lat: number;
   lng: number;
-  distance: string | null; // ✅ เพราะ API เป็น null
+  distance: string | null;
   address: string;
   districtname: string;
   amphurname: string;
@@ -388,7 +469,9 @@ export interface branchlocationsItem {
   tel: string;
 }
 
-// contact
+// -------------------------------------------
+// ---------------- Contact ------------------
+// -------------------------------------------
 export interface ContactData {
   callCenter: string;
   fax: string;
@@ -445,4 +528,11 @@ export interface ContactData {
     qr_line: string;
     register: string;
   };
+
+}
+export interface LoanApplicationResponse {
+  application_id: number;
+  customer_id?: number;
+  ticket_id?: number;
+  ticketNo?: string;
 }

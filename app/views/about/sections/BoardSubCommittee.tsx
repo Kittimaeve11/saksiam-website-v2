@@ -1,17 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Box, Grid, Typography } from "@mui/material";
 
 import { apiFetch, getCachedApiResponse } from "@/app/api/client";
 import type { DirectorApiItem } from "@/app/Utils/type";
 import { useLocale } from "@/app/providers/LocaleContext";
-import { buildImageUrl } from "@/app/Utils/imageUrl";
+import {
+  getDirectorOrder,
+  isDirectorActive,
+  normalizeCommitteeTag,
+  normalizeDirector,
+} from "@/app/Utils/directorData";
 
 import DirectorCard from "../../../components/cards/DirectorCard/DirectorCard";
 import type { Director } from "../../../components/cards/DirectorCard/DirectorCard";
 import DirectorCardSkeleton from "../../../components/cards/DirectorCard/DirectorCardSkeleton";
+import ScrollReveal, {
+  usePageRevealOnce,
+} from "@/app/components/ui/ScrollReveal/ScrollReveal";
+
+const DIRECTORS_ENDPOINT = "/api/directorsapi";
+const ABOUT_TARGET_CLASS = "about-target-pending";
+const ABOUT_TARGET_KEY = "saksiam-about-target";
+const DIRECTORS_TIMEOUT_MS = 8000;
 
 const committees = [
   {
@@ -36,105 +49,89 @@ const committees = [
   },
 ] as const;
 
-const toText = (value: string | number | null | undefined): string => {
-  if (typeof value === "number") return String(value);
-  return typeof value === "string" ? value.trim() : "";
-};
-
-const toImageUrl = (src: string): string => {
-  return buildImageUrl(src);
-};
-
-const normalizeDirector = (item: DirectorApiItem): Director => ({
-  id: toText(item.id),
-  nameTH: toText(item.nameTH),
-  nameEN: toText(item.nameEN),
-  positionTH: toText(item.positionTH),
-  positionEN: toText(item.positionEN),
-  picture: toImageUrl(toText(item.picture)),
-  tag: toText(item.tag),
-});
-
-const normalize = (value: string): string => value.replace(/\s+/g, "");
-const ABOUT_TARGET_CLASS = "about-target-pending";
-const ABOUT_TARGET_KEY = "saksiam-about-target";
+const toDirectors = (items: DirectorApiItem[]): Director[] =>
+  items
+    .filter((item) => isDirectorActive(item.active))
+    .sort((a, b) => getDirectorOrder(a) - getDirectorOrder(b))
+    .map(normalizeDirector)
+    .filter((item) => item.id && (item.nameTH || item.nameEN));
 
 export default function BoardSubCommittee() {
   const { messages } = useLocale();
   const searchParams = useSearchParams();
-  const endpoint = "/api/directorsapi";
-  const cached = getCachedApiResponse<DirectorApiItem[]>(endpoint);
-  const initialDirectors = (cached?.data || cached?.result || [])
-    .map(normalizeDirector)
-    .filter((item) => item.id && (item.nameTH || item.nameEN));
-  const [directors, setDirectors] = useState<Director[]>(initialDirectors);
+  const cached = getCachedApiResponse<DirectorApiItem[]>(DIRECTORS_ENDPOINT);
+  const shouldReveal = usePageRevealOnce("about-board-subcommittee");
+  const [directors, setDirectors] = useState<Director[]>(() =>
+    toDirectors(cached?.data || [])
+  );
   const [loading, setLoading] = useState(!cached);
   const targetSection = searchParams.get("section");
-  const fetchedEndpointRef = useRef("");
+  const skipReveal = Boolean(targetSection) || !shouldReveal;
   const shouldFadeContentRef = useRef(!cached);
+  const scrollFrameRef = useRef(0);
+
+  const scrollToTarget = useCallback(() => {
+    if (!targetSection) return;
+    let tries = 0;
+
+    const finishFooterTarget = () => {
+      window.sessionStorage.removeItem(ABOUT_TARGET_KEY);
+      document.documentElement.classList.remove(ABOUT_TARGET_CLASS);
+    };
+
+    const attemptScroll = () => {
+      const isFooterTarget =
+        document.documentElement.classList.contains(ABOUT_TARGET_CLASS);
+      const target = document.getElementById(targetSection);
+
+      if (target || tries >= 20) {
+        target?.scrollIntoView({
+          behavior: isFooterTarget ? "auto" : "smooth",
+          block: "start",
+        });
+
+        if (isFooterTarget) {
+          requestAnimationFrame(finishFooterTarget);
+        }
+        return;
+      }
+
+      tries += 1;
+      scrollFrameRef.current = requestAnimationFrame(attemptScroll);
+    };
+
+    scrollFrameRef.current = requestAnimationFrame(attemptScroll);
+  }, [targetSection]);
 
   useEffect(() => {
     let active = true;
-    let frame = 0;
-    let scrollFrame = 0;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      controller.abort();
+    }, DIRECTORS_TIMEOUT_MS);
 
-    const scrollToTarget = () => {
-      if (!targetSection) return;
-      let tries = 0;
-
-      const finishFooterTarget = () => {
-        window.sessionStorage.removeItem(ABOUT_TARGET_KEY);
-        document.documentElement.classList.remove(ABOUT_TARGET_CLASS);
-      };
-
-      const attemptScroll = () => {
-        const isFooterTarget =
-          document.documentElement.classList.contains(ABOUT_TARGET_CLASS);
-        const target = document.getElementById(targetSection);
-
-        if (target || tries >= 20) {
-          target?.scrollIntoView({
-            behavior: isFooterTarget ? "auto" : "smooth",
-            block: "start",
-          });
-
-          if (isFooterTarget) {
-            requestAnimationFrame(finishFooterTarget);
+    const fetchDirectors = async () => {
+      try {
+        const cached = getCachedApiResponse<DirectorApiItem[]>(DIRECTORS_ENDPOINT);
+        if (cached) {
+          if (active) {
+            setDirectors(toDirectors(cached.data || []));
+            setLoading(false);
+            scrollToTarget();
           }
           return;
         }
 
-        tries += 1;
-        scrollFrame = requestAnimationFrame(attemptScroll);
-      };
+        const response = await apiFetch<DirectorApiItem[]>(DIRECTORS_ENDPOINT, {
+          signal: controller.signal,
+        });
 
-      frame = requestAnimationFrame(attemptScroll);
-    };
-
-    const fetchDirectors = async () => {
-      try {
-        const cached = getCachedApiResponse<DirectorApiItem[]>(endpoint);
-        if (cached) {
-          const directors = (cached.data || cached.result || [])
-            .map(normalizeDirector)
-            .filter((item) => item.id && (item.nameTH || item.nameEN));
-
-          setDirectors(directors);
-          setLoading(false);
-          scrollToTarget();
-          return;
-        }
-
-        const res = await apiFetch<DirectorApiItem[]>(endpoint);
-        const directors = (res.data || res.result || [])
-          .map(normalizeDirector)
-          .filter((item) => item.id && (item.nameTH || item.nameEN));
-
-        if (active) setDirectors(directors);
+        if (active) setDirectors(toDirectors(response.data || []));
       } catch (error) {
         console.error("fetch subcommittee directors error:", error);
         if (active) setDirectors([]);
       } finally {
+        window.clearTimeout(timeout);
         if (active) {
           setLoading(false);
           scrollToTarget();
@@ -142,30 +139,31 @@ export default function BoardSubCommittee() {
       }
     };
 
-    if (fetchedEndpointRef.current !== endpoint) {
-      fetchedEndpointRef.current = endpoint;
-      fetchDirectors();
-    } else if (!loading) {
-      scrollToTarget();
-    }
+    fetchDirectors();
 
     return () => {
       active = false;
-      cancelAnimationFrame(frame);
-      cancelAnimationFrame(scrollFrame);
+      window.clearTimeout(timeout);
+      controller.abort();
     };
-  }, [endpoint, loading, targetSection]);
+  }, [scrollToTarget]);
+
+  useEffect(() => {
+    if (!loading) scrollToTarget();
+
+    return () => {
+      if (scrollFrameRef.current) cancelAnimationFrame(scrollFrameRef.current);
+    };
+  }, [loading, scrollToTarget]);
 
   const groupedCommittees = useMemo(
     () =>
       committees
         .map((committee) => {
-          const committeeKey = normalize(committee.tagTH);
-          const members = directors
-            .filter((director) =>
-              normalize(director.tag || "").includes(committeeKey)
-            )
-            .sort((a, b) => Number(a.id) - Number(b.id));
+          const committeeKey = normalizeCommitteeTag(committee.tagTH);
+          const members = directors.filter((director) =>
+            normalizeCommitteeTag(director.tag || "").includes(committeeKey)
+          );
 
           return { ...committee, members };
         })
@@ -235,7 +233,6 @@ export default function BoardSubCommittee() {
               size={12}
               sx={{ mb: { xs: 6, md: 7 } }}
             >
-              
               <Typography component="h3" sx={headingSx}>
                 {getCommitteeLabel(group.labelKey)}
               </Typography>
@@ -245,9 +242,14 @@ export default function BoardSubCommittee() {
                 spacing={{ xs: 5, md: 7 }}
                 sx={{ alignItems: "start", justifyContent: "flex-start" }}
               >
-                {group.members.map((director) => (
+                {group.members.map((director, index) => (
                   <Grid key={director.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                    <DirectorCard director={director} />
+                    <ScrollReveal
+                      delay={Math.min(index, 5) * 70}
+                      disabled={skipReveal}
+                    >
+                      <DirectorCard director={director} />
+                    </ScrollReveal>
                   </Grid>
                 ))}
               </Grid>

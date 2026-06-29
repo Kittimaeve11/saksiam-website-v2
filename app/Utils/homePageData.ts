@@ -1,36 +1,21 @@
 import { apiFetch } from "../api/client";
 import { getEditorialViewMap } from "../api/editoria-views/store";
 import type { HomeBannerItem } from "../views/home/HomeBanner/HomeBanner";
-import type { HomeNewsItem } from "../views/home/News/NewsSection";
-import type { TestimonialItem } from "../views/home/TestimonialSection/TestimonialSection";
 import type {
   BannerApiItem,
+  HomeNewsItem,
   NewsApiItem,
   TestimonialApiData,
   TestimonialApiItem,
+  TestimonialItem,
 } from "./type";
-import { fetchGalleryMap, getImagesForEditorial } from "./editorialGallery";
-import { buildImageUrl } from "./imageUrl";
-
-const toText = (value: string | number | null | undefined): string =>
-  typeof value === "string" ? value.trim() : "";
+import { buildImageUrl, toText } from "./imageUrl";
+import { normalizeEditorial } from "./editorialData";
 
 const toNumber = (value: number | string | null | undefined): number => {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
 };
-
-const toImageUrl = (src: string): string => {
-  return buildImageUrl(src);
-};
-
-const stripHtml = (value: string): string =>
-  value
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 
 const extractYoutubeId = (value: string): string => {
   if (!value) return "";
@@ -50,96 +35,55 @@ const toEmbedUrl = (videoId: string, link: string): string => {
 
 const normalizeNews = (
   item: NewsApiItem,
-  index: number,
-  viewMap: Record<string, number>,
-  galleryMap: Map<string, string[]>
+  viewMap: Record<string, number>
 ): HomeNewsItem => {
-  const id =
-    toText(
-      item.id ||
-        item.editoriaID ||
-        item.editoriaId ||
-        item.editoriaNum ||
-        item.int_saksiam_editoria_id
-    ) || String(index + 1);
+  const editorial = normalizeEditorial(item);
 
   return {
-    id,
-    categoryTH: toText(item.typeNameTH || item.categoryTH),
-    categoryEN: toText(item.typeNameEN || item.categoryEN),
-    titleTH: toText(item.titleTH || item.int_saksiam_editoria_titieTH),
-    titleEN: toText(item.titleEN || item.int_saksiam_editoria_titieEN),
-    detailTH: stripHtml(
-      toText(item.descriptionTH || item.int_saksiam_editoria_descriptionTH)
-    ),
-    detailEN: stripHtml(
-      toText(item.descriptionEN || item.int_saksiam_editoria_descriptionEN)
-    ),
-    createdAt: toText(
-      item.approvedate || item.createAt || item.int_saksiam_editoria_approvedate
-    ),
-    images: getImagesForEditorial(item as Record<string, unknown>, galleryMap),
-    views: viewMap[id] || 0,
+    id: editorial.id,
+    categoryTH: editorial.categoryTH,
+    categoryEN: editorial.categoryEN,
+    titleTH: editorial.titleTH,
+    titleEN: editorial.titleEN,
+    detailTH: editorial.detailTH,
+    detailEN: editorial.detailEN,
+    createdAt: editorial.createdAt,
+    images: editorial.images,
+    views: viewMap[editorial.id] || 0,
   };
 };
 
 const normalizeBanner = (item: BannerApiItem, index: number): HomeBannerItem => ({
-  id: toNumber(item.id || item.int_saksiam_banner_ID) || index + 1,
-  pc: toImageUrl(toText(item.picturePC || item.int_saksiam_banner_picturePC)),
-  mobile: toImageUrl(
-    toText(
-      item.pictureMoblie ||
-        item.pictureMobile ||
-        item.int_saksiam_banner_pictureMoblie
-    )
-  ),
-  link: toText(item.link || item.int_saksiam_banner_link),
+  id: toNumber(item.id) || index + 1,
+  pc: buildImageUrl(toText(item.picturePC)),
+  mobile: buildImageUrl(toText(item.pictureMoblie)),
+  link: toText(item.link),
 });
 
 const normalizeTestimonial = (
   item: TestimonialApiItem,
   index: number
 ): TestimonialItem => {
-  const link = toText(
-    item.videoUrl ||
-      item.link ||
-      item.linkVedio ||
-      item.vedio_link ||
-      item.int_saksiam_vedio_link
-  );
-  const videoId = extractYoutubeId(
-    toText(
-      item.videoId ||
-        item.youtubeID ||
-        item.vedio_youtubeID ||
-        item.int_saksiam_vedio_youtubeID
-    ) || link
-  );
+  const link = toText(item.link);
+  const videoId = extractYoutubeId(toText(item.youtubeID) || link);
 
   return {
-    id:
-      toNumber(item.id || item.vedioID || item.videoID || item.int_saksiam_vedio_id) ||
-      index + 1,
-    title: toText(
-      item.title || item.nameTH || item.vedio_nameTH || item.int_saksiam_vedio_nameTH
-    ),
+    id: toNumber(item.id) || index + 1,
+    title: toText(item.title),
     videoUrl: toEmbedUrl(videoId, link),
     videoId,
   };
 };
 
 export async function getHomeData() {
-  const [bannerResponse, newsResponse, testimonialResponse, viewMapResponse, galleryMapResponse] = await Promise.allSettled([
+  const [bannerResponse, newsResponse, testimonialResponse, viewMapResponse] = await Promise.allSettled([
     apiFetch<BannerApiItem[]>("/api/bannerhomeapi"),
     apiFetch<NewsApiItem[]>("/api/editoriaapimain"),
     apiFetch<TestimonialApiData>("/api/Reviewapi"),
     getEditorialViewMap(),
-    fetchGalleryMap(),
   ]);
   const viewMap =
     viewMapResponse.status === "fulfilled" ? viewMapResponse.value : {};
-  const galleryMap =
-    galleryMapResponse.status === "fulfilled" ? galleryMapResponse.value : new Map<string, string[]>();
 
   return {
     banners:
@@ -151,7 +95,7 @@ export async function getHomeData() {
     news:
       newsResponse.status === "fulfilled"
         ? (newsResponse.value.data || [])
-            .map((item, index) => normalizeNews(item, index, viewMap, galleryMap))
+            .map((item) => normalizeNews(item, viewMap))
             .filter((item) => (item.titleTH || item.titleEN) && item.images.length)
         : [],
     testimonials:

@@ -1,5 +1,5 @@
 import { apiFetch } from "../client";
-import { buildImageUrl } from "@/app/Utils/imageUrl";
+import { buildApiImageUrl, toText } from "@/app/Utils/imageUrl";
 
 type RawContactApiData = {
   company_name?: {
@@ -43,11 +43,6 @@ type RawContactApiData = {
     register?: string;
     regiter?: string;
   };
-};
-
-const toText = (value: string | number | null | undefined): string => {
-  if (typeof value === "number") return String(value);
-  return typeof value === "string" ? value.trim() : "";
 };
 
 const normalizeContact = (data: RawContactApiData = {}) => {
@@ -108,9 +103,9 @@ const normalizeContact = (data: RawContactApiData = {}) => {
       lng: toText(data.location?.lng),
     },
     images: {
-      cover: buildImageUrl(toText(data.images?.cover)),
+      cover: buildApiImageUrl(data.images?.cover),
       qr_line: "/Social/Qrcode-Line.png",
-      register: buildImageUrl(register),
+      register: buildApiImageUrl(register),
     },
   };
 };

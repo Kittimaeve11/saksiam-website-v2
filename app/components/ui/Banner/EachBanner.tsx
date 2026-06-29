@@ -1,162 +1,176 @@
 "use client";
 
-/* ====================================================== */
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Box, Skeleton } from "@mui/material";
+
 import { apiFetch, getCachedApiResponse } from "@/app/api/client";
-import { Box, useTheme, useMediaQuery } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import {
+  EACH_BANNER_MOBILE_MEDIA,
+  getCurrentEachBannerImageSrc,
+  getEachBannerEndpoint,
+  getEachBannerImages,
+  isEachBannerActive,
+  normalizeEachBanner,
+  type EachBannerItem,
+} from "@/app/Utils/eachBanner";
 import EachBannerSkeleton from "./EachBannerskeleton";
-import { buildImageUrl } from "@/app/Utils/imageUrl";
 
-/* ====================================================== */
-interface EachBanneritem {
-  id: number;
-  name: string;
-  picturePC: string;
-  pictureMoblie: string;
-  type: string;
-  link: string;
-  active: string;
-  createAt: string;
-  updateAt: string;
-}
+type EachBannerProps = {
+  num: number;
+  mobileMedia?: string;
+};
 
-/* ====================================================== */
-const EachBanner = ({ num }: { num: number }) => {
-  const endpoint = `/api/bannerapi/${num}`;
-  const cached = getCachedApiResponse<EachBanneritem | null>(endpoint);
-  const [data, setData] = useState<EachBanneritem | null>(cached?.data || null);
-  const [loading, setLoading] = useState(!cached);
-  const [imageReady, setImageReady] = useState(false);
-  const [showImageSkeleton, setShowImageSkeleton] = useState(false);
+export default function EachBanner({
+  num,
+  mobileMedia = EACH_BANNER_MOBILE_MEDIA,
+}: EachBannerProps) {
+  const endpoint = useMemo(() => getEachBannerEndpoint(num), [num]);
+  const cachedResponse = getCachedApiResponse<EachBannerItem | null>(endpoint);
+
+  const [data, setData] = useState<EachBannerItem | null>(() =>
+    normalizeEachBanner(cachedResponse?.data)
+  );
+  const [loading, setLoading] = useState(!cachedResponse);
+  const [readyImageKey, setReadyImageKey] = useState("");
   const [fadeImage, setFadeImage] = useState(false);
   const fetchedEndpointRef = useRef("");
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const pcImage = buildImageUrl(data?.picturePC || "");
-  const mobileImage = buildImageUrl(data?.pictureMoblie || data?.picturePC || "");
-  const imageSrc = data
-    ? isMobile
-      ? mobileImage || pcImage
-      : pcImage || mobileImage
-    : "";
+  const images = useMemo(() => getEachBannerImages(data), [data]);
+  const imageReady = Boolean(images.key) && readyImageKey === images.key;
 
-  /* ======================================================
-      FETCH
-  ====================================================== */
   useEffect(() => {
-    let fetchActive = true;
-    let imageActive = true;
-    let image: HTMLImageElement | null = null;
-    let imageFallbackTimer: ReturnType<typeof setTimeout> | null = null;
-    let skeletonFallbackTimer: ReturnType<typeof setTimeout> | null = null;
+    let active = true;
     let fetchFallbackTimer: ReturnType<typeof setTimeout> | null = null;
+    let image: HTMLImageElement | null = null;
 
-    const fetchData = async () => {
-      const cached = getCachedApiResponse<EachBanneritem | null>(endpoint);
+    async function fetchBanner() {
+      const cached = getCachedApiResponse<EachBannerItem | null>(endpoint);
+
       if (cached) {
         setLoading(false);
-        setData(cached.data || null);
+        setData(normalizeEachBanner(cached.data));
         return;
       }
 
       try {
         setLoading(true);
         fetchFallbackTimer = setTimeout(() => {
-          if (fetchActive) setLoading(false);
+          if (active) setLoading(false);
         }, 5000);
 
-        const res = await apiFetch<EachBanneritem | null>(endpoint);
+        const response = await apiFetch<EachBannerItem | null>(endpoint);
 
-        if (!res?.status) {
-          throw new Error(res?.message || "API error");
+        if (!response.status) {
+          throw new Error(response.message || "Banner API error");
         }
 
-        if (fetchActive) {
-          if (fetchFallbackTimer) clearTimeout(fetchFallbackTimer);
-          setLoading(false);
-          setData(res.data || null);
-        }
-      } catch (err) {
-        console.error("fetch error:", err);
-        if (fetchActive) {
-          if (fetchFallbackTimer) clearTimeout(fetchFallbackTimer);
-          setLoading(false);
-          setData(null);
-        }
+        if (!active) return;
+
+        if (fetchFallbackTimer) clearTimeout(fetchFallbackTimer);
+        setLoading(false);
+        setData(normalizeEachBanner(response.data));
+      } catch (error) {
+        console.error("Each banner fetch error:", error);
+
+        if (!active) return;
+
+        if (fetchFallbackTimer) clearTimeout(fetchFallbackTimer);
+        setLoading(false);
+        setData(null);
       }
-    };
+    }
 
     if (fetchedEndpointRef.current !== endpoint || (loading && !data)) {
       fetchedEndpointRef.current = endpoint;
-      fetchData();
+      fetchBanner();
     }
 
-    if (data && !imageSrc) {
-      setImageReady(true);
-      setShowImageSkeleton(false);
+    const imageSrc = getCurrentEachBannerImageSrc(images, mobileMedia);
+
+    if (!imageSrc || !images.key.trim()) {
+      setReadyImageKey("");
       setFadeImage(false);
-    } else if (imageSrc) {
+    } else {
       image = new window.Image();
+      image.decoding = "async";
       image.src = imageSrc;
 
       if (image.complete) {
-        setImageReady(true);
-        setShowImageSkeleton(false);
+        setReadyImageKey(images.key);
         setFadeImage(false);
       } else {
-        setImageReady(false);
-        setShowImageSkeleton(true);
+        setReadyImageKey("");
         setFadeImage(true);
 
         image.onload = () => {
-          if (imageActive) {
-            setImageReady(true);
-            setShowImageSkeleton(false);
-          }
+          if (active) setReadyImageKey(images.key);
         };
         image.onerror = () => {
-          if (imageActive) {
-            setImageReady(true);
-            setShowImageSkeleton(false);
-            setFadeImage(false);
-          }
+          if (!active) return;
+
+          setReadyImageKey(images.key);
+          setFadeImage(false);
         };
-        imageFallbackTimer = setTimeout(() => {
-          if (imageActive) {
-            setImageReady(true);
-            setShowImageSkeleton(false);
-            setFadeImage(false);
-          }
-        }, 1200);
-        skeletonFallbackTimer = setTimeout(() => {
-          if (imageActive) setShowImageSkeleton(false);
-        }, 700);
       }
     }
 
     return () => {
-      fetchActive = false;
-      imageActive = false;
-      if (imageFallbackTimer) clearTimeout(imageFallbackTimer);
-      if (skeletonFallbackTimer) clearTimeout(skeletonFallbackTimer);
+      active = false;
       if (fetchFallbackTimer) clearTimeout(fetchFallbackTimer);
+
       if (loading && !data && fetchedEndpointRef.current === endpoint) {
         fetchedEndpointRef.current = "";
       }
+
       if (image) {
         image.onload = null;
         image.onerror = null;
       }
     };
-  }, [data, endpoint, imageSrc, loading]);
+  }, [data, endpoint, images, loading, mobileMedia]);
 
-  /* ====================================================== */
-  if (loading) {
-    return <EachBannerSkeleton />;
-  }
+  if (loading) return <EachBannerSkeleton />;
+  if (!data || !isEachBannerActive(data) || (!images.pc && !images.mobile)) return null;
 
-  if (!data) return null;
+  const picture = (
+    <Box
+      component="picture"
+      sx={{
+        display: "block",
+        width: "100%",
+        height: "100%",
+        lineHeight: 0,
+      }}
+    >
+      <Box component="source" media={mobileMedia} srcSet={images.mobile || images.pc} />
+      <Box
+        component="img"
+        src={images.pc || images.mobile}
+        alt={data.name || ""}
+        draggable={false}
+        onLoad={() => setReadyImageKey(images.key)}
+        onError={() => {
+          setReadyImageKey(images.key);
+          setFadeImage(false);
+        }}
+        onDragStart={(event) => event.preventDefault()}
+        sx={{
+          width: "100%",
+          height: "100%",
+          objectFit: {
+            xs: "contain",
+            md: "cover",
+          },
+          backgroundColor: "#fff",
+          display: "block",
+          opacity: imageReady ? 1 : 0,
+          transition: fadeImage ? "opacity 0.24s ease" : "none",
+          userSelect: "none",
+          WebkitUserDrag: "none",
+        }}
+      />
+    </Box>
+  );
 
   return (
     <Box
@@ -179,51 +193,42 @@ const EachBanner = ({ num }: { num: number }) => {
           overflow: "hidden",
         }}
       >
-        {showImageSkeleton && (
-          <Box
+        {!imageReady && (
+          <Skeleton
+            variant="rectangular"
+            animation="wave"
             sx={{
               position: "absolute",
               inset: 0,
               zIndex: 1,
+              width: "100%",
+              height: "100%",
+              borderRadius: 0,
+              transform: "none",
+              bgcolor: "var(--gray-50)",
             }}
-          >
-            <EachBannerSkeleton />
-          </Box>
+          />
         )}
 
-        <Box
-          component="img"
-          className={fadeImage && imageReady ? "fade-in" : undefined}
-          src={imageSrc}
-          alt={data.name}
-          draggable={false}
-          onLoad={() => {
-            setImageReady(true);
-            setShowImageSkeleton(false);
-          }}
-          onError={() => {
-            setImageReady(true);
-            setShowImageSkeleton(false);
-            setFadeImage(false);
-          }}
-          onDragStart={(e) => e.preventDefault()}
-          sx={{
-            width: "100%",
-            height: "100%",
-            objectFit: {
-              xs: "contain",
-              md: "cover",
-            },
-            backgroundColor: "#fff",
-            display: "block",
-            opacity: imageReady ? 1 : 0.01,
-            userSelect: "none",
-            WebkitUserDrag: "none",
-          }}
-        />
+        {data.link ? (
+          <Box
+            component="a"
+            href={data.link}
+            aria-label={data.name || undefined}
+            sx={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              color: "inherit",
+              textDecoration: "none",
+            }}
+          >
+            {picture}
+          </Box>
+        ) : (
+          picture
+        )}
       </Box>
     </Box>
   );
-};
-
-export default EachBanner;
+}

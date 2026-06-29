@@ -113,6 +113,12 @@ const AddressSearch: React.FC<Props> = ({
                     if (!value) {
                         setSelectedAddress(null);
                         setInputValue("");
+                        setProvinces("");
+                        setAmphures("");
+                        setTambons("");
+                        setZipcode("");
+                        setAddress("");
+                        setTambonsID(0);
                         handleFieldChange(fieldKey, {
                             address: "",
                             district: "",

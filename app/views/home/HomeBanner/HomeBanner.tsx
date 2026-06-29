@@ -1,7 +1,7 @@
 "use client";
 
 /* ====================================================== */
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Box, IconButton } from "@mui/material";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
@@ -27,6 +27,7 @@ const isRemoteImage = (src: string) =>
 function FadeSlider({ banners, ratio }: SliderProps) {
   const slides = [banners[banners.length - 1], ...banners, banners[0]];
   const firstBanner = banners[0] || "";
+  const slideCount = banners.length;
 
   const [index, setIndex] = useState(1);
   const [enableTransition, setEnableTransition] = useState(true);
@@ -43,21 +44,34 @@ function FadeSlider({ banners, ratio }: SliderProps) {
   const preloadedBannerRef = useRef("");
 
   /* ====================================================== */
-  const resetAutoplay = () => {
+  useEffect(() => {
+    const resetTimer = setTimeout(() => {
+      setIndex(1);
+      setEnableTransition(false);
+    }, 0);
+    isSliding.current = false;
+    isAnimating.current = false;
+
+    return () => clearTimeout(resetTimer);
+  }, [firstBanner, slideCount]);
+
+  /* ====================================================== */
+  const resetAutoplay = useCallback(() => {
     if (autoTimer.current) clearTimeout(autoTimer.current);
 
     autoTimer.current = setTimeout(() => {
-      if (!isSliding.current) {
+      if (!isSliding.current && slideCount > 1) {
         isSliding.current = true;
         setIndex((prev) => prev + 1);
       }
     }, 5000);
-  };
+  }, [setIndex, slideCount]);
 
   useEffect(() => {
     let active = true;
     let image: HTMLImageElement | null = null;
     let frame = 0;
+    let loadStateTimer: ReturnType<typeof setTimeout> | null = null;
 
     if (firstBanner && preloadedBannerRef.current !== firstBanner) {
       preloadedBannerRef.current = firstBanner;
@@ -65,13 +79,20 @@ function FadeSlider({ banners, ratio }: SliderProps) {
       image.src = firstBanner;
 
       if (image.complete) {
-        setInitialImageLoaded(true);
-        setFadeInitialImage(false);
+        loadStateTimer = setTimeout(() => {
+          setInitialImageLoaded(true);
+          setFadeInitialImage(false);
+        }, 0);
       } else {
-        setInitialImageLoaded(false);
-        setFadeInitialImage(true);
+        loadStateTimer = setTimeout(() => {
+          setInitialImageLoaded(false);
+          setFadeInitialImage(true);
+        }, 0);
 
         image.onload = () => {
+          if (active) setInitialImageLoaded(true);
+        };
+        image.onerror = () => {
           if (active) setInitialImageLoaded(true);
         };
       }
@@ -88,10 +109,12 @@ function FadeSlider({ banners, ratio }: SliderProps) {
     return () => {
       active = false;
       if (image) image.onload = null;
+      if (image) image.onerror = null;
+      if (loadStateTimer) clearTimeout(loadStateTimer);
       cancelAnimationFrame(frame);
       if (autoTimer.current) clearTimeout(autoTimer.current);
     };
-  }, [enableTransition, firstBanner]);
+  }, [enableTransition, firstBanner, resetAutoplay]);
 
   /* ======================================================
      🔥 FIX LOOP + NO WHITE SCREEN
@@ -100,13 +123,13 @@ function FadeSlider({ banners, ratio }: SliderProps) {
     isSliding.current = false;
     isAnimating.current = false;
 
-    if (index === slides.length - 1) {
+    if (index >= slides.length - 1) {
       setEnableTransition(false);
       requestAnimationFrame(() => setIndex(1));
       return;
     }
 
-    if (index === 0) {
+    if (index <= 0) {
       setEnableTransition(false);
       requestAnimationFrame(() =>
         setIndex(slides.length - 2)
@@ -119,7 +142,7 @@ function FadeSlider({ banners, ratio }: SliderProps) {
 
   /* ====================================================== */
   const goNext = () => {
-    if (isAnimating.current) return;
+    if (isAnimating.current || slideCount <= 1) return;
 
     isAnimating.current = true;
     isSliding.current = true;
@@ -129,7 +152,7 @@ function FadeSlider({ banners, ratio }: SliderProps) {
   };
 
   const goPrev = () => {
-    if (isAnimating.current) return;
+    if (isAnimating.current || slideCount <= 1) return;
 
     isAnimating.current = true;
     isSliding.current = true;
@@ -153,7 +176,7 @@ function FadeSlider({ banners, ratio }: SliderProps) {
 
     const diff = startX.current - x;
 
-    if (Math.abs(diff) > 50 && !isAnimating.current) {
+    if (Math.abs(diff) > 50 && !isAnimating.current && slideCount > 1) {
       isAnimating.current = true;
       isSliding.current = true;
 
@@ -211,6 +234,9 @@ function FadeSlider({ banners, ratio }: SliderProps) {
                 onLoad={() => {
                   if (src === firstBanner) setInitialImageLoaded(true);
                 }}
+                onError={() => {
+                  if (src === firstBanner) setInitialImageLoaded(true);
+                }}
 
                 priority
                 loading="eager"
@@ -245,22 +271,16 @@ function FadeSlider({ banners, ratio }: SliderProps) {
 
       <Box sx={dotWrap}>
         <DotSlider
-          total={banners.length}
-          activeIndex={(index - 1 + banners.length) % banners.length}
+          total={slideCount}
+          activeIndex={(index - 1 + slideCount) % slideCount}
           onClick={(i) => {
-            if (isAnimating.current) return;
-
-            const current = (index - 1 + banners.length) % banners.length;
+            if (isAnimating.current || i < 0 || i >= slideCount) return;
 
             isAnimating.current = true;
             isSliding.current = true;
 
-            // 🔥 ถ้ากด “ย้อนหลัง” → ให้วิ่งไปข้างหน้าแทน
-            if (i < current) {
-              setIndex((prev) => prev + (banners.length - (current - i)));
-            } else {
-              setIndex((prev) => prev + (i - current));
-            }
+            setEnableTransition(true);
+            setIndex(i + 1);
 
             resetAutoplay();
           }}

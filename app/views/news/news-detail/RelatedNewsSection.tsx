@@ -16,22 +16,11 @@ import type { Swiper as SwiperType } from "swiper";
 import NewsCard from "@/app/components/cards/NewsCard/NewsCard";
 import DotSlider from "@/app/components/ui/DotSlider/DotSlider";
 import { useLocale } from "@/app/providers/LocaleContext";
-
+import type { News } from "@/app/Utils/type";
 /* ======================================================
    DATA TYPE
 ====================================================== */
-type News = {
-  id: string | number;
-  titleTH: string;
-  titleEN: string;
-  images: string[];
-  createdAt: string;
-  categoryTH: string;
-  categoryEN: string;
-  detailTH: string;
-  detailEN: string;
-  views?: number;
-};
+
 
 type Props = {
   data: News[];

@@ -133,8 +133,10 @@
     "ask": "ตอบ",
     "selete": "เลือก",
     "loading": "กำลังโหลด",
-    "about": {
-        "history": "ประวัติสินเชื่อศักดิ์สยาม",
+   "about": {
+        "title1":"จาก 1 สาขา สู่",
+        "title2":"สาขาทั่วประเทศ",
+         "history": "ประวัติสินเชื่อศักดิ์สยาม",
         "vision_mission": "วิสัยทัศน์ และพันธกิจ",
         "organization_structure": "โครงสร้างองค์กร",
         "board_of_directors": "คณะกรรมการบริษัท",
@@ -143,6 +145,8 @@
         "risk_committee": "คณะกรรมการบริหารความเสี่ยง",
         "nomination_committee": "คณะกรรมการสรรหา และพิจารณาค่าตอบแทน",
         "governance_committee": "คณะกรรมการบรรษัทภิบาลและความยั่งยืน",
-        "board_skills_matrix": "Board Skills Matrix"
+        "board_skills_matrix": "Board Skills Matrix",
+        "employees":"พนักงาน",
+        "years":"ปี"
     }
 }

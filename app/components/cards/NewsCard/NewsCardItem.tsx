@@ -37,7 +37,7 @@ export default function NewsCardItem({ item }: { item: News }) {
   const category = locale === "th" ? item.categoryTH : item.categoryEN;
   const title = locale === "th" ? item.titleTH : item.titleEN;
 
-  const href = `/news-activities/${item.id}`; // 🔥 route
+  const href = `/news-activities-list/${item.id}`;
   const imageSrc = item.images?.[0] || "/images/placeholder.jpg";
   const isRemoteImage =
     imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
@@ -45,6 +45,7 @@ export default function NewsCardItem({ item }: { item: News }) {
   return (
     <Link
       href={href}
+      prefetch={false}
       style={{ textDecoration: "none", display: "block", height: "100%" }}
     >
       <Card

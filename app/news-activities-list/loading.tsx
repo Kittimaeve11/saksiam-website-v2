@@ -72,7 +72,7 @@ export default function Loading() {
             },
           }}
         >
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: 15 }).map((_, index) => (
             <NewsCardSkeleton key={index} variant="list" />
           ))}
         </Box>

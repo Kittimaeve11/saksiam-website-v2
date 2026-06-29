@@ -186,7 +186,7 @@ export default function ServiceClient() {
   ====================================================== */
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" className="api-content-fade-in">
       {/* TITLE */}
 
       <Box sx={{ textAlign: "center", mb: 7 }}>
@@ -233,7 +233,7 @@ export default function ServiceClient() {
             justifyContent: "flex-start",
           }}
         >
-          {services.map((item, index) => {
+          {services.map((item) => {
             const titleRaw = item.nameTH;
 
             const title =
@@ -252,9 +252,6 @@ export default function ServiceClient() {
                   lg: 4,
                 }}
                 sx={{
-                  animationDelay: `${index * 0.08}s`,
-                  animationFillMode: "forwards",
-
                   display: "flex",
                   justifyContent: "center",
 

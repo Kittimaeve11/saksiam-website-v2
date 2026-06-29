@@ -12,12 +12,12 @@ type Props = {
 
 /* ====================================================== */
 export default function FaqList({ data }: Props) {
-  const [open, setOpen] = useState<number | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
 
   /* ======================================================
      HANDLE TOGGLE
   ====================================================== */
-  const handleToggle = (id: number) => {
+  const handleToggle = (id: string) => {
     setOpen((prev) => (prev === id ? null : id));
   };
 

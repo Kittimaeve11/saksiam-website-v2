@@ -66,7 +66,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
   const category = locale === "th" ? item.categoryTH : item.categoryEN;
   const title = locale === "th" ? item.titleTH : item.titleEN;
   const detail = locale === "th" ? item.detailTH : item.detailEN;
-  const href = `/news-activities/${item.id}`;
+  const href = `/news-activities-list/${item.id}`;
   const formattedDate = item.createdAt
     ? formatDate(item.createdAt, locale)
     : "-";
@@ -87,6 +87,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
     return (
       <Link
         href={href}
+        prefetch={false}
         style={{ textDecoration: "none", display: "block", height: "100%" }}
       >
         <Card
@@ -211,6 +212,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
     return (
       <Link
         href={href}
+        prefetch={false}
         style={{ textDecoration: "none", display: "block", height: "100%" }}
       >
         <Card
@@ -347,6 +349,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
     return (
       <Link
         href={href}
+        prefetch={false}
         style={{
           textDecoration: "none",
           display: "block",
@@ -459,6 +462,7 @@ export default function NewsCard({ item, variant = "default" }: Props) {
   return (
     <Link
       href={href}
+      prefetch={false}
       style={{ textDecoration: "none", display: "block", height: "100%" }}
     >
       <Card

@@ -5,63 +5,42 @@ import { Box, Typography } from "@mui/material";
 
 import { apiFetch, getCachedApiResponse } from "@/app/api/client";
 import type { MissionApiItem, MissionItem } from "@/app/Utils/type";
-import { buildImageUrl } from "@/app/Utils/imageUrl";
+import { normalizeMission } from "@/app/Utils/missionData";
 import MissionCard, { MissionCardSkeleton } from "./MissionCard";
 
-const toText = (value: string | number | null | undefined): string => {
-  if (typeof value === "number") return String(value);
-  return typeof value === "string" ? value.trim() : "";
-};
+const MISSION_ENDPOINT = "/api/missionapi";
 
-const toImageUrl = (src: string): string => {
-  return buildImageUrl(src);
-};
-
-const stripHtml = (value: string): string =>
-  value
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const normalizeMission = (item: MissionApiItem, index: number): MissionItem => ({
-  id:
-    toText(item.id || item.missionID || item.mission_ID || item.int_saksiam_mission_id) ||
-    String(index + 1),
-  titleTH: stripHtml(toText(item.topicTH || item.nameTH || item.mission_nameTH)),
-  titleEN: stripHtml(toText(item.topicEN || item.nameEN || item.mission_nameEN)),
-  detailTH: stripHtml(toText(item.detailTH || item.descriptionTH || item.mission_detailTH || item.titleTH)),
-  detailEN: stripHtml(toText(item.detailEN || item.descriptionEN || item.mission_detailEN || item.titleEN)),
-  image: toImageUrl(toText(item.image || item.picture || item.icon || item.mission_picture)),
-});
+const toMissionItems = (items: MissionApiItem[]): MissionItem[] =>
+  items
+    .map(normalizeMission)
+    .filter(
+      (item) =>
+        item.id &&
+        (item.titleTH || item.titleEN) &&
+        (item.detailTH || item.detailEN)
+    );
 
 const chunkByRows = <T,>(list: T[]): T[][] => [
-  list.slice(0, 4),   // 4
-  list.slice(4, 7),   // 3
-  list.slice(7, 9),   // 2
-  list.slice(9, 10),  // 1
+  list.slice(0, 4),
+  list.slice(4, 7),
+  list.slice(7, 9),
+  list.slice(9, 10),
 ].filter((row) => row.length);
 
 export default function MissionSection() {
-  const endpoint = "/api/missionapi";
-  const cached = getCachedApiResponse<MissionApiItem[]>(endpoint);
-  const initialItems = (cached?.data || cached?.result || [])
-    .map(normalizeMission)
-    .filter((item) => (item.titleTH || item.titleEN) && (item.detailTH || item.detailEN));
-  const [items, setItems] = useState<MissionItem[]>(initialItems);
+  const cached = getCachedApiResponse<MissionApiItem[]>(MISSION_ENDPOINT);
+  const [items, setItems] = useState<MissionItem[]>(() =>
+    toMissionItems(cached?.data || [])
+  );
   const [loading, setLoading] = useState(!cached);
   const shouldFadeContentRef = useRef(!cached);
 
   useEffect(() => {
     let active = true;
-    const cached = getCachedApiResponse<MissionApiItem[]>(endpoint);
-    if (cached) {
-      const missions = (cached.data || cached.result || [])
-        .map(normalizeMission)
-        .filter((item) => (item.titleTH || item.titleEN) && (item.detailTH || item.detailEN));
+    const cached = getCachedApiResponse<MissionApiItem[]>(MISSION_ENDPOINT);
 
-      setItems(missions);
+    if (cached) {
+      setItems(toMissionItems(cached.data || []));
       setLoading(false);
       return;
     }
@@ -69,12 +48,9 @@ export default function MissionSection() {
     const fetchMission = async () => {
       try {
         setLoading(true);
-        const res = await apiFetch<MissionApiItem[]>(endpoint);
-        const missions = (res.data || res.result || [])
-          .map(normalizeMission)
-          .filter((item) => (item.titleTH || item.titleEN) && (item.detailTH || item.detailEN));
+        const response = await apiFetch<MissionApiItem[]>(MISSION_ENDPOINT);
 
-        if (active) setItems(missions);
+        if (active) setItems(toMissionItems(response.data || []));
       } catch (error) {
         console.error("Mission API error:", error);
         if (active) setItems([]);
@@ -88,13 +64,11 @@ export default function MissionSection() {
     return () => {
       active = false;
     };
-  }, [endpoint]);
+  }, []);
 
   if (!loading && !items.length) return null;
 
-  const displayItems = loading
-    ? Array.from({ length: 10 })
-    : items.slice(0, 10);
+  const displayItems = loading ? Array.from({ length: 10 }) : items.slice(0, 10);
   const rows = chunkByRows(displayItems);
 
   return (

@@ -1,24 +1,43 @@
-"use client";
-interface ApplicationResponse {
-  application_id: number;
-}
+import BasicRadioField from "@/app/components/form/BasicRadioField";
+import BasicDropDownseletedata from "@/app/components/form/BasicDropDownseletedata";
+import BasicDropDownseletedatatag from "@/app/components/form/BasicDropDownseletedatatag";
+import AddressSearch from "@/app/components/form/AddressSearch";
+import BasicTextField from "@/app/components/form/BasicTextField";
+import TextButton from "@/app/components/ui/Button/TextButton";
+import { showSuccessAlert } from "@/app/components/ui/SweetAlert/SweetAlert";
 
-import BasicRadioField from '@/app/components/form/BasicRadioField'
-import { Box, Card, Checkbox, Dialog, DialogContent, DialogTitle, Grid, IconButton, Link, Typography } from '@mui/material'
-import React, { useState } from 'react'
-import LoanDropDownIconselete from '../../Loan/LoanDropDownIconselete';
-import BasicDropDownseletedatatag from '@/app/components/form/BasicDropDownseletedatatag';
-import BasicDropDownseletedata from '@/app/components/form/BasicDropDownseletedata';
-import { timeData } from '@/app/api/service/route';
-import { BasicDropDownSeleteLoanProps, FormLoanData, FormLoanDataErrors } from '@/app/Utils/type';
-import { validataLoanForm } from '@/app/Utils/validation';
-import BasicTextField from '@/app/components/form/BasicTextField';
-import AddressSearch from '@/app/components/form/AddressSearch';
-import TextButton from '@/app/components/ui/Button/TextButton';
-import { apiFetch } from '@/app/api/client';
-import PrivacyConsent from './PrivacyConsent';
+import { apiFetch } from "@/app/api/client";
+import { timeData } from "@/app/api/service/route";
+
+import {
+  BasicDropDownSeleteLoanProps,
+  FormLoanData,
+  FormLoanDataErrors,
+  LoanApplicationResponse,
+} from "@/app/Utils/type";
+
+import { normalizeContactTime } from "@/app/Utils/loan";
+import { verifyRecaptcha } from "@/app/Utils/recaptcha";
+import { validataLoanForm } from "@/app/Utils/validation";
+
+import LoanDropDownIconselete from "../../Loan/LoanDropDownIconselete";
+import PrivacyConsent from "./PrivacyConsent";
+
 import CloseIcon from "@mui/icons-material/Close";
-import { verifyRecaptcha } from '@/app/Utils/recaptcha';
+import {
+  Box,
+  Card,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  Link,
+  Typography,
+} from "@mui/material";
+
+import React, { useState } from "react";
 
 const LoanInterestForm = () => {
   const [isCuntomer, setIsCuntomer] =
@@ -72,6 +91,40 @@ const LoanInterestForm = () => {
     tambonsID: '',
     captcha: ''
   });
+
+  const resetForm = () => {
+    setIsCuntomer(null);
+    setSelectedLoan(null);
+    setTypeCar("");
+    setSelectedTime(null);
+    seFullname("");
+    setAmount("");
+    setPhone("");
+    setShowConsent(false);
+    setAcceptConsent(false);
+    setProvinces("");
+    setAmphures("");
+    setTambons("");
+    setZipcode("");
+    setAddress("");
+    setTambonsID(0);
+    setError({
+      isCuntomer: '',
+      selectedLoan: '',
+      typeCar: '',
+      amount: '',
+      selectedtime: '',
+      fullname: '',
+      phone: '',
+      address: '',
+      district: '',
+      amphoe: '',
+      province: '',
+      zipcode: '',
+      tambonsID: '',
+      captcha: ''
+    });
+  };
   const handleFieldChange = (fieldName: string, value: unknown) => {
     const formData: FormLoanData = {
       isCuntomer,
@@ -89,16 +142,28 @@ const LoanInterestForm = () => {
       tambonsID
     };
 
-    const updateFormData = {
+    const updateFormData: FormLoanData = {
       ...formData,
-      [fieldName]: value
-    }
+      ...(fieldName === "address" && value && typeof value === "object"
+        ? (value as Partial<FormLoanData>)
+        : { [fieldName]: value }),
+    };
 
     const errors = validataLoanForm(updateFormData)
-    setError(prevErrors => ({
-      ...prevErrors,
-      [fieldName]: errors[fieldName]
-    }))
+    setError(prevErrors => fieldName === "address"
+      ? {
+        ...prevErrors,
+        address: errors.address,
+        district: errors.district,
+        amphoe: errors.amphoe,
+        province: errors.province,
+        zipcode: errors.zipcode,
+        tambonsID: errors.tambonsID,
+      }
+      : {
+        ...prevErrors,
+        [fieldName]: errors[fieldName]
+      })
   }
   const validateBeforeConsent = () => {
 
@@ -184,7 +249,8 @@ const LoanInterestForm = () => {
       phone: phone,
       type: '1',
       loan: isCuntomer,
-      preferred: selectedtime,
+      preferred: normalizeContactTime(selectedtime),
+      contedtime: normalizeContactTime(selectedtime),
       amount: amount,
       subdistrict: tambons,
       district: amphures,
@@ -213,7 +279,7 @@ const LoanInterestForm = () => {
       // =========================
       // SUBMIT API จริง
       // =========================
-      const response = await apiFetch<ApplicationResponse>(
+      const response = await apiFetch<LoanApplicationResponse>(
         `/api/applicationapi`,
         {
           method: "POST",
@@ -226,14 +292,19 @@ const LoanInterestForm = () => {
         }
       );
 
-      if (!response.status || !response.data) {
+      if (!response.status) {
         throw new Error(
           response.message ||
           "บันทึกข้อมูลไม่สำเร็จ"
         );
       }
 
-      const loanid = response.data.application_id;
+      const responseData = response.data ?? (response as unknown as LoanApplicationResponse);
+      const loanid =
+        responseData.application_id ??
+        responseData.customer_id ??
+        responseData.ticket_id ??
+        0;
       const payloadlog = {
         actionType: 5,
         actionDetail:
@@ -241,31 +312,42 @@ const LoanInterestForm = () => {
         datatype: 'สมัครสินเชื่อออนไลน์',
         dataname:
           selectedLoan?.name || '',
-        dataID: loanid
+        dataID: loanid,
+        typeUser: 'ผู้เยี่ยมชมเว็บไซต์',
+        datatypeID: '0',
+        brandtype: '0'
       };
 
-      await apiFetch(
-        `/api/logapi`,
-        {
-          method: "POST",
+      try {
+        await apiFetch(
+          `/api/logapi`,
+          {
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
 
-          body: JSON.stringify(
-            payloadlog
-          ),
-        }
-      );
+            body: JSON.stringify(
+              payloadlog
+            ),
+          }
+        );
+      } catch (logError) {
+        console.warn("loan interest log warning:", logError);
+      }
 
       console.log(
         "SUBMIT SUCCESS",
         payload
       );
 
-      // await fetch(...)
+      await showSuccessAlert({
+        text: response.message || "บันทึกข้อมูลเรียบร้อย",
+      });
+
+      resetForm();
 
     } catch (err) {
 
@@ -287,21 +369,42 @@ const LoanInterestForm = () => {
       variant="outlined"
       sx={{
         position: "relative",
-        borderRadius: 20,
+        borderRadius: {
+          xs: 16,
+          md: 20,
+        },
         overflow: "hidden",
-        border: 'transparent',
+        border: "transparent",
+        backgroundColor: "#fff",
+
+        boxShadow: {
+          xs: "0 10px 20px rgba(0,0,0,0.08)",
+          sm: "0 15px 30px rgba(0,0,0,0.10)",
+          md: "0 20px 40px rgba(0,0,0,0.12)",
+        },
+
         "&::before": {
           content: '""',
           position: "absolute",
           inset: 0,
-          padding: 1, // ความหนาขอบ
+          padding: {
+            xs: "6px",
+            md: "8px",
+          },
           borderRadius: "inherit",
-          background: "linear-gradient(135deg, #4369BE, #ffffff,#ffffff,#ffffff,  #FBD53F)",
+
+          background:
+            "linear-gradient(135deg, #4369BE, #ffffff, #ffffff, #ffffff, #FBD53F)",
+
           WebkitMask:
             "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
           WebkitMaskComposite: "xor",
           maskComposite: "exclude",
+
+          pointerEvents: "none",
+          zIndex: 2,
         },
+
       }}
     >
       <Box
@@ -314,21 +417,22 @@ const LoanInterestForm = () => {
           maxWidth: '600px',
           margin: '0 auto',
           my: 8,
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Typography
-          variant='h4'
           sx={{
-            display: "block",
             textAlign: "center",
+            fontSize: { xs: "32px", sm: "40px" },
+            px : 1,
             fontWeight: 800,
-            background: "var(--color-primary)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#1C3563",
           }}
         >
           เลือกสินเชื่อที่คุณสนใจ
         </Typography>
+
         <Box sx={{ px: 5, mb: 2, width: '100%' }}>
           <Grid container spacing={1}>
             <Grid size={12}>
@@ -385,7 +489,7 @@ const LoanInterestForm = () => {
                 specify
               />
             </Grid>
-            <Grid size={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <BasicTextField
                 name="ชื่อ - นามสกุล"
                 titlename="กรุณากรอกชื่อ - นามสกุล"
@@ -398,7 +502,7 @@ const LoanInterestForm = () => {
                 specify
               />
             </Grid>
-            <Grid size={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <BasicTextField
                 name="เบอร์โทรศัพท์"
                 titlename="กรุณากรอกเบอร์โทรศัพท์"

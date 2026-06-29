@@ -215,6 +215,10 @@ const ContactForm = ({ onErrorChange }: Props) => {
                     xs: '100%',
                     lg: 490
                 },
+                maxWidth: {
+                    xs: 600,
+                    lg: 490
+                },
                 mx: { xs: 'auto', lg: 0 },
 
                 mt: { xs: 3, lg: 0 },

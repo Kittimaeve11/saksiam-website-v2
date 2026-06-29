@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography } from "@mui/material";
+import { Box, Card, Typography } from "@mui/material";
 import { useLocale } from "@/app/providers/LocaleContext";
 import type { ContactData } from "@/app/Utils/type";
 
@@ -27,20 +27,20 @@ export default function ContactInfo({ data, errorCount = 0 }: Props) {
   const items = [
     {
       title: messages.contact.working_hours,
-      desc: officeHours.map((text, index) => `${index === 0 ? "• " : ""}${text}`),
+      desc: officeHours,
       icon: "fi fi-sr-clock",
     },
     {
       title: messages.contact.phone,
       desc: [
-        `• ${phoneLabel} : ${data.contact.callcenter}`,
-        `• ${faxLabel} : ${data.contact.fax}`,
+        `${phoneLabel} : ${data.contact.callcenter}`,
+        `${faxLabel} : ${data.contact.fax}`,
       ],
       icon: "fi fi-sr-phone-flip",
     },
     {
       title: messages.contact.more_channels,
-      desc: email.map((mail) => `• ${mail}`),
+      desc: email,
       icon: "fi fi-sr-envelope",
     },
   ];
@@ -65,8 +65,9 @@ export default function ContactInfo({ data, errorCount = 0 }: Props) {
         }}
       >
         {items.map((item, index) => (
-          <Box
+          <Card
             key={item.title}
+            elevation={0}
             sx={{
               background: "#fff",
               p: 3,
@@ -152,7 +153,7 @@ export default function ContactInfo({ data, errorCount = 0 }: Props) {
                 </Typography>
               ))}
             </Box>
-          </Box>
+          </Card>
         ))}
       </Box>
     </Box>

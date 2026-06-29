@@ -13,7 +13,7 @@ export default function PhilosophyBannerSection() {
 
         // ดึง Banner ขึ้นไปด้านหลังเนื้อหา
         mt: {
-          xs: -20,
+          xs: -23,
           sm: -28,
           md: -38,
         },
@@ -27,7 +27,11 @@ export default function PhilosophyBannerSection() {
         lineHeight: 0,
       }}
     >
-      <AboutMenuBanner num={16} objectFit="cover" />
+      <AboutMenuBanner
+        num={16}
+        naturalSize
+        mobileMedia="(max-width: 1200px)"
+      />
     </Box>
   );
 }

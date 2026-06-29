@@ -1,4 +1,5 @@
 import { apiFetch } from "@/app/api/client";
+import { toText } from "@/app/Utils/imageUrl";
 import type {
   FaqApiItem,
   FaqItem,
@@ -6,44 +7,46 @@ import type {
   FaqTypeItem,
 } from "@/app/Utils/type";
 
-const toText = (value: string | number | null | undefined): string => {
-  if (typeof value === "number") return String(value);
-  return typeof value === "string" ? value.trim() : "";
+const toNullableText = (value: string | null | undefined): string | null => {
+  if (value === null) return null;
+  return toText(value) || null;
 };
 
-const isInactive = (
-  value: boolean | number | string | null | undefined
-): boolean => {
-  if (typeof value === "boolean") return !value;
-  if (typeof value === "number") return value === 0;
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    return ["0", "false", "no", "n", "inactive", "disable", "disabled"].includes(
-      normalized
-    );
-  }
+const isActive = (value: string | null | undefined): boolean => toText(value) !== "0";
 
-  return false;
-};
-
-const normalizeFaqType = (
-  item: FaqTypeApiItem
-): FaqTypeItem & { active: boolean } => ({
-  id: toText(item.faqtypeID || item.typeID || item.id || item.int_saksiam_typefqa_id),
-  nameTH: toText(item.faqtypenameTH || item.typeNameTH || item.nameTH),
-  nameEN: toText(item.faqtypenameEN || item.typeNameEN || item.nameEN),
-  active: !isInactive(
-    item.active || item.faqtypeactive || item.int_saksiam_typefqa_active
-  ),
+const normalizeFaqType = (item: FaqTypeApiItem): FaqTypeItem => ({
+  id: toText(item.id),
+  faqtypeID: toText(item.faqtypeID),
+  typefaqID: toText(item.typefaqID),
+  nameTH: toText(item.nameTH),
+  nameEN: toText(item.nameEN),
+  faqtypenameTH: toText(item.faqtypenameTH),
+  faqtypenameEN: toText(item.faqtypenameEN),
+  active: toText(item.active),
+  savename: toText(item.savename),
+  createAt: toText(item.createAt),
+  updateAt: toNullableText(item.updateAt),
+  faqtypeorder: toNullableText(item.faqtypeorder),
+  typefaqorder: toNullableText(item.typefaqorder),
 });
 
-const normalizeFaq = (item: FaqApiItem, index: number): FaqItem => ({
-  id: Number(toText(item.id || item.fqaID || item.faqQuestionID || item.int_saksiam_fqa_id)) || index + 1,
-  category: toText(item.faqtypeID || item.typeID || item.int_saksiam_fqa_type),
-  questionTH: toText(item.questionTH || item.int_saksiam_fqa_questionTH),
-  questionEN: toText(item.questionEN || item.int_saksiam_fqa_questionEN),
-  answerTH: toText(item.answerTH || item.answersTH || item.int_saksiam_fqa_answersTH),
-  answerEN: toText(item.answerEN || item.answersEN || item.int_saksiam_fqa_answersEN),
+const normalizeFaq = (item: FaqApiItem): FaqItem => ({
+  id: toText(item.id),
+  faqtypeID: toText(item.faqtypeID),
+  typeID: toText(item.typeID),
+  faqtypeNameTH: toText(item.faqtypeNameTH),
+  faqtypeNameEN: toText(item.faqtypeNameEN),
+  typeNameTH: toText(item.typeNameTH),
+  typeNameEN: toText(item.typeNameEN),
+  questionTH: toText(item.questionTH),
+  questionEN: toText(item.questionEN),
+  answersTH: toText(item.answersTH),
+  answersEN: toText(item.answersEN),
+  active: toText(item.active),
+  savename: toText(item.savename),
+  createAt: toText(item.createAt),
+  updateAt: toNullableText(item.updateAt),
+  fqaorder: toNullableText(item.fqaorder),
 });
 
 export async function getFaqData(): Promise<{
@@ -56,18 +59,26 @@ export async function getFaqData(): Promise<{
       apiFetch<FaqTypeApiItem[]>("/api/faqtypeapi"),
     ]);
 
-    const faqTypes = (typeResponse.data || typeResponse.result || [])
+    const faqTypes = (typeResponse.data || [])
       .map(normalizeFaqType)
-      .filter((item) => item.id && item.active && (item.nameTH || item.nameEN));
+      .filter(
+        (item) =>
+          item.faqtypeID &&
+          isActive(item.active) &&
+          (item.nameTH || item.nameEN)
+      );
 
-    const activeTypeIds = new Set(faqTypes.map((item) => item.id));
-    const faq = (faqResponse.data || faqResponse.result || [])
+    const activeTypeIds = new Set(faqTypes.map((item) => item.faqtypeID));
+    const faq = (faqResponse.data || [])
       .map(normalizeFaq)
       .filter(
         (item) =>
-          item.category &&
-          activeTypeIds.has(item.category) &&
-          (item.questionTH || item.questionEN)
+          item.id &&
+          item.faqtypeID &&
+          isActive(item.active) &&
+          activeTypeIds.has(item.faqtypeID) &&
+          (item.questionTH || item.questionEN) &&
+          (item.answersTH || item.answersEN)
       );
 
     return { faq, faqTypes };
